@@ -1,0 +1,251 @@
+library(camtrapR)
+
+wd_createStationDir <- file.path("~/Dropbox/coiba_camtrapR/raw data", "R3") #first is path, second is station directory to create
+station_names_new <- c("SURVEY-CEBUS-15-03-R3")
+
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+#specify station dir in destination folder
+wd_createStationDir <- file.path("~/Dropbox/coiba_camtrapR/clean data", "R3") #first is path, second is station directory to create
+station_names_new <- c("SURVEY-CEBUS-15-03-R3")
+# create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+
+
+
+StationFolderCreate1
+
+##this works to move, but it copies reconyx folders
+#file.copy(from = "~/Dropbox/coiba_camtrapR/Cebus-15-03C raw", to = "~/Dropbox/coiba_camtrapR/camtrapR_test/R3/SURVEY-CEBUS-15-03-R3" , recursive = TRUE)
+
+####renaming images
+
+# raw image location
+#wd_images_raw <- file.path("~/Dropbox/coiba_camtrapR/Cebus-15-03C raw") #location of raw images  
+
+wd_images_raw <- file.path("~/Dropbox/coiba_camtrapR/raw data/R3") #location of images  
+# destination for renamed images to be copied to
+wd_images_raw_renamed <- file.path("~/Dropbox/coiba_camtrapR/clean data/R3") #location of renamed images       
+
+#table of new names
+renaming.table2 <- imageRename(inDir               = wd_images_raw, #source path
+                               outDir              = wd_images_raw_renamed, #sink path
+                               hasCameraFolders    = FALSE, #if old files have camera subfolder
+                               copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
+                               keepCameraSubfolders = FALSE
+)
+
+renaming.table2
+
+#########copy to external hard drive
+
+#create folders on new hard drive "Coiba Image Data" for raw data
+#b/c of subfolders we will drag and drop images, should be solvable for future however
+
+#####################################################R4#################################################
+
+###deployment R4 March 2018 to July 2018
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R4") #first is path, second is station directory to create
+station_names_new <- c("SURVEY-CEBUS-01-02-R4" , "CEBUS-01-R4" , "CEBUS-02-R4" , "CEBUS-03-R4" , "SURVEY-CEBUS-15-04-R4" ,
+                       "CEBUS-05-R4" , "CEBUS-06-R4" , "CEBUS-08-R4" , "CEBUS-09-R4" , "SURVEY-CEBUS-17-03-R4" , "SURVEY-CEBUS-24-01-R4")
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+###create home for renamed files
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data", "R4") #first is path, second is station directory to create
+station_names_new <- c("SURVEY-CEBUS-01-02-R4" , "CEBUS-01-R4" , "CEBUS-02-R4" , "CEBUS-03-R4" , "SURVEY-CEBUS-15-04-R4" ,
+                       "CEBUS-05-R4" , "CEBUS-06-R4" , "CEBUS-08-R4" , "CEBUS-09-R4" , "SURVEY-CEBUS-17-03-R4" , "SURVEY-CEBUS-24-01-R4")
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+
+##rename
+
+wd_images_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R4") #location of images  
+# destination for renamed images to be copied to
+wd_images_raw_renamed <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R4") #location of renamed images       
+
+#table of new names
+renaming.table2 <- imageRename(inDir               = wd_images_raw, #source path
+                               outDir              = wd_images_raw_renamed, #sink path
+                               hasCameraFolders    = FALSE, #if old files have camera subfolder
+                               copyImages          = FALSE, #if copying will actually happen, set to false to simulate renaminf
+                               keepCameraSubfolders = FALSE
+)
+
+nrow(renaming.table2)
+nrow(renaming.table2[renaming.table2$Station=="CEBUS-03-R4",])
+ff <- renaming.table2$filename_new[renaming.table2$Station=="CEBUS-03-R4"] ###only does images
+
+
+
+#####################################################R3#################################################
+
+###deployment R3 March 2018 to July 2018
+#raw files
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R3") #first is path, second is station directory to create
+station_names_new <- c("SURVEY-CEBUS-03-04-R3" , "CEBUS-01-R3" , "CEBUS-02-R3" , "SURVEY-CEBUS-07-03-R3" , "SURVEY-CEBUS-15-02-R3",
+                       "SURVEY-CEBUS-15-03-R3", "CEBUS-05-R3" , "CEBUS-08-R3" , "CEBUS-09-R3", 
+                       "SURVEY-CEBUS-22-01-R3" , "SURVEY-CEBUS-23-01-R3")
+
+length(station_names_new)
+
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+###create home for renamed files
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data", "R3") #first is path, second is station directory to create
+
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+
+
+wd_images_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R3") #location of images  
+# destination for renamed images to be copied to
+wd_images_raw_renamed <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R3") #location of renamed images       
+
+#table of new names
+renaming.table2 <- imageRename(inDir               = wd_images_raw, #source path
+                               outDir              = wd_images_raw_renamed, #sink path
+                               hasCameraFolders    = FALSE, #if old files have camera subfolder
+                               copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
+                               keepCameraSubfolders = FALSE
+)
+
+
+
+####################################################R2#################################################
+###deployment R2 July 2017 to Dec 2017
+#raw files
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R2") #first is path, second is station directory to create
+station_names_new <- c("SURVEY-CEBUS-03-03-R2",
+                       "SURVEY-CEBUS-06-01-R2",
+                       "SURVEY-CEBUS-06-02-R2",
+                       "CEBUS-01-R2",
+                       "CEBUS-02-R2",
+                       "SURVEY-CEBUS-12-01-R2",
+                       "SURVEY-CEBUS-13-01-R2",
+                       "SURVEY-CEBUS-14-01-R2",
+                       "SURVEY-CEBUS-15-01-R2",
+                       "SURVEY-CEBUS-16-01-R2",
+                       "CEBUS-05-R2",
+                       "SURVEY-CEBUS-16-02-R2",
+                       "CEBUS-08-R2",
+                       "CEBUS-09-R2",
+                       "SURVEY-CEBUS-18-01-R2",
+                       "SURVEY-CEBUS-19-01-R2",
+                       "SURVEY-CEBUS-20-01-R2",
+                       "SURVEY-CEBUS-21-01-R2")
+
+length(station_names_new)
+
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+###create home for renamed files
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data", "R2") #first is path, second is station directory to create
+
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+
+
+wd_images_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R2") #location of images  
+# destination for renamed images to be copied to
+wd_images_raw_renamed <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R2") #location of renamed images       
+
+#table of new names
+renaming.tableR2 <- imageRename(inDir               = wd_images_raw, #source path
+                               outDir              = wd_images_raw_renamed, #sink path
+                               hasCameraFolders    = FALSE, #if old files have camera subfolder
+                               copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
+                               keepCameraSubfolders = FALSE
+)
+
+
+####################################################R1#################################################
+###deployment R2 March 2017 to July 2017
+#raw files
+wd_createStationDir_R1 <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R1") #first is path, second is station directory to create
+station_names_new_R1 <- c(
+"SURVEY-CEBUS-01-01-R1",
+"SURVEY-CEBUS-02-01-R1" ,
+"SURVEY-CEBUS-02-02-R1" ,
+"SURVEY-CEBUS-03-01-R1" ,
+"SURVEY-CEBUS-03-02-R1" ,
+"SURVEY-CEBUS-04-01-R1" ,
+"SURVEY-CEBUS-05-01-R1" ,
+"SURVEY-CEBUS-06-01-R1" ,
+"CEBUS-01-R1" ,
+"CEBUS-02-R1" ,
+"SURVEY-CEBUS-08-01-R1" ,
+"SURVEY-CEBUS-09-01-R1" ,
+"SURVEY-CEBUS-09-02-R1" ,
+"SURVEY-CEBUS-10-01-R1" ,
+"SURVEY-CEBUS-11-01-R1" ,
+"SURVEY-CEBUS-12-01-R1" 
+)
+
+length(station_names_new_R1)
+
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate_R1 <- createStationFolders (inDir       = wd_createStationDir_R1,
+                                              stations    = station_names_new_R1, 
+                                              createinDir = TRUE)
+###create home for renamed files
+wd_createStationDir_R1 <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data", "R1") #first is path, second is station directory to create
+
+StationFolderCreate_R1 <- createStationFolders (inDir       = wd_createStationDir_R1,
+                                              stations    = station_names_new_R1, 
+                                              createinDir = TRUE)
+
+
+wd_images_raw_R1 <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R1") #location of images  
+# destination for renamed images to be copied to
+wd_images_renamed_R1 <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R1") #location of renamed images       
+
+#table of new names
+renaming.table_R1 <- imageRename(inDir               = wd_images_raw_R1, #source path
+                                outDir              = wd_images_renamed_R1, #sink path
+                                hasCameraFolders    = FALSE, #if old files have camera subfolder
+                                copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
+                                keepCameraSubfolders = FALSE
+)
+
+
+
+##########video tomfoolery
+wd_video_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R4/") #location of videos  and jpgs
+
+exifTagNames(wd_video_raw) #gives first folder
+exifTagNames(wd_video_raw ,  whichSubDir="CEBUS-03-R4" , fileName="RCNX0006_101RECNX.MP4") #gives first folder
+exifTagNames(wd_video_raw ,  whichSubDir="CEBUS-03-R4" , fileName="RCNX0001_100RECNX.JPG") #gives first folder
+exifTagNames(wd_video_raw ,  whichSubDir="CEBUS-03-R4" ) #gives first folder
+
+wd_video_raw2 <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R4/CEBUS-03-R4") #location of videos  and jpgs
+exifTagNames(wd_video_raw2 , fileName="RCNX0001_100RECNX.JPG") #gives meta data of image
+exifTagNames(wd_video_raw2 , fileName="RCNX0006_101RECNX.MP4") #gives meta data of video
+
+##rename
+
+# destination for renamed images to be copied to
+wd_video_raw_renamed2 <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R4/CEBUS-03-R4") #location of renamed images       
+
+#table of new names
+renaming.table2 <- imageRename(inDir               = wd_video_raw2, #source path
+                               outDir              = wd_video_raw_renamed2, #sink path
+                               hasCameraFolders    = FALSE, #if old files have camera subfolder
+                               copyImages          = FALSE, #if copying will actually happen, set to false to simulate renaminf
+                               keepCameraSubfolders = FALSE
+)
+
+renaming.table2
