@@ -255,3 +255,39 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "SPT" , 
                        "NA"                       
 )
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/2a3aaba4-3789-481b-b3aa-ace7a57fa7c1"
+                       , 20 ,
+                       "YOD" , 
+                       "Second arrival"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/2a3aaba4-3789-481b-b3aa-ace7a57fa7c1"
+                       , 1 ,
+                       "LAR" , 
+                       "Check, first arrival"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9a05da25-8886-4124-bfe3-f076c8727f23"
+                       , 621 ,
+                       "SKL" , 
+                       "NA"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e2b46e04-5933-44a8-907e-e914a05655c9"
+                       , 1 ,
+                       "SKL" , 
+                       "On back of CYS"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a3918cc9-2c3c-4302-b52b-20206950ee02"
+                       , 1 ,
+                       "SKL" , 
+                       "Sex with CYS"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9a05da25-8886-4124-bfe3-f076c8727f23"
+                       , 393 ,
+                       "FRI" , 
+                       "On anvil"                       
+)
