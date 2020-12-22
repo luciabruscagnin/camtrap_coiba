@@ -292,15 +292,103 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "On anvil"                       
 )
 
-<<<<<<< HEAD
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd493ab7-86e4-4d0c-add1-4b89c01704d2"
                        , 1 ,
                        "CYS" , 
                        "in color, blurred"                       
 )
 
-https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd493ab7-86e4-4d0c-add1-4b89c01704d2
-=======
+
+#####Cebus-01-R2
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1d371307-63ee-4038-ad5f-60a6348e49e5"
+                       , 1 ,
+                       "CYS" , 
+                       "in color, blurred"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a703b801-51c8-4c8f-9948-a5cb88dbc5f8"
+                       , 1 ,
+                       "SPT" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a703b801-51c8-4c8f-9948-a5cb88dbc5f8"
+                       , 41 ,
+                       "INK" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/08a234de-d247-4786-a796-f009e56471a8"
+                       , 1 ,
+                       "INK" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/08a234de-d247-4786-a796-f009e56471a8"
+                       , 1 ,
+                       "CYS" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/08a234de-d247-4786-a796-f009e56471a8"
+                       , 30 ,
+                       "TOM" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/08a234de-d247-4786-a796-f009e56471a8"
+                       , 30 ,
+                       "BEA" , 
+                       "check this"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/982c3760-80b9-42a5-a228-b90ddf6a8ea5"
+                       , 1 ,
+                       "TOM" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/982c3760-80b9-42a5-a228-b90ddf6a8ea5"
+                       , 1 ,
+                       "CYS" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/982c3760-80b9-42a5-a228-b90ddf6a8ea5"
+                       , 16 ,
+                       "LEO" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/26fac7be-9162-440b-af0e-aa8973320a63"
+                       , 16 ,
+                       "TOM" , 
+                       "2nd opinion wanted"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bc0fbc2a-fc80-4881-8b3e-51120f5a13b8"
+                       , 1 ,
+                       "LEO" , 
+                       "2nd opinion wanted"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4d281531-fb8d-4f9d-b52a-f85ed1e0441b"
+                       , 1 ,
+                       "SPT" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d90f1640-b5d1-47e3-bb0e-5724a6b94957"
+                       , 1 ,
+                       "SPT" , 
+                       NA                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d90f1640-b5d1-47e3-bb0e-5724a6b94957"
+                       , 1 ,
+                       "YOD" , 
+                       "must check, no spots, tiny ear tufts, slight peak, fluffy forehead"                       
+)
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a6ea1cc5-9ab9-4f1a-9554-dfc876663d91
@@ -331,5 +419,15 @@ https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/se
   
 ##  SHARP PEAK, JUV TINY WHITE DOT ABOVE LEFT EAR
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e5ea21ed-3177-41d5-ad66-30b41e22e287
+
+###huvenile, yoda like ear tufts piched head? 
+#https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/08a234de-d247-4786-a796-f009e56471a8 frame 21
+
+##no peak larger sub adult https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bacd5730-65fb-43f4-89c3-31192ce931dd
+#sharp peak juv https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da171c17-fd20-4266-a996-d92cece793a2
   
->>>>>>> b3648adc658e979df23630cf063d84bbf6c9bbf4
+#SAD of effed up ear female https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ac7c0cc2-644c-4b26-a2b9-0e28dd52d5b0
+
+#flufy forehead, some peak, maybe YODA? https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c9a13818-bce5-4d33-8437-3ca86cbbedc5
+
+#flufy forehead, some peak, maybe YODA again? https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/8204de2d-0869-4abb-b3da-3d709510384a
