@@ -292,6 +292,7 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "On anvil"                       
 )
 
+<<<<<<< HEAD
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd493ab7-86e4-4d0c-add1-4b89c01704d2"
                        , 1 ,
                        "CYS" , 
@@ -299,3 +300,36 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 )
 
 https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd493ab7-86e4-4d0c-add1-4b89c01704d2
+=======
+#### From here on down notes (not yet identified individuals)
+## Double white dots, dark temples, larger male:
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a6ea1cc5-9ab9-4f1a-9554-dfc876663d91
+# Possibly also https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/47f607e6-9e90-4007-8edd-418976464d7c around frame 90
+  
+##  Mystery Juveniles
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/91502947-533d-4347-a05f-74bff21b5670 dip up in right peak 304
+  
+##  Symmetrical peak juvenile squared off
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/7069f94a-73f7-4190-8d28-d5c2a85ab3b0 check if yoda beginning on anvil. Symmetrical peak squares off (not sharp point)
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9a05da25-8886-4124-bfe3-f076c8727f23 symmetrical squared off peak at frame 38
+  
+##  Mousey infant/juvenile
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/7069f94a-73f7-4190-8d28-d5c2a85ab3b0 check frame 38 on left 
+  
+##  Shark pinched head juvenile
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1479a34c-f9d5-4697-b26d-58b9372c7510 frame 111 
+  
+##  Broad faced unknown juvenile
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bf099bea-40df-4934-8cda-0e1799dbf04e
+  
+##  Old cavity lady (not Beatrice?)
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/40043c07-31d3-4db9-9941-039839a8a1b0 
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cae5bca8-b5e4-4744-af80-803eeab88eda 
+  
+##  Female messed up left ear (not Sadie? New female?)
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3b0cbd5d-8174-4a87-8f54-d7fe15c10610 frame 24 
+  
+##  SHARP PEAK, JUV TINY WHITE DOT ABOVE LEFT EAR
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e5ea21ed-3177-41d5-ad66-30b41e22e287
+  
+>>>>>>> b3648adc658e979df23630cf063d84bbf6c9bbf4
