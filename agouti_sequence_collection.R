@@ -186,7 +186,7 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4c037780-57e1-41cf-b82e-aa866ad67eb8"
                        , 33 ,
                        "LEO" , 
-                       "inspect this"                       
+                       "inspect this, might be younger female with messed up left ear"                       
 )  
 
 
@@ -291,3 +291,11 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "FRI" , 
                        "On anvil"                       
 )
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd493ab7-86e4-4d0c-add1-4b89c01704d2"
+                       , 1 ,
+                       "CYS" , 
+                       "in color, blurred"                       
+)
+
+https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd493ab7-86e4-4d0c-add1-4b89c01704d2

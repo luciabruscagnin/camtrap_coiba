@@ -18,8 +18,11 @@
 
 
 cd "/Users/BJB/Desktop/exiftool_test/"
-#below is brett code for images
+#below renames images with datetimeoriginal tag and camera model
 exiftool -r '-filename<${datetimeoriginal}_${model;}%-c.%e' -d "%Y%m%d_%H%M%S" .
+exiftool -r '-filename<${ile Modification Date/Time}_${model;}%-c.%e' -d "%Y%m%d_%H%M%S" .
+
+File Modification Date/Time
 
 #my attempt
 exiftool -r '-filename<${CreateDate}_${UserLabel;}%-c.%e' -d "%Y%m%d_%H%M%S" .
@@ -57,6 +60,10 @@ exiftool -r "-filename<CreateDate" -d "%Y-%m-%d_%H-%M-%S - %%f.%%e" RCNX0012.MP4
 
 exiftool -r '-filename<${CreateDate}_${%dogs%}%-c.%e' -d "%Y%m%d_%H%M%S" .
 
+#read user label and filename
+ exiftool -g1 -a -s -Date/Time Original -Filename path/file.jpg 
+#read user label and filename
+ exiftool -g1 -a -s -UserLabel -Filename path/file.jpg 
 
-###email w/ info, prev convos, hints, scopes, time commitment
+exiftool -csv -datetimeoriginal /path/to/dir > /Users/BJB/Dropbox/camtrap_coiba/Cebus-01-R1_exif_metadata.csv
 
