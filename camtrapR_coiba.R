@@ -46,6 +46,53 @@ renaming.table2
 #create folders on new hard drive "Coiba Image Data" for raw data
 #b/c of subfolders we will drag and drop images, should be solvable for future however
 
+
+#########################################R5#############################################
+###deployment R5 July 2018 to Dec 2018
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R5") #first is path, second is station
+station_names_new <-c("CEBUS-02-R5",
+                      "SURVEY-CEBUS-16-02-R5",
+                      "SURVEY-CEBUS-05-02-R5",
+                      "SURVEY-CEBUS-15-04-R5",
+                      "SURVEY-CEBUS-24-01-R5",
+                      "CEBUS-09-R5",
+                      "CEBUS-05-R5",
+                      "SURVEY-CEBUS-17-03-R5",
+                      "CEBUS-06-R5",
+                      "CEBUS-03-R5",
+                      "CEBUS-08-R5",
+                      "CEBUS-01-R5")
+
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+#create home for renamed files
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data", "R5") #first is path, second is station directory to create
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+
+wd_images_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R5") #location of images  
+# destination for renamed images to be copied to
+wd_images_raw_renamed <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R5") #location of renamed images   
+#table of new names
+renaming.table.csv <- imageRename(inDir               = wd_images_raw, #source path
+                               outDir              = wd_images_raw_renamed, #sink path
+                               hasCameraFolders    = FALSE, #if old files have camera subfolder
+                               copyImages          = FALSE, #if copying will actually happen, set to false to simulate renaminf
+                               keepCameraSubfolders = FALSE
+)
+
+write.csv(renaming.table.csv, "R5renamingtablejpgs.csv")
+
+renaming.table2 <- imageRename(inDir               = wd_images_raw, #source path
+                               outDir              = wd_images_raw_renamed, #sink path
+                               hasCameraFolders    = FALSE, #if old files have camera subfolder
+                               copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
+                               keepCameraSubfolders = FALSE
+)
+
 #####################################################R4#################################################
 
 ###deployment R4 March 2018 to July 2018
@@ -79,9 +126,6 @@ renaming.table2 <- imageRename(inDir               = wd_images_raw, #source path
                                keepCameraSubfolders = FALSE
 )
 
-nrow(renaming.table2)
-nrow(renaming.table2[renaming.table2$Station=="CEBUS-03-R4",])
-ff <- renaming.table2$filename_new[renaming.table2$Station=="CEBUS-03-R4"] ###only does images
 
 
 
@@ -222,6 +266,7 @@ renaming.table_R1 <- imageRename(inDir               = wd_images_raw_R1, #source
 )
 
 
+###########BELOW IS CODE SANDBOX###########
 
 ##########video tomfoolery
 wd_video_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R4/") #location of videos  and jpgs
@@ -249,3 +294,5 @@ renaming.table2 <- imageRename(inDir               = wd_video_raw2, #source path
 )
 
 renaming.table2
+
+
