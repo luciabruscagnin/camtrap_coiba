@@ -266,7 +266,19 @@ renaming.table_R1 <- imageRename(inDir               = wd_images_raw_R1, #source
                                 keepCameraSubfolders = FALSE
 )
 
-
+########lets read file names in image folders
+#Cebus-01-R5 or what it was originally
+stuff <- list.files(path = "/Volumes/LaCie/Camera Traps July 2017/Cebus-06-01-BBC")
+stuff[700] #this is 700, JUST AS NOSTRADMUS PREDICTED
+stuff <- list.files(path = "/Volumes/LaCie/Camera Traps July 2017/Cebus-07-1B BBC/100RECNX")
+stuff[length(stuff)]
+length(stuff)
+stuff <- list.files(path = "/Volumes/LaCie/Camera Traps July 2017/Cebus-07-1B BBC/101RECNX")
+stuff[length(stuff)]
+length(stuff)
+stuff <- list.files(path = "/Volumes/LaCie/Camera Traps July 2017/Cebus-07-1B BBC/102RECNX")
+stuff[length(stuff)]
+length(stuff)
 ###########BELOW IS CODE SANDBOX###########
 
 ##########video tomfoolery
