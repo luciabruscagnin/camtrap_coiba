@@ -44,3 +44,23 @@ exiftool -csv -FileName -CreateDate -ext mp4  /Volumes/Coiba\ Image\ Data/rename
 ##just mp4 files name and timestamp which is dd/mm/yyyy hh:mm:ss for Agouti
 exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba\ Image\ Data/renamed_data/R1/CEBUS-01-R1/video/ > /Users/BJB/Dropbox/camtrap_coiba/Cebus-01-R1_exif_metadata_clean_mp4.csv
 
+
+####rename all images and videos in paricular folders
+
+####R1
+#CEBUS-01-R1
+cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/CEBUS-01-R1/video 
+exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="CEBUS-01-R1" .
+exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+#SURVEY-CEBUS-02-01-R1
+cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-02-01-R1 
+exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="SURVEY-CEBUS-02-01-R1" .
+exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+#SURVEY-CEBUS-03-01-R1
+cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-03-01-R1 
+exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="SURVEY-CEBUS-03-01-R1" .
+exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+#SURVEY-CEBUS-06-01-R1
+cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-06-01-R1 
+exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="SURVEY-CEBUS-06-01-R1" .
+exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video

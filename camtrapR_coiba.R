@@ -46,7 +46,24 @@ renaming.table2
 #create folders on new hard drive "Coiba Image Data" for raw data
 #b/c of subfolders we will drag and drop images, should be solvable for future however
 
+#########################################R6#############################################
+###deployment R6 Jan 2019 to Mar 2019
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R6") #first is path, second is station
+station_names_new <-c("CEBUS-01-R6",
+                      "CEBUS-02-R6",
+                      "CEBUS-03-R6",
+                      "CEBUS-04-R6",
+                      "CEBUS-05-R6",
+                      "CEBUS-06-R6",
+                      "CEBUS-07-R6",
+                      "CEBUS-08-R6",
+                      "CEBUS-09-R6")
+# to create station directories in  wd_createStationDir on hard disk
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
 
+#pick up here with renaming of images
 #########################################R5#############################################
 ###deployment R5 July 2018 to Dec 2018
 wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R5") #first is path, second is station
