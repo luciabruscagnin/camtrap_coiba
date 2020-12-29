@@ -46,6 +46,10 @@ exiftool -r '-filename<${CreateDate}_${FileName;}%-c.' -d "%Y%m%d_%H%M%S" .
 exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="CEBUS-01-R1" .
 #below is very close, we need to put dashes in between files names,, or not
 exiftool -r '-filename<${Comment}_${CreateDate}%-c.%e' -d "%Y%m%d_%H%M%S" .
+###this matches CamTrapR well
+exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" .
+
+exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" .
 
 
 exiftool -r '-filename<${CreateDate}_${FileName;}%-c.%e.' -d "%Y%m%d_%H%M%S" .

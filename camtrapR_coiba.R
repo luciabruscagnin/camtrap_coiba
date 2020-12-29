@@ -81,7 +81,8 @@ renaming.table.csv <- imageRename(inDir               = wd_images_raw, #source p
                                outDir              = wd_images_raw_renamed, #sink path
                                hasCameraFolders    = FALSE, #if old files have camera subfolder
                                copyImages          = FALSE, #if copying will actually happen, set to false to simulate renaminf
-                               keepCameraSubfolders = FALSE
+                               keepCameraSubfolders = FALSE,
+                               writecsv = TRUE
 )
 
 write.csv(renaming.table.csv, "R5renamingtablejpgs.csv")
