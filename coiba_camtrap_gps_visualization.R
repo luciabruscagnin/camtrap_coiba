@@ -5,7 +5,6 @@ library(lubridate)
 
 #setwd("/Users/BJB/Dropbox/Coiba Tool Images/GPX/")
 
-
 cammar2017 <- readOGR(dsn = "~/Dropbox/Capuchin Monkeys, Coiba National Park_July2018/GPS Points/Camera Deployments Mar 2017.GPX", layer="waypoints")
 camjul2017 <- readOGR(dsn = "~/Dropbox/Capuchin Monkeys, Coiba National Park_July2018/GPS Points/Camera Deployments July 2017.GPX", layer="waypoints")
 camjan2018 <- readOGR(dsn = "~/Dropbox/Capuchin Monkeys, Coiba National Park_July2018/GPS Points/Camera Deployments Jan 2018.GPX", layer="waypoints")
@@ -13,7 +12,15 @@ camjan2018 <- readOGR(dsn = "~/Dropbox/Capuchin Monkeys, Coiba National Park_Jul
 mccir <- readOGR(dsn ="~/Dropbox/Capuchin Monkeys, Coiba National Park_July2018/GPS Points/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
 m <- mccir[1:756,]
 m2019 <- m[year(m$time)>2018,]
-str(m2019)      
+jan2019 <- m[year(m$time)==2019 & month(m$time)==1,]
+mar2019 <- m[year(m$time)==2019 & month(m$time)==3,]
+aug2019 <- m[year(m$time)==2019 & month(m$time)==8,]
+dec2019 <- m[year(m$time)==2019 & month(m$time)==12,]
+
+
+month(m2019$time)
+str(m2019) 
+m2019$time
 mapview(m2019[19,])
 sort(m$name)
 mapview(cammar2017 , col.region="red") + mapview(camjul2017 , col.region="orange") + mapview(camjan2018 , col.region="green") + mapview(m2019 , col.region="blue")
@@ -146,3 +153,14 @@ camjan2018$name[8]
 camjan2018@coords[8,]
 
 cbind(cammar2017$name,cammar2017@coords)
+
+######jan 2019
+mapview(jan2019)
+jan2019$name
+mapview(jan2019[17:24,])
+jan2019[17:24,]$name
+jan2019[17:24,]$time
+jan2019[17:24,]$
+
+######mar 2019
+str(mar2019)
