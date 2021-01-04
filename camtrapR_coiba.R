@@ -45,7 +45,68 @@ renaming.table2
 
 #create folders on new hard drive "Coiba Image Data" for raw data
 #b/c of subfolders we will drag and drop images, should be solvable for future however
+#########################################R8#############################################
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R8") #first is path, second is station
+station_names_new <-c(
+  "CEBUS-01-R8",
+  "CEBUS-02-R8",
+  "CEBUS-03-R8",
+  "CEBUS-04-R8",
+  "CEBUS-05-R8",
+  "CEBUS-06-R8",
+  "CEBUS-07-R8",
+  "CEBUS-08-R8",
+  "CEBUS-10-R8",
+  "ESC-01-R8",
+  "ESC-02-R8",
+  "ESC-03-R8"
+)
 
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+
+wd_images_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R8") #location of images  
+#will need to do time shifts on cebus 03
+# destination for renamed images to be copied to
+wd_images_raw_renamed <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R8") #location of renamed images   
+#table of new names
+
+renaming.table <- imageRename(inDir               = wd_images_raw, #source path
+                              outDir              = wd_images_raw_renamed, #sink path
+                              hasCameraFolders    = FALSE, #if old files have camera subfolder
+                              copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
+                              keepCameraSubfolders = FALSE,
+                              writecsv = TRUE
+)
+#########################################R7#############################################
+# Mar 2019 to Jul 2019; i feel like SD cards are missing
+wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R7") #first is path, second is station
+station_names_new <-c(
+  "CEBUS-01-R7",
+  "CEBUS-06-R7",
+  "CEBUS-07-R7",
+  "CEBUS-09-R7",
+  "CEBUS-10-R7",
+  "SURVEY-RIO-ESC-01-R7"
+)
+
+StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
+                                              stations    = station_names_new, 
+                                              createinDir = TRUE)
+
+wd_images_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R7") #location of images  
+# destination for renamed images to be copied to
+wd_images_raw_renamed <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R7") #location of renamed images   
+#table of new names
+
+renaming.table <- imageRename(inDir               = wd_images_raw, #source path
+                              outDir              = wd_images_raw_renamed, #sink path
+                              hasCameraFolders    = FALSE, #if old files have camera subfolder
+                              copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
+                              keepCameraSubfolders = FALSE,
+                              writecsv = TRUE
+)
 #########################################R6#############################################
 ###deployment R6 Jan 2019 to Mar 2019
 wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R6") #first is path, second is station
@@ -90,17 +151,6 @@ renaming.table <- imageRename(inDir               = wd_images_raw, #source path
                                   writecsv = TRUE
 )
 
-#whoops we forgot to move some files
-wd_images_raw <- file.path("/Volumes/Coiba\ Image\ Data/raw_data/R6/CEBUS-09-R6") #location of images  
-# destination for renamed images to be copied to
-wd_images_raw_renamed <- file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R6/CEBUS-09-R6") #location of renamed images  
-renaming.table <- imageRename(inDir               = wd_images_raw, #source path
-                              outDir              = wd_images_raw_renamed, #sink path
-                              hasCameraFolders    = FALSE, #if old files have camera subfolder
-                              copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
-                              keepCameraSubfolders = FALSE,
-                              writecsv = TRUE
-)
 #########################################R5#############################################
 ###deployment R5 July 2018 to Dec 2018
 wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R5") #first is path, second is station
