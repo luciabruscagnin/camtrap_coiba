@@ -389,6 +389,129 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "YOD" , 
                        "must check, no spots, tiny ear tufts, slight peak, fluffy forehead"                       
 )
+
+### CEBUS-09 R4 ####
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da7d243a-a58e-4fbe-9aba-749c3fb813d7"
+                       , 1 ,
+                       "SPT" , 
+                       NA                 
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bb19c2a4-c9f5-4cda-9420-0a622f264ecd"
+                       , 1 ,
+                       "ABE" , 
+                       "check, could also be SMG"                 
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/dddae03a-b3b2-46ff-aa90-ba2eb6d3f42d"
+                       , 12 ,
+                       "SMG" , 
+                       NA
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e3b04ec6-d287-4f8c-a41c-3cd680ef7ac7"
+                       , 1 ,
+                       "LEO" , 
+                      "with infant and two juveniles"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/f5f8532b-4af1-4756-a163-c8139dad4098"
+                       , 12 ,
+                       "CYS" , 
+                       "check, need second opinion"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/f5f8532b-4af1-4756-a163-c8139dad4098"
+                       , 87 ,
+                       "LEO" , 
+                       "check, with infant and two juveniles"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/f5f8532b-4af1-4756-a163-c8139dad4098"
+                       , 1 ,
+                       "ABE" , 
+                       "check or SMG"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/801664b8-63d8-4652-85b3-581ab0d4b284"
+                       , 1 ,
+                       "LEO" , 
+                       "90% positive it's her"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/59acfede-b855-4674-93a6-70eb898c19dc"
+                       , 1 ,
+                       "LEO" , 
+                       "with infant and juvenile"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e3d3d5c9-2651-4ed7-814a-1b6f490666a9"
+                       , 62 ,
+                       "LEO" , 
+                       "with infant and juveniles"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9e5ad2dc-e2f2-449b-bc2b-b39ea4448c47"
+                       , 1 ,
+                       "LAR" , 
+                       "dot left ear"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d04e1f81-a109-4583-9e03-faf32baaed19"
+                       , 1 ,
+                       "SPT" , 
+                       NA
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0ba9b991-b28f-4486-8e4d-843fd0bbca48"
+                       , 11 ,
+                       "ABE" , 
+                       "lower canine sticking out (left side)"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/85934761-9219-4b72-89dd-ec80366011a7"
+                       , 1 ,
+                       "LEO" , 
+                       "with infant and juveniles"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/007dd511-58f3-4bbb-a768-066126b3618a"
+                       , 1 ,
+                       "LAR" , 
+                       "dot left ear"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e439a915-68c8-423a-ad47-9aaedfdeafb5"
+                       , 1 ,
+                       "INK" , 
+                       NA
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1a2f2213-e8f8-45fa-a240-921aa299f780"
+                       , 1 ,
+                       "SPT" , 
+                       NA
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1a2f2213-e8f8-45fa-a240-921aa299f780"
+                       , 28 ,
+                       "LEO" , 
+                       "not sure, check"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/39b74e36-97fc-4345-a479-3caf30f0791e"
+                       , 1 ,
+                       "SPT" , 
+                       "double-check"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0b56aad7-683a-4315-9e99-6d72c9b6a37e"
+                       , 1 ,
+                       "CYS" , 
+                       NA
+)
+
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a6ea1cc5-9ab9-4f1a-9554-dfc876663d91
@@ -413,6 +536,8 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 ##  Old cavity lady (not Beatrice?)
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/40043c07-31d3-4db9-9941-039839a8a1b0 
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cae5bca8-b5e4-4744-af80-803eeab88eda 
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/013278da-eba0-44ae-874e-d3d4a453732d
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/528b40d2-c6df-433c-8cc4-35fa664147c3
   
 ##  Female messed up left ear (not Sadie? New female?)
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3b0cbd5d-8174-4a87-8f54-d7fe15c10610 frame 24 
@@ -431,3 +556,5 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 #flufy forehead, some peak, maybe YODA? https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c9a13818-bce5-4d33-8437-3ca86cbbedc5
 
 #flufy forehead, some peak, maybe YODA again? https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/8204de2d-0869-4abb-b3da-3d709510384a
+
+# female with left rumpled ear. Cavity lady or BEA? https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cf30b8a5-d102-4469-b24f-23ce39dae56f
