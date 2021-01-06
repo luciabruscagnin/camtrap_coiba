@@ -1,47 +1,6 @@
 library(camtrapR)
 
-wd_createStationDir <- file.path("~/Dropbox/coiba_camtrapR/raw data", "R3") #first is path, second is station directory to create
-station_names_new <- c("SURVEY-CEBUS-15-03-R3")
-
-# to create station directories in  wd_createStationDir on hard disk
-StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
-                                              stations    = station_names_new, 
-                                              createinDir = TRUE)
-#specify station dir in destination folder
-wd_createStationDir <- file.path("~/Dropbox/coiba_camtrapR/clean data", "R3") #first is path, second is station directory to create
-station_names_new <- c("SURVEY-CEBUS-15-03-R3")
-# create station directories in  wd_createStationDir on hard disk
-StationFolderCreate1 <- createStationFolders (inDir       = wd_createStationDir,
-                                              stations    = station_names_new, 
-                                              createinDir = TRUE)
-
-
-
-StationFolderCreate1
-
-##this works to move, but it copies reconyx folders
-#file.copy(from = "~/Dropbox/coiba_camtrapR/Cebus-15-03C raw", to = "~/Dropbox/coiba_camtrapR/camtrapR_test/R3/SURVEY-CEBUS-15-03-R3" , recursive = TRUE)
-
-####renaming images
-
-# raw image location
-#wd_images_raw <- file.path("~/Dropbox/coiba_camtrapR/Cebus-15-03C raw") #location of raw images  
-
-wd_images_raw <- file.path("~/Dropbox/coiba_camtrapR/raw data/R3") #location of images  
-# destination for renamed images to be copied to
-wd_images_raw_renamed <- file.path("~/Dropbox/coiba_camtrapR/clean data/R3") #location of renamed images       
-
-#table of new names
-renaming.table2 <- imageRename(inDir               = wd_images_raw, #source path
-                               outDir              = wd_images_raw_renamed, #sink path
-                               hasCameraFolders    = FALSE, #if old files have camera subfolder
-                               copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaming
-                               keepCameraSubfolders = FALSE
-)
-
-renaming.table2
-
-#########copy to external hard drive
+#########copy to external hard drive first, doing it by hand but could also do it via script which is better
 
 #create folders on new hard drive "Coiba Image Data" for raw data
 #b/c of subfolders we will drag and drop images, should be solvable for future however
@@ -56,6 +15,7 @@ station_names_new <-c(
   "CEBUS-06-R8",
   "CEBUS-07-R8",
   "CEBUS-08-R8",
+  "CEBUS-09-R8",
   "CEBUS-10-R8",
   "ESC-01-R8",
   "ESC-02-R8",
@@ -79,6 +39,7 @@ renaming.table <- imageRename(inDir               = wd_images_raw, #source path
                               keepCameraSubfolders = FALSE,
                               writecsv = TRUE
 )
+
 #########################################R7#############################################
 # Mar 2019 to Jul 2019; i feel like SD cards are missing
 wd_createStationDir <- file.path("/Volumes/Coiba\ Image\ Data/raw_data", "R7") #first is path, second is station
@@ -425,3 +386,14 @@ renaming.table2 <- imageRename(inDir               = wd_video_raw2, #source path
 renaming.table2
 
 
+#############recordtable
+wd_images_ID_species <-  file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R5")
+
+rec_table1 <- recordTable(inDir                 = wd_images_ID_species,
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               =
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+  )
