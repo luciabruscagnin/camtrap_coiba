@@ -387,13 +387,76 @@ renaming.table2
 
 
 #############recordtable
-wd_images_ID_species <-  file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R5")
+wd_images_ID_species <-  file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R8")
 
-rec_table1 <- recordTable(inDir                 = wd_images_ID_species,
+rec_table_R8 <- recordTable(inDir                 = wd_images_ID_species,
                             IDfrom                 = "directory",
                             minDeltaTime           = 30,
                             deltaTimeComparedTo    = "lastRecord",
                             writecsv               = FALSE,
-                            timeZone               =
+                            timeZone               = "America/Panama" ,
                             additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
   )
+
+rec_table_R7 <- recordTable(inDir                 = file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R7"),
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               = "America/Panama" ,
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+)
+
+rec_table_R6 <- recordTable(inDir                 = file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R6"),
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               = "America/Panama" ,
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+)
+
+rec_table_R5 <- recordTable(inDir                 = file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R5"),
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               = "America/Panama" ,
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+)
+
+rec_table_R4 <- recordTable(inDir                 = file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R4"),
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               = "America/Panama" ,
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+)
+
+rec_table_R3 <- recordTable(inDir                 = file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R3"),
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               = "America/Panama" ,
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+)
+
+rec_table_R2 <- recordTable(inDir                 = file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R2"),
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               = "America/Panama" ,
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+)
+
+rec_table_R1 <- recordTable(inDir                 = file.path("/Volumes/Coiba\ Image\ Data/renamed_data/R1"),
+                            IDfrom                 = "directory",
+                            minDeltaTime           = 30,
+                            deltaTimeComparedTo    = "lastRecord",
+                            writecsv               = FALSE,
+                            timeZone               = "America/Panama" ,
+                            additionalMetadataTags = c("EXIF:Model", "EXIF:Make")
+)

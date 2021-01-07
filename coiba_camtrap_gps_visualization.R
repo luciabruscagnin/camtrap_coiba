@@ -2,6 +2,8 @@ library(mapview)
 library(sf) 
 library(rgdal)
 library(lubridate)
+library(janitor)
+library(stringr)
 
 #setwd("/Users/BJB/Dropbox/Coiba Tool Images/GPX/")
 
@@ -162,3 +164,65 @@ jan2019[17:24,]$
 
 ######mar 2019
 str(mar2019)
+
+#######load table of camera trap invensiry, lets add GPS points.
+imginv <- read.csv("image_inventory_coiba.csv")
+imginv <- clean_names(imginv)
+str(imginv)
+sort(unique(imginv$final_name))
+imginv$deployment <- str_sub(imginv$final_name, start= -2)
+str_sub(imginv$final_name, end= -4)
+imginv$camera_id <- str_sub(imginv$final_name, end= -4)
+
+#append ids
+cam_ids <- as.data.frame(unique(imginv$camera_id)) #make a list of camera IDs
+names(cam_ids)[1] <- "camera_id"
+cam_ids$latitide <- cam_ids$longitude <-  NA
+# cam_ids$longitude[cam_ids$camera_id=="CEBUS-01"] <- cammar2017@coords[cammar2017$name=="CEBUS-01-R1"][1]
+# cam_ids$latitide[cam_ids$camera_id=="CEBUS-01"] <- cammar2017@coords[cammar2017$name=="CEBUS-01-R1"][2]
+"SURVEY-CEBUS-01-01-R1"
+#using gps points from mar 2017
+cammar2017$name
+
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-01-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-01-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-02-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-02-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-02-02",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-02-02-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-03-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-03-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-03-02",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-03-02-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-04-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-04-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-05-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-05-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-06-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-06-01-R1"]
+cam_ids[cam_ids[1]=="CEBUS-01",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS-01-R1"]
+cam_ids[cam_ids[1]=="CEBUS-02",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS-02-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-08-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-08-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-09-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-09-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-09-02",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-09-02-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-10-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-10-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-11-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-11-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-12-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-12-01-R1"]
+cam_ids
+##july 2017
+camjul2017$name
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-12-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-12-01-R1"]
+
+cammar2017$name
+mapview(cam_ids , xcol=cam_ids$latitide , ycol=cam_ids$longitude)
+
+str(cammar2017)
+cammar2017@coords[cammar2017$name=="CEBUS-01-R1"][2]
+cammar2017@coords[1,1] #topleft
+cammar2017@coords[1,2]#topright
+cammar2017@coords[2,2]
+
+
+cammar2017@coords
+imginv$coords.x1 <- NA
+imginv$coords.x2 <- NA
+
+imginv$ele<- NA
+imginv$ele<- NA
+
+
+imginv$latlong <- ifelse(cam_ids=="CEBUS-01" , , imginv$latlong )
+cammar2017$[cammar2017$name=="CEBUS-01-R1"]
+str(cammar2017)
