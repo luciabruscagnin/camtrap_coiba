@@ -18,6 +18,7 @@ jan2019 <- m[year(m$time)==2019 & month(m$time)==1,]
 mar2019 <- m[year(m$time)==2019 & month(m$time)==3,]
 aug2019 <- m[year(m$time)==2019 & month(m$time)==8,]
 dec2019 <- m[year(m$time)==2019 & month(m$time)==12,]
+mar2018 <- m[year(m$time)==2018 & month(m$time)==3,]
 
 
 month(m2019$time)
@@ -177,7 +178,7 @@ imginv$camera_id <- str_sub(imginv$final_name, end= -4)
 #append ids
 cam_ids <- as.data.frame(unique(imginv$camera_id)) #make a list of camera IDs
 names(cam_ids)[1] <- "camera_id"
-cam_ids$latitide <- cam_ids$longitude <-  NA
+cam_ids$latitude <- cam_ids$longitude <-  NA
 # cam_ids$longitude[cam_ids$camera_id=="CEBUS-01"] <- cammar2017@coords[cammar2017$name=="CEBUS-01-R1"][1]
 # cam_ids$latitide[cam_ids$camera_id=="CEBUS-01"] <- cammar2017@coords[cammar2017$name=="CEBUS-01-R1"][2]
 "SURVEY-CEBUS-01-01-R1"
@@ -203,11 +204,46 @@ cam_ids[cam_ids[1]=="SURVEY-CEBUS-12-01",2:3] <- cammar2017@coords[cammar2017$na
 cam_ids
 ##july 2017
 camjul2017$name
-cam_ids[cam_ids[1]=="SURVEY-CEBUS-12-01",2:3] <- cammar2017@coords[cammar2017$name=="SURVEY-CEBUS-12-01-R1"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-03-03",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-03-03-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-06-02",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-06-02-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-13-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-13-01-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-14-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-14-01-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-15-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-15-01-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-16-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-16-01-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-16-02",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-16-01-R2"] #not a mistake, not precise
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-18-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-18-01-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-19-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-19-01-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-20-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-20-01-R2"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-21-01",2:3] <- camjul2017@coords[camjul2017$name=="SURVEY-CEBUS-21-01-R2"]
+cam_ids[cam_ids[1]=="CEBUS-08",2:3] <- camjul2017@coords[camjul2017$name=="CEBUS-08-R2"]
+cam_ids[cam_ids[1]=="CEBUS-09",2:3] <- camjul2017@coords[camjul2017$name=="CEBUS-09-R2"]
+###16-02 is the later good one
+###jan2018
+camjan2018$name
+cam_ids[cam_ids[1]=="CEBUS-05",2:3] <- camjan2018@coords[camjan2018$name=="CEBUS-05-R3"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-03-04",2:3] <- camjan2018@coords[camjan2018$name=="SURVEY-CEBUS-03-04-R3"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-15-02",2:3] <- camjan2018@coords[camjan2018$name=="SURVEY-CEBUS-15-02-R3"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-15-03",2:3] <- camjan2018@coords[camjan2018$name=="SURVEY-CEBUS-15-03-R3"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-22-01",2:3] <- camjan2018@coords[camjan2018$name=="SURVEY-CEBUS-22-01-R3"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-23-01",2:3] <- camjan2018@coords[camjan2018$name=="SURVEY-CEBUS-23-01-R3"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-07-03",2:3] <- camjan2018@coords[camjan2018$name=="SURVEY-CEBUS-07-03-R3"]
+cam_ids[cam_ids[1]=="SURVEY-CEBUS-01-02",2:3] <- camjan2018@coords[camjan2018$name=="SURVEY-CEBUS-01-02-R4"]
+cam_ids[cam_ids[1]=="CEBUS-03",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS-02-R1"]#cam on log anvil
+
+cam_ids
+###need moar done
+cam_ids[cam_ids[1]=="CEBUS-17-03",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS-02-R1"]#bbc stream entrance, 
+cam_ids[cam_ids[1]=="CEBUS-15-04",2:3]  
+
+
+
+
 
 cammar2017$name
-mapview(cam_ids , xcol=cam_ids$latitide , ycol=cam_ids$longitude)
+mapview(cam_ids , xcol="longitude" , ycol="latitude")
+mapview(cam_ids[1:16,] , xcol=cam_ids$longitude[1:16] , ycol=cam_ids$latitude[1:16] ,  )
 
+st_as_sf(cam_ids)
 str(cammar2017)
 cammar2017@coords[cammar2017$name=="CEBUS-01-R1"][2]
 cammar2017@coords[1,1] #topleft
@@ -223,6 +259,5 @@ imginv$ele<- NA
 imginv$ele<- NA
 
 
-imginv$latlong <- ifelse(cam_ids=="CEBUS-01" , , imginv$latlong )
 cammar2017$[cammar2017$name=="CEBUS-01-R1"]
 str(cammar2017)
