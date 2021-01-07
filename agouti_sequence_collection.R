@@ -512,6 +512,14 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        NA
 )
 
+#######CEBUS_R1-01
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cac333e5-bda2-43e4-b805-35a8ff458a19"
+
+                       , 1 ,
+                       "LAR" , 
+                       "asymetrical peak, white spot left ear"
+)
+
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a6ea1cc5-9ab9-4f1a-9554-dfc876663d91

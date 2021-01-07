@@ -91,8 +91,6 @@ mapview(camjul2017 , zcol='name')
 
 
 #########jan 2018
-
-
 camjan2018$old_name <- camjan2018$name
 camjan2018$name <- as.character(camjan2018$name)
 mapview(camjan2018 , zcol='name')
