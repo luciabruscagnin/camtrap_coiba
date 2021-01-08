@@ -231,6 +231,25 @@ cam_ids[cam_ids[1]=="SURVEY-CEBUS-01-02",2:3] <- camjan2018@coords[camjan2018$na
 cam_ids[cam_ids[1]=="CEBUS-03",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS-02-R1"]#cam on log anvil
 
 cam_ids
+###jan2019
+jan2019$name
+cam_ids[cam_ids[1]=="JIC-STREAM-DISC-T-1",2:3] <- jan2019@coords[jan2019$name=="Stream. T. 1"]#crab stream exists
+cam_ids[cam_ids[1]=="JIC-STREAM-DISC-T-2",2:3] <- jan2019@coords[jan2019$name=="Stream. T. 2"]#crab stream hypothetical
+cam_ids[cam_ids[1]=="JIC-STREAM-DISC-T-3",2:3] <- jan2019@coords[jan2019$name=="Stream. T. 3"]#crab stream may not exist
+cam_ids[cam_ids[1]=="JIC-STREAM-CAMP-NO-T-01",2:3] <- jan2019@coords[jan2019$name=="Stream. no. T. 1"]#crab stream may not exist
+cam_ids[cam_ids[1]=="JIC-STREAM-CAMP-NO-T-02",2:3] <- jan2019@coords[jan2019$name=="Stream. no. T. 2"]#crab stream may not exist
+ mapview(m)
+ cam_ids[cam_ids[1]=="JIC-STREAM-CAMP-NO-T-02",2:3] <- jan2019@coords[jan2019$name=="Stream. no. T. 2"]#crab stream may not exist
+
+ cam_ids[cam_ids[1]=="ESC-01",2:3] <- aug2019@coords[aug2019$name=="RioEsc. 1"]
+ cam_ids[cam_ids[1]=="ESC-02",2:3] <- aug2019@coords[aug2019$name=="RioEsc. 2"]
+ cam_ids[cam_ids[1]=="ESC-03",2:3] <- aug2019@coords[aug2019$name=="RioEsc. 3"]
+ cam_ids[cam_ids[1]=="SURVEY-RIO-ESC-00",2:3] <- mar2019@coords[mar2019$name=="Stone. 1"]
+ 
+ 
+ mapview(mar2019)
+ mapview(aug2019)
+ aug2019$name
 ###need moar done
 cam_ids[cam_ids[1]=="CEBUS-17-03",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS-02-R1"]#bbc stream entrance, 
 cam_ids[cam_ids[1]=="CEBUS-15-04",2:3]  
@@ -242,22 +261,3 @@ cam_ids[cam_ids[1]=="CEBUS-15-04",2:3]
 cammar2017$name
 mapview(cam_ids , xcol="longitude" , ycol="latitude")
 mapview(cam_ids[1:16,] , xcol=cam_ids$longitude[1:16] , ycol=cam_ids$latitude[1:16] ,  )
-
-st_as_sf(cam_ids)
-str(cammar2017)
-cammar2017@coords[cammar2017$name=="CEBUS-01-R1"][2]
-cammar2017@coords[1,1] #topleft
-cammar2017@coords[1,2]#topright
-cammar2017@coords[2,2]
-
-
-cammar2017@coords
-imginv$coords.x1 <- NA
-imginv$coords.x2 <- NA
-
-imginv$ele<- NA
-imginv$ele<- NA
-
-
-cammar2017$[cammar2017$name=="CEBUS-01-R1"]
-str(cammar2017)
