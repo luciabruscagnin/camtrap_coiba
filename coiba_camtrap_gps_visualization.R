@@ -272,14 +272,9 @@ write.csv(cam_ids , "coiba_camtrap_ids_gps.csv") ##write this to csv
 
 ###lets make it a spacial item, uncomment only if writing new csv
 # all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326)
+
 #or read directly, for Zoe w/o access to localized files
 all_cams <- read.csv(file="coiba_camtrap_ids_gps.csv")
 
-all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326)#do it again if rading csv
+all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
 mapview(all_cams)
-
-
-
-cammar2017$name
-mapview(cam_ids , xcol="longitude" , ycol="latitude")
-mapview(cam_ids[1:16,] , xcol=cam_ids$longitude[1:16] , ycol=cam_ids$latitude[1:16] ,  )
