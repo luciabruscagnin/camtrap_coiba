@@ -268,13 +268,15 @@ cam_ids[cam_ids[1]=="JIC-STREAM-CAMP-NO-T-02",2:3] <- jan2019@coords[jan2019$nam
  cam_ids[cam_ids[1]=="CEBUS-07",2:3]  <- m@coords[m$name=="190104T12"]
  
  cam_ids <- cam_ids[cam_ids$camera_id!="JIC-STREAM-CAMP-NO-T-03",] ##this may not exist
+ 
 write.csv(cam_ids , "coiba_camtrap_ids_gps.csv") ##write this to csv
+all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
+mapview(all_cams)
 
 ###lets make it a spacial item, uncomment only if writing new csv
 # all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326)
 
-#or read directly, for Zoe w/o access to localized files
-all_cams <- read.csv(file="coiba_camtrap_ids_gps.csv")
-
+# or read directly w/o access to localized files and running above code
+cam_ids <- read.csv(file="coiba_camtrap_ids_gps.csv")
 all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
 mapview(all_cams)
