@@ -29,7 +29,7 @@ sort(m$name)
 mapview(cammar2017 , col.region="red") + mapview(camjul2017 , col.region="orange") + mapview(camjan2018 , col.region="green") + mapview(m2019 , col.region="blue")
 mapview(m2019 , col.region="blue")
 #######interactive maps#######
-
+m$name
 ##edit mar 2017 deployment
 cammar2017$old_name <- cammar2017$name
 cammar2017$name <- as.character(cammar2017$name)
@@ -232,8 +232,8 @@ cam_ids[cam_ids[1]=="CEBUS-03",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS
 
 cam_ids
 ###jan2019
-jan2019$name
-cam_ids[cam_ids[1]=="JIC-STREAM-DISC-T-1",2:3] <- jan2019@coords[jan2019$name=="Stream. T. 1"]#crab stream exists
+jan2019$name[18]
+cam_ids[cam_ids[1]=="JIC-STREAM-DISC-T-1",2:3] <- jan2019@coords[18,]#crab stream exists
 cam_ids[cam_ids[1]=="JIC-STREAM-DISC-T-2",2:3] <- jan2019@coords[jan2019$name=="Stream. T. 2"]#crab stream hypothetical
 cam_ids[cam_ids[1]=="JIC-STREAM-DISC-T-3",2:3] <- jan2019@coords[jan2019$name=="Stream. T. 3"]#crab stream may not exist
 cam_ids[cam_ids[1]=="JIC-STREAM-CAMP-NO-T-01",2:3] <- jan2019@coords[jan2019$name=="Stream. no. T. 1"]#crab stream may not exist
@@ -246,15 +246,37 @@ cam_ids[cam_ids[1]=="JIC-STREAM-CAMP-NO-T-02",2:3] <- jan2019@coords[jan2019$nam
  cam_ids[cam_ids[1]=="ESC-03",2:3] <- aug2019@coords[aug2019$name=="RioEsc. 3"]
  cam_ids[cam_ids[1]=="SURVEY-RIO-ESC-00",2:3] <- mar2019@coords[mar2019$name=="Stone. 1"]
  
+ cam_ids
  
  mapview(mar2019)
  mapview(aug2019)
  aug2019$name
-###need moar done
-cam_ids[cam_ids[1]=="CEBUS-17-03",2:3] <- cammar2017@coords[cammar2017$name=="CEBUS-02-R1"]#bbc stream entrance, 
-cam_ids[cam_ids[1]=="CEBUS-15-04",2:3]  
+ 
+ ####read in more gps
+ w201807 <- readOGR(dsn = "/Users/BJB/Dropbox/Coiba Tool Images/GPX/Tool Use Site July 2018.GPX", layer="waypoints")
+ w201903 <- readOGR(dsn = "/Users/BJB/Dropbox/Coiba Tool Images/GPX/Tool Sites Mar 2019.GPX", layer="waypoints")
+ w201803 <- readOGR(dsn = "/Users/BJB/Dropbox/Coiba Tool Images/GPX/Tool Use Sites Mar 2018.GPX", layer="waypoints")
+ 
+ cam_ids[cam_ids[1]=="SURVEY-CEBUS-17-03",2:3] <-  w201903@coords[w201903$name=="190326T16"]
+ cam_ids[cam_ids[1]=="SURVEY-CEBUS-24-01",2:3] <-  w201903@coords[w201903$name=="190326T05"]
+ cam_ids[cam_ids[1]=="CEBUS-10",2:3] <-  w201903@coords[w201903$name=="190324T05"]
+ cam_ids[cam_ids[1]=="CEBUS-05",2:3] <-  w201903@coords[w201903$name=="190324T01"]
+ cam_ids[cam_ids[1]=="SURVEY-CEBUS-15-04",2:3]  <- m@coords[m$name=="CEBUS-15-04"]
+ cam_ids[cam_ids[1]=="CEBUS-06",2:3] <-  w201807@coords[w201807$name=="180728T23"] #follow up for better point?
+ cam_ids[cam_ids[1]=="CEBUS-04",2:3] <-  cam_ids[cam_ids[1]=="SURVEY-CEBUS-24-01",2:3]  #close to same camera, diff mount point
+ cam_ids[cam_ids[1]=="SURVEY-CEBUS-05-02",2:3]  <- m@coords[m$name=="CEBUS-05-01"]
+ cam_ids[cam_ids[1]=="CEBUS-07",2:3]  <- m@coords[m$name=="190104T12"]
+ 
+ cam_ids <- cam_ids[cam_ids$camera_id!="JIC-STREAM-CAMP-NO-T-03",] ##this may not exist
+write.csv(cam_ids , "coiba_camtrap_ids_gps.csv") ##write this to csv
 
+###lets make it a spacial item, uncomment only if writing new csv
+# all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326)
+#or read directly, for Zoe w/o access to localized files
+all_cams <- read.csv(file="coiba_camtrap_ids_gps.csv")
 
+all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326)#do it again if rading csv
+mapview(all_cams)
 
 
 
