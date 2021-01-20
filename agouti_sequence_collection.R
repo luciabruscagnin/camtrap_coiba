@@ -518,6 +518,21 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "double-check, with infant and juvenile with white on side of legs"
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1458e88d-a015-450c-b783-05b3d1ad997c"
+                       , 9 ,
+                       "LAR" , 
+                       NA
+)
+
+d[nrow(d) + 1 , ] <- c(d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1458e88d-a015-450c-b783-05b3d1ad997c"
+                        , 1 ,
+                       "MRE" , 
+                       NA
+)
+                       , 9 ,
+                       "LAR" , 
+                       NA
+)
 
 #######CEBUS_R1-01
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cac333e5-bda2-43e4-b805-35a8ff458a19"
