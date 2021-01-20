@@ -524,15 +524,55 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        NA
 )
 
-d[nrow(d) + 1 , ] <- c(d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1458e88d-a015-450c-b783-05b3d1ad997c"
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1458e88d-a015-450c-b783-05b3d1ad997c"
                         , 1 ,
                        "MRE" , 
                        NA
 )
-                       , 9 ,
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c1097711-4b1b-4ec6-b107-3ea30e419ff7"
+                       , 11 ,
+                       "SPT" , 
+                       NA
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/90e4bac3-4324-45af-aa80-7bdd229f8027"
+                       , 1 ,
                        "LAR" , 
                        NA
 )
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c2bbfe5e-a881-4028-940d-59d7d618dfa9"
+                       , 1 ,
+                       "LAR" , 
+                       NA
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/fc07d53a-35cd-44ad-9fba-7017f0b3d33e"
+                       , 1 ,
+                       "LAR" , 
+                       "Double check"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/feed2759-63d0-4d20-bafc-0a230c2340c7"
+                       , 1 ,
+                       "LAR" , 
+                       "Double check, continuation of previous sequence"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/2c01125b-8fd9-499d-9259-9601b791fd3a"
+                       , 1 ,
+                       "LAR" , 
+                       "Double check, continuation of previous two sequences"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d84a8702-2d32-4861-9e87-583f10c001be"
+                       , 1 ,
+                       "LAR" , 
+                       "Double check, continuation of previous three sequences"
+)
+
+         
 
 #######CEBUS_R1-01
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cac333e5-bda2-43e4-b805-35a8ff458a19"
@@ -589,4 +629,7 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 
 # female with left rumpled ear. Cavity lady or BEA? https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cf30b8a5-d102-4469-b24f-23ce39dae56f
 
-# juvenile with white on the legs (with Leona often) https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1ba13b87-21ff-4f06-b0c3-b49affaf4e2b
+# juvenile with white on the legs (with Leona often) 
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1ba13b87-21ff-4f06-b0c3-b49affaf4e2b
+# CHECK https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e34bd385-842a-4e73-87c8-b0ed635e7edc
+# CHECK is same one as sequence directly above https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d153d6f1-05e5-4643-9f24-337fa577f4f0 
