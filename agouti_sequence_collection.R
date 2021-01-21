@@ -635,6 +635,42 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/fe86a534-456c-4ef0-9d11-b5e0df87b327",
+                       1 ,
+                       "SMG" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/fe86a534-456c-4ef0-9d11-b5e0df87b327",
+                       1 ,
+                       "TOM" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/158dd0f4-ae01-422f-ac17-e56cdf442d42",
+                       1 ,
+                       "TOM" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/158dd0f4-ae01-422f-ac17-e56cdf442d42",
+                       1 ,
+                       "SAD" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c4ae1497-5825-4720-a1cf-72467417f752",
+                       1 ,
+                       "SAD" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/eabca757-1dbc-4419-a357-838005cdf8db",
+                       1 ,
+                       "SAD" , 
+                       ""
+)
+
 
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
