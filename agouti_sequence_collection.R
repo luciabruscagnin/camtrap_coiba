@@ -551,25 +551,25 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/fc07d53a-35cd-44ad-9fba-7017f0b3d33e"
                        , 1 ,
                        "LAR" , 
-                       "Double check"
+                       ""
 )
 
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/feed2759-63d0-4d20-bafc-0a230c2340c7"
                        , 1 ,
                        "LAR" , 
-                       "Double check, continuation of previous sequence"
+                       "continuation of previous sequence"
 )
 
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/2c01125b-8fd9-499d-9259-9601b791fd3a"
                        , 1 ,
                        "LAR" , 
-                       "Double check, continuation of previous two sequences"
+                       "continuation of previous two sequences"
 )
 
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d84a8702-2d32-4861-9e87-583f10c001be"
                        , 1 ,
                        "LAR" , 
-                       "Double check, continuation of previous three sequences"
+                       "continuation of previous three sequences"
 )
 
          
@@ -581,6 +581,60 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "LAR" , 
                        "asymetrical peak, white spot left ear"
 )
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/fbc0046d-157d-408c-a3f7-47067ef3ab94"
+                       , 1 ,
+                       "LAR" , 
+                       "asymetrical peak, white spot left ear"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/fcc5d069-bb53-450d-9d51-ab7a6c881d21",
+                       1 ,
+                       "LAR" , 
+                       "asymetrical peak, white spot left ear"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4a9bb448-b963-452d-a300-bd0462c6942b",
+                       1 ,
+                       "TOM" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/15df25cb-1a18-4254-81b8-d999d7eedec5",
+                       1 ,
+                       "ABE" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/15df25cb-1a18-4254-81b8-d999d7eedec5",
+                       1 ,
+                       "BEA" , 
+                       "check this!"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ebff7d74-1b38-42c3-8af5-7c7651fc2516",
+                        1 ,
+                       "TOM" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4e12c26d-aae9-472a-ad2d-2d1aed140ff2",
+                        1 ,
+                       "SAD" , 
+                       ""
+)
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4e12c26d-aae9-472a-ad2d-2d1aed140ff2",
+                        1 ,
+                       "SMG" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4e12c26d-aae9-472a-ad2d-2d1aed140ff2",
+                        1 ,
+                       "ABE" , 
+                       ""
+)
+
 
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
