@@ -390,6 +390,19 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "must check, no spots, tiny ear tufts, slight peak, fluffy forehead"                       
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cae5bca8-b5e4-4744-af80-803eeab88eda"
+                       , 1 ,
+                       "OLG" , 
+                       "good ID sequence"                       
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/40043c07-31d3-4db9-9941-039839a8a1b0"
+                       , 1 ,
+                       "OLG" , 
+                       "best sequence, see cavities etc"                       
+)
+
+
 ### CEBUS-09 R4 ####
 
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da7d243a-a58e-4fbe-9aba-749c3fb813d7"
@@ -572,7 +585,212 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "continuation of previous three sequences"
 )
 
-         
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/5532097b-213f-4526-9cdc-ad45e67547ea"
+                       , 1 ,
+                       "MRE" , 
+                       "Check ID, I am basing this on a hunch and one picture of the back of his head. Also check behavior? (vigilance?)"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/435b7356-e9a2-409d-91f8-46168f361285"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/dc882d0a-743b-4a57-8357-3301cb3b2e69"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/b50580ec-7841-4088-b117-d9393e4b1ec2"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4481463f-aa03-412e-a705-7f8f5727a688"
+                       , 11 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d7ae35df-e761-4562-9c3b-3a7eac6d65e2"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e351ee62-8552-45f1-8c8f-a9d17fe7af7e"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1c343392-0bf0-4169-8a3d-3a2ea0c611b0"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/48569810-10f6-498d-bf8b-f4c418d1239c"
+                       , 1 ,
+                       "SMG" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3745b28a-1ab9-43f2-86b7-d9a4e56247bf"
+                       , 1 ,
+                       "OLG" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/528b40d2-c6df-433c-8cc4-35fa664147c3"
+                       , 1 ,
+                       "OLG" , 
+                       "Or Bea, check!"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/013278da-eba0-44ae-874e-d3d4a453732d"
+                       , 15 ,
+                       "OLG" , 
+                       "Check, can also be BEA"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e455af8b-68ec-46e2-a66c-0eae9822001b"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c986ac8c-1f31-4e5a-99f0-16672263439f"
+                       , 1 ,
+                       "SPT" , 
+                       "Check, I am 95% sure (I think it's the same as the sequence before where I was confident it was spot)"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4af9f216-8094-479d-b7bf-5ef7e68b4dc5"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/f8f76514-e85a-4717-b251-5bd21e846058"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/09f47023-7320-4e67-acb5-ae8020821cf0"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4aa078ee-1ec2-4e9b-86b1-fc2a86d5e7e9"
+                       , 1 ,
+                       "ABE" , 
+                       "CHECK! could also be CYS"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/b1331256-0a01-45d0-bed1-98df3f29331b"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e71296fd-1d5a-4ee9-94a6-89b72f843456"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/b4e9ed50-5bde-4f55-88f4-9d73c54d737e"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/929a000c-59b5-420b-a359-fb379cbc3b6f"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9899d57b-02f8-4533-8f48-b84ff8f2a8a4"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/76acd22f-e972-46d7-8de6-07e2e170dff4"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9c5f1e2e-9434-4b41-adba-463738eb6285"
+                       , 1 ,
+                       "ABE" , 
+                       "Check, could be CYS"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/7ccc9c7b-1595-4882-94b1-c6e4fb0f53c5"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ba44923e-9594-49dc-a6ac-8459a3ae8824"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/df145510-65ac-4d9e-af32-322fb17c8307"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e2a8bf5a-8dea-45cf-9f03-f4b9020e22e3"
+                       , 1 ,
+                       "LAR" , 
+                       "Check! if not larry then also change 3 sequences after it"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/99d4567d-55cd-4fd9-9332-417b783564d9"
+                       , 1 ,
+                       "LAR" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/61bc966e-77b4-46df-b85d-ef0231368bce"
+                       , 1 ,
+                       "LAR" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/721da3ed-36c0-47ab-88c7-a6fb3ded120d"
+                       , 1 ,
+                       "LAR" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/88c02561-44a3-4802-befc-707fa5e1d461"
+                       , 1 ,
+                       "TOM" , 
+                       "I wasn't sure, Check, I didn't code it yet (only as comment)"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/97818bc7-bc41-4b7e-85f4-9029845a79e5"
+                       , 1 ,
+                       "OLG" , 
+                       "Pregnant. 80% sure, could be BEA"
+)
+
+
 
 #######CEBUS_R1-01
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cac333e5-bda2-43e4-b805-35a8ff458a19"
@@ -689,15 +907,10 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
   
 ##  Shark pinched head juvenile
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1479a34c-f9d5-4697-b26d-58b9372c7510 frame 111 
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9c5f1e2e-9434-4b41-adba-463738eb6285 frame 104
   
 ##  Broad faced unknown juvenile
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bf099bea-40df-4934-8cda-0e1799dbf04e
-  
-##  Old cavity lady (not Beatrice?)
-# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/40043c07-31d3-4db9-9941-039839a8a1b0 
-# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cae5bca8-b5e4-4744-af80-803eeab88eda 
-# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/013278da-eba0-44ae-874e-d3d4a453732d
-# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/528b40d2-c6df-433c-8cc4-35fa664147c3
   
 ##  Female messed up left ear (not Sadie? New female?)
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3b0cbd5d-8174-4a87-8f54-d7fe15c10610 frame 24 
@@ -723,3 +936,5 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1ba13b87-21ff-4f06-b0c3-b49affaf4e2b
 # CHECK https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e34bd385-842a-4e73-87c8-b0ed635e7edc
 # CHECK is same one as sequence directly above https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d153d6f1-05e5-4643-9f24-337fa577f4f0 
+
+
