@@ -52,15 +52,27 @@ exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba
 cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/CEBUS-01-R1/video 
 exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="CEBUS-01-R1" .
 exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba\ Image\ Data/renamed_data/R1/CEBUS-01-R1/video/ > /Users/BJB/Dropbox/camtrap_coiba/Cebus-01-R1_exif_metadata_clean_mp4.csv
 #SURVEY-CEBUS-02-01-R1
 cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-02-01-R1 
 exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="SURVEY-CEBUS-02-01-R1" .
 exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-02-01-R1 > /Users/BJB/Dropbox/camtrap_coiba/Survey-Cebus-02-01-R1_exif_metadata_clean_mp4.csv
 #SURVEY-CEBUS-03-01-R1
 cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-03-01-R1 
 exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="SURVEY-CEBUS-03-01-R1" .
 exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-03-01-R1 > /Users/BJB/Dropbox/camtrap_coiba/Survey-Cebus-03-01-R1_exif_metadata_clean_mp4.csv
+
 #SURVEY-CEBUS-06-01-R1
 cd /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-06-01-R1 
 exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="SURVEY-CEBUS-06-01-R1" .
 exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba\ Image\ Data/renamed_data/R1/SURVEY-CEBUS-06-01-R1 > /Users/BJB/Dropbox/camtrap_coiba/Survey-Cebus-06-01-R1_exif_metadata_clean_mp4.csv
+
+########R2
+#now will copy from raw folder into renamed folder
+
+
+
+
