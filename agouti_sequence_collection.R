@@ -784,6 +784,11 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "I wasn't sure, Check, I didn't code it yet (only as comment)"
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/97818bc7-bc41-4b7e-85f4-9029845a79e5"
+                       , 1 ,
+                       "OLG" , 
+                       "Pregnant. 80% sure, could be BEA"
+)
 
 
 
@@ -933,4 +938,3 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 # CHECK is same one as sequence directly above https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d153d6f1-05e5-4643-9f24-337fa577f4f0 
 
 
-# BEA or OLG, check https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/97818bc7-bc41-4b7e-85f4-9029845a79e5
