@@ -72,7 +72,18 @@ exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba
 
 ########R2
 #now will copy from raw folder into renamed folder
+exiftool -o . '-Directory<CreateDate' -d /media/ingest/newfolder/%y/%y%m -r /media/ingest/oldfolder
+#CEBUS-02-R2
+exiftool -o . '-Directory<CreateDate' -d /Volumes/Coiba\ Image\ Data/renamed_data/R2/CEBUS-02-R2 -r /Volumes/Coiba\ Image\ Data/raw_data/R2/CEBUS-02-R2
+cd /Volumes/Coiba\ Image\ Data/renamed_data/R2/CEBUS-02-R2
+exiftool -r -overwrite_original -artist="Brendan J Barrett" -copyright="Max Planck Institue of Animal Behavior" -comment="CEBUS-02-R2" .
+exiftool -r '-filename<${Comment}__${CreateDate}%-c.%e' -d "%Y-%m-%d__%H-%M-%S" . #does not have the double rename thing if same timestep, but that is OK for video
+exiftool -csv -FileName -CreateDate -ext mp4 -d %d/%m/%Y_%H:%M:%S /Volumes/Coiba\ Image\ Data/renamed_data/R2/CEBUS-02-R2 > /Users/BJB/Dropbox/camtrap_coiba/Survey-Cebus-02-R2_exif_metadata_clean_mp4.csv
 
+
+/Volumes/Coiba\ Image\ Data/raw_data/R2/test
+
+/Users/BJB/Desktop/exiftool_test
 
 
 
