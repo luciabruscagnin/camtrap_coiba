@@ -826,12 +826,6 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
-d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c18c527b-fb96-4c94-92c2-4df3b2eda4d7"
-                       , 1 ,
-                       "SPT" , 
-                       ""
-)
-
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9dc4040e-342f-4518-a661-1a0a94110eb4"
                        , 1 ,
                        "TOM" , 
@@ -848,6 +842,60 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        , 12 ,
                        "SMG" , 
                        "Check"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c18c527b-fb96-4c94-92c2-4df3b2eda4d7"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3115d838-2fa7-4c45-b55c-ad38d4e910db"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4d21147b-070c-4771-8c05-8580e3ea3f19"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4f14ea17-aa50-4476-af9a-45fbee7a8c65"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9a6883a4-7992-4ea2-a362-2c63a846b6ac"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ab4eb164-6ee6-4296-90e7-c27425ee63ce"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ab4eb164-6ee6-4296-90e7-c27425ee63ce"
+                       , 11 ,
+                       "TOM" , 
+                       "Double check ID"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/47afcf18-4509-456b-905a-f8518f714920"
+                       , 1 ,
+                       "SMG" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c1815ea7-1d79-4b9a-9c5e-c8d1307c13f6"
+                       , 1 ,
+                       "SPT" , 
+                       ""
 )
 
 
@@ -997,4 +1045,5 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 # CHECK is same one as sequence directly above https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d153d6f1-05e5-4643-9f24-337fa577f4f0 
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/20ef8c2d-b060-45d2-8638-8b598504daa4 starting frame 11
 
-
+# juvenile not larry or spot
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ae7cdc87-439e-4099-96ad-a178316a54c9
