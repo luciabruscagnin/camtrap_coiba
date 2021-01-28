@@ -808,6 +808,49 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd6ed99a-b819-423f-92ec-5ac5d3a0d0c9"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c5d632f7-6143-4b4d-bcf6-b81d6ffde301"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/60972c7b-f2a3-4903-80fe-a00172bc51bc"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c18c527b-fb96-4c94-92c2-4df3b2eda4d7"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9dc4040e-342f-4518-a661-1a0a94110eb4"
+                       , 1 ,
+                       "TOM" , 
+                       "Check this"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/46c0ef8e-f7f6-4df7-a0ee-dd83c74433d0"
+                       , 1 ,
+                       "TOM" , 
+                       "Check this"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bfc47d9d-0a32-48a1-a32b-b7b95832f7ea"
+                       , 12 ,
+                       "SMG" , 
+                       "Check"
+)
+
+
 #######CEBUS_R1-01
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cac333e5-bda2-43e4-b805-35a8ff458a19"
 
