@@ -790,7 +790,23 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "Pregnant. 80% sure, could be BEA"
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/103c6fc8-3bcd-4ceb-9112-b79264741de5"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4db9eccb-4629-4ad4-bcd2-c6222a9553e0"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/841463b5-6396-4cfb-9bd7-53becb077455"
+                       , 1 ,
+                       "SPT" , 
+                       ""
+)
 
 #######CEBUS_R1-01
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cac333e5-bda2-43e4-b805-35a8ff458a19"
@@ -936,5 +952,6 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1ba13b87-21ff-4f06-b0c3-b49affaf4e2b
 # CHECK https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e34bd385-842a-4e73-87c8-b0ed635e7edc
 # CHECK is same one as sequence directly above https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d153d6f1-05e5-4643-9f24-337fa577f4f0 
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/20ef8c2d-b060-45d2-8638-8b598504daa4 starting frame 11
 
 
