@@ -898,6 +898,19 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ac24c862-c925-4caf-8051-e6f7e31ad129"
+                       , 1 ,
+                       "LAR" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/5806521b-0ab2-4cd7-906d-35ba764db19a"
+                       , 1 ,
+                       "ABE" , 
+                       ""
+)
+
+
 
 #######CEBUS_R1-01
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cac333e5-bda2-43e4-b805-35a8ff458a19"
@@ -1047,3 +1060,7 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 
 # juvenile not larry or spot
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ae7cdc87-439e-4099-96ad-a178316a54c9
+
+# male juvenile/subadult, with pigmentation in left ear (not INK?)
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da8a3d6f-a40c-4046-bdaf-5ffe8f155f65
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/72c9af83-dec1-45ce-9f7d-1ecf0aef0df6
