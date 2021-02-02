@@ -48,3 +48,7 @@ plot(d$tdiff_days,d$individual_index_jitter , col=col.pal[d$observer_index] , ya
 axis(2, at=d$individual_index,labels=d$name.x, col.axis="red", las=2)
 axis(2, at=0,labels="No ID", las=2)
 legend("topleft", inset=.01 , c("Brendan" , "Meredith" , "Tamara") , fill=col.pal[unique(d$observer_index)])
+
+
+#####something else to see what are most common pecies for AI
+sort(table(obs$scientificName))
