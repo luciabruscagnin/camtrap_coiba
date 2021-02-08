@@ -1009,6 +1009,18 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c90adcd6-49f2-4fd1-86e4-37027725141c",
+                       1 ,
+                       "SAD" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9d393f20-d020-4c4a-958c-d75b98a1b5e9",
+                       1 ,
+                       "SMG" , 
+                       ""
+)
+
 
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
@@ -1035,14 +1047,14 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 ##  Female messed up left ear (not Sadie? New female?)
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3b0cbd5d-8174-4a87-8f54-d7fe15c10610 frame 24 
   
-##  SHARP PEAK, JUV TINY WHITE DOT ABOVE LEFT EAR
+##  SHARP PEAK, JUV TINY WHITE DOT ABOVE LEFT EAR, IT IS LARRY
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e5ea21ed-3177-41d5-ad66-30b41e22e287
 
 ###huvenile, yoda like ear tufts piched head? 
 #https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/08a234de-d247-4786-a796-f009e56471a8 frame 21
 
 ##no peak larger sub adult https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bacd5730-65fb-43f4-89c3-31192ce931dd
-#sharp peak juv https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da171c17-fd20-4266-a996-d92cece793a2
+#sharp peak juv looks like dashiki https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da171c17-fd20-4266-a996-d92cece793a2
   
 #SAD of effed up ear female https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ac7c0cc2-644c-4b26-a2b9-0e28dd52d5b0
 
@@ -1063,4 +1075,9 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 
 # male juvenile/subadult, with pigmentation in left ear (not INK?)
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da8a3d6f-a40c-4046-bdaf-5ffe8f155f65
-# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/72c9af83-dec1-45ce-9f7d-1ecf0aef0df6
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/72c9af83-dec1-45ce-9f7d-1ecf0aef0df63
+
+# juvenile, some peak, beginning to look recognizable, yoda?
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/36218754-fc97-4ea0-8fde-d40e5b69bc74
+#i think same juv as above, also DK looking monkey mayby INK using tools
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/99b8c008-e516-4b27-8a0b-b4b309952960
