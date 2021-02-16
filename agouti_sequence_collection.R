@@ -384,12 +384,6 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        NA                       
 )
 
-d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/d90f1640-b5d1-47e3-bb0e-5724a6b94957"
-                       , 1 ,
-                       "YOD" , 
-                       "must check, no spots, tiny ear tufts, slight peak, fluffy forehead"                       
-)
-
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cae5bca8-b5e4-4744-af80-803eeab88eda"
                        , 1 ,
                        "OLG" , 
@@ -1021,6 +1015,47 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/8ac8d2f8-1cf9-4e9d-8b8b-099496ab78c9",
+                       1 ,
+                       "SAD" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0e0f08dd-d16d-4530-a946-24bc03f94d16",
+                       1 ,
+                       "DOT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0e0f08dd-d16d-4530-a946-24bc03f94d16",
+                       1 ,
+                       "LAR" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3ec8a42c-e29b-4a46-816f-1d8cab5a9538",
+                       1 ,
+                       "SMG" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c5baff2d-f54d-41c6-ab53-4e9791cedfe1",
+                       1 ,
+                       "DOT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a38944fd-032d-4c69-a866-31d7dea6f9bb",
+                       1 ,
+                       "SPT" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/16d4db4d-67aa-4415-a2f6-a5adc396a861",
+                       1 ,
+                       "TOM" , 
+                       ""
+)
 
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
@@ -1040,6 +1075,7 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 ##  Shark pinched head juvenile
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1479a34c-f9d5-4697-b26d-58b9372c7510 frame 111 
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9c5f1e2e-9434-4b41-adba-463738eb6285 frame 104
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/6ce976f7-0fb6-45db-aed8-ad39b5a569d8
   
 ##  Broad faced unknown juvenile
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bf099bea-40df-4934-8cda-0e1799dbf04e
@@ -1072,6 +1108,7 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 
 # juvenile not larry or spot
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ae7cdc87-439e-4099-96ad-a178316a54c9
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/f4f11620-06b9-4ea5-961e-3a1087dcf816 bald knees, sharp peak 
 
 # male juvenile/subadult, with pigmentation in left ear (not INK?)
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da8a3d6f-a40c-4046-bdaf-5ffe8f155f65
@@ -1081,3 +1118,8 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/36218754-fc97-4ea0-8fde-d40e5b69bc74
 #i think same juv as above, also DK looking monkey mayby INK using tools
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/99b8c008-e516-4b27-8a0b-b4b309952960
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/6ce976f7-0fb6-45db-aed8-ad39b5a569d8
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/9b5a13fe-5d42-4d04-9279-f7e49547ded6
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/5e8b1152-9867-406e-82e1-937ad4f6084d
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/32e380ba-6486-4e34-bc0a-dc22b8390df9
+# https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/8a2717a3-98bd-4198-9835-7b54d2234720
