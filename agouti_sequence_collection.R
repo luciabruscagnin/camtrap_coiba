@@ -1063,6 +1063,13 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4f77af5f-9909-4f5b-85f7-636919664512",
+                       1 ,
+                       "SMG" , 
+                       ""
+)
+
+
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a6ea1cc5-9ab9-4f1a-9554-dfc876663d91
