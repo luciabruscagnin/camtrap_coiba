@@ -11,7 +11,7 @@ str(seq)
 str(ind)
 unique(obs$observer)
 d <- obs[obs$location_label=="CEBUS-02" & obs$scientificName=="Homo",]
-d <- d[c("observation_id","scientificName","individual" , "observation_notes" , "behaviours" , "observer" , "sequence_start" , "originalFilename","location_label")]
+d <- d[c("observation_id","scientificName","individual" , "observation_notes" , "behaviours" , "observer" , "sequence_start" , "originalFilename","location_label","link")]
 str(d)
 d$sequence_start
 d$datetime <- ymd_hms(d$sequence_start , tz="America/Panama")
@@ -157,7 +157,18 @@ tmax <- max(d$tdiff_days[d$individual_index_jitter==1 & d$take_tool==1 | d$tool_
 segments(tmin,1,tmax,1)# we might want to exclude some behaviors 
 unique(d$beh_1)
 min(d$tdiff_days[])
+
+
+#####create brendan subset
+d_bb <- d[d$observer=="Brendan Barrett",]
 #####something else to see what are most common species for AI
 sort(table(obs$scientificName))
 
 write.csv(d , "tool behav excerpts.csv")
+
+
+#######Brendan notes
+###tool 3 picked up 1st here https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/968dbcf0-bd5d-4c72-bf4d-e82e7e149809
+
+##Tool 3 dropped from anvil here
+#Tool 4 moved here off anvil,seq 171 photo 97 https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0ae02080-c819-4103-a88b-4ac5d92ecb84
