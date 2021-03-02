@@ -84,7 +84,7 @@ col.pal <- brewer.pal(3,"Set1")#set color pallete
 plot(d$tdiff_days,d$individual_index_jitter , col=col.pal[d$observer_index] , yaxt='n' , ylab='' )
 axis(2, at=d$individual_index,labels=d$name.x, col.axis="red", las=2)
 axis(2, at=0,labels="No ID", las=2)
-legend("topleft", inset=.01 , c("Brendan" , "Meredith" , "Tamara") , fill=col.pal[unique(d$observer_index)])
+legend("topleft", inset=.01 , c("Brendan" , "Meredith" , "Tamara") , fill=col.pal)
 #plot w/ unique poiunts per behavior
 
 #ab line from tool on anvil to tool off anvil
@@ -97,7 +97,7 @@ points(d$tdiff_days,d$individual_index_jitter , col=col.pal[d$observer_index] , 
 points(d$tdiff_days,d$individual_index_jitter , col=col.pal[d$observer_index] , yaxt='n' , ylab='' , pch=beh_index_key2$pch[d$beh_4_index] , cex=0.7)
 axis(2, at=d$individual_index,labels=d$name.x, col.axis="red", las=2)
 axis(2, at=0,labels="No ID", las=2)
-legend("topleft", inset=.01 , c("Brendan" , "Meredith" , "Tamara") , fill=col.pal[unique(d$observer_index)])
+legend("topleft", inset=.01 , c("Brendan" , "Meredith" , "Tamara") , fill=col.pal)
 #need per obs behavior column
 d[,26:29]
 d$bring_tool <-d$tool_on_anvil <- d$take_tool <- d$tool_off_anvil <- 0
