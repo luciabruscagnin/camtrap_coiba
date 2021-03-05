@@ -1,0 +1,889 @@
+{
+  "name": "coiba-national-park-tool-use-20210305145356",
+  "id": "6e71b64e-5071-4387-8109-71b0dc0c73fa",
+  "created": "2021-03-05T14:53:56Z",
+  "profile": "tabular-data-package",
+  "sources": [
+    {
+      "title": "Agouti",
+      "path": "https://www.agouti.eu",
+      "email": "agouti@wur.nl"
+    }
+  ],
+  "project": {
+    "title": "Coiba National Park Tool Use",
+    "sampling_design": "targeted",
+    "sensor_method": [
+      "motion detection",
+      "time lapse"
+    ],
+    "animal_types": [
+      "unmarked",
+      "marked"
+    ],
+    "bait_use": [
+      "none"
+    ],
+    "classification_level": "sequence",
+    "sequence_interval": 30,
+    "_id": "0e0508af-d3dc-4be6-9806-dbdba5ec3368"
+  },
+  "multimedia_access": {
+    "public": true,
+    "remote": true
+  },
+  "organizations": [
+    {
+      "title": "Max Planck Institute for Animal Behavior"
+    }
+  ],
+  "contributors": [
+    {
+      "title": "Brendan Barrett",
+      "email": "bbarrett@ab.mpg.de",
+      "path": "https://orcid.org/0000-0002-2725-2385",
+      "role": "author"
+    },
+    {
+      "title": "Chuck Stewart",
+      "email": "cvstewart@gmail.com",
+      "role": "contributor"
+    },
+    {
+      "title": "Claudio Manuel Monteza",
+      "email": "cmmonteza@gmail.com",
+      "role": "contributor"
+    },
+    {
+      "title": "Evelyn Del Rosario",
+      "email": "delrosarioev@gmail.com",
+      "role": "contributor"
+    },
+    {
+      "title": "Meg Crofoot",
+      "email": "mcrofoot@ab.mpg.de",
+      "role": "author"
+    },
+    {
+      "title": "Meredith Carlson",
+      "email": "mkcarlson@ucdavis.edu",
+      "role": "contributor"
+    },
+    {
+      "title": "Shreya Kakhandiki",
+      "email": "shreya.kakhandiki@gmail.com",
+      "role": "contributor"
+    },
+    {
+      "title": "Sylvia Garza",
+      "email": "sylvia.f.garza@gmail.com",
+      "role": "contributor"
+    },
+    {
+      "title": "Tamara Dogandzic",
+      "email": "tamara_dogandzic@eva.mp.de",
+      "role": "contributor"
+    },
+    {
+      "title": "Tamara Dogandzic",
+      "email": "tamara_dogandzic@eva.mpg.de",
+      "role": "contributor"
+    },
+    {
+      "title": "Tamara Dogandzic",
+      "email": "tamariss@gmail.com",
+      "role": "contributor"
+    },
+    {
+      "title": "Yorick Liefting",
+      "email": "yorick.liefting@wur.nl",
+      "role": "maintainer",
+      "organization": "Wageningen University"
+    },
+    {
+      "title": "Zoë Goldsborough",
+      "email": "zgoldsborough@outlook.com",
+      "role": "author"
+    }
+  ],
+  "temporal": {
+    "start": "2004-01-01",
+    "end": "2021-03-05"
+  },
+  "spatial": {
+    "type": "Feature",
+    "bbox": [
+      -81.82197,
+      7.22769,
+      -81.67728,
+      7.52983
+    ],
+    "properties": {},
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -81.82197,
+            7.22769
+          ],
+          [
+            -81.67728,
+            7.22769
+          ],
+          [
+            -81.67728,
+            7.52983
+          ],
+          [
+            -81.82197,
+            7.52983
+          ],
+          [
+            -81.82197,
+            7.22769
+          ]
+        ]
+      ]
+    }
+  },
+  "taxonomic": [
+    {
+      "taxon_id": "11910126",
+      "scientific_name": "Aramides cajanea",
+      "vernacular_name": "Gray-necked Wood-Rail",
+      "count": 20
+    },
+    {
+      "taxon_id": "11909571",
+      "scientific_name": "Buteogallus anthracinus",
+      "vernacular_name": "Common Black Hawk",
+      "count": 10
+    },
+    {
+      "taxon_id": "21940495",
+      "scientific_name": "Cebus imitator",
+      "vernacular_name": "Panamanian White-faced Capuchin",
+      "count": 5580
+    },
+    {
+      "taxon_id": "11909469",
+      "scientific_name": "Coragyps atratus",
+      "vernacular_name": "Black Vulture",
+      "count": 9
+    },
+    {
+      "taxon_id": "21941480",
+      "scientific_name": "Dasyprocta coibae",
+      "vernacular_name": "Coiban Agouti",
+      "count": 158
+    },
+    {
+      "taxon_id": "21939392",
+      "scientific_name": "Didelphis marsupialis",
+      "vernacular_name": "Common Opossum",
+      "count": 6
+    },
+    {
+      "taxon_id": "11909256",
+      "scientific_name": "Eudocimus albus",
+      "vernacular_name": "American White Ibis",
+      "count": 13
+    },
+    {
+      "taxon_id": "13207777",
+      "scientific_name": "Holcosus quadrilineatus",
+      "count": 1
+    },
+    {
+      "taxon_id": "27753077",
+      "scientific_name": "Homo",
+      "count": 765
+    },
+    {
+      "taxon_id": "21940882",
+      "scientific_name": "Homo sapiens",
+      "vernacular_name": "Human",
+      "count": 23
+    },
+    {
+      "taxon_id": "13207870",
+      "scientific_name": "Iguana iguana",
+      "count": 41
+    },
+    {
+      "taxon_id": "11916250",
+      "scientific_name": "Leptotila battyi",
+      "vernacular_name": "Azuero Dove",
+      "count": 86
+    },
+    {
+      "taxon_id": "11910601",
+      "scientific_name": "Leptotila cassini",
+      "vernacular_name": "Gray-chested Dove",
+      "count": 6
+    },
+    {
+      "taxon_id": "11909737",
+      "scientific_name": "Milvago chimachima",
+      "vernacular_name": "Yellow-headed Caracara",
+      "count": 6
+    },
+    {
+      "taxon_id": "21934771",
+      "scientific_name": "Odocoileus virginianus",
+      "vernacular_name": "white-tailed deer",
+      "count": 23
+    },
+    {
+      "taxon_id": "24836210",
+      "scientific_name": "Parkesia motacilla",
+      "vernacular_name": "Louisiana Waterthrush",
+      "count": 60
+    },
+    {
+      "taxon_id": "24815479",
+      "scientific_name": "Quiscalus mexicanus",
+      "vernacular_name": "Great-tailed Grackle",
+      "count": 3
+    },
+    {
+      "taxon_id": "24565920",
+      "scientific_name": "Rattus rattus",
+      "vernacular_name": "Roof Rat",
+      "count": 27
+    },
+    {
+      "taxon_id": "11909236",
+      "scientific_name": "Tigrisoma mexicanum",
+      "vernacular_name": "Bare-throated Tiger Heron",
+      "count": 72
+    },
+    {
+      "taxon_id": "24814852",
+      "scientific_name": "Troglodytes aedon",
+      "vernacular_name": "House Wren",
+      "count": 17
+    },
+    {
+      "taxon_id": "24821210",
+      "scientific_name": "Turdus assimilis",
+      "vernacular_name": "White-throated Robin",
+      "count": 6
+    }
+  ],
+  "taxon_id_reference": "http://www.catalogueoflife.org/annual-checklist/2016/",
+  "_platform_title": "Agouti",
+  "_platform_path": "https://agouti.eu",
+  "_platform_package_id": "6e71b64e-5071-4387-8109-71b0dc0c73fa",
+  "resources": [
+    {
+      "name": "deployments",
+      "path": "deployments.csv",
+      "profile": "tabular-data-resource",
+      "title": "Camera trap deployments",
+      "description": "Table with camera trap deployments. Includes `deployment_id`, start, end, location and camera setup information.",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "utf-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "deployment_id",
+            "type": "string",
+            "format": "default",
+            "title": "Deployment ID",
+            "description": "Unique identifier (within a project) of the deployment.",
+            "example": "dep1",
+            "constraints": {
+              "required": true,
+              "unique": true
+            }
+          },
+          {
+            "name": "location_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier (within a project) of the sampling location for this deployment.",
+            "example": "loc1",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "location_name",
+            "type": "string",
+            "format": "default",
+            "description": "Name given to the sampling location.",
+            "example": "Białowieża MRI 01",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "longitude",
+            "type": "number",
+            "format": "default",
+            "description": "Longitude of the sampling location in decimal degrees, using the WGS84 datum.",
+            "example": "23.84995",
+            "constraints": {
+              "required": true,
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "latitude",
+            "type": "number",
+            "format": "default",
+            "description": "Latitude of the sampling location in decimal degrees, using the WGS84 datum.",
+            "example": "52.70442",
+            "constraints": {
+              "required": true,
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "start",
+            "type": "datetime",
+            "format": "%Y-%m-%dT%H:%M:%S%z",
+            "description": "Date and time when the deployment started, as an ISO 8601 formatted string with timezone designator (`YYYY-MM-DDThh:mm:ssZ` or `YYYY-MM-DDThh:mm:ss±hh:mm`).",
+            "example": "2020-03-01T22:00:00Z",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "end",
+            "type": "datetime",
+            "format": "%Y-%m-%dT%H:%M:%S%z",
+            "description": "Date and time when the deployment ended, as an ISO 8601 formatted string with timezone designator (`YYYY-MM-DDThh:mm:ssZ` or `YYYY-MM-DDThh:mm:ss±hh:mm`).",
+            "example": "2020-04-01T22:00:00Z",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "setup_by",
+            "type": "string",
+            "format": "default",
+            "description": "Name or unique identifier of the person who set up the camera for this deployment.",
+            "example": [
+              "Jim Casaer",
+              "2ef60d48-fd67-4bac-9569-49a03b0ef096"
+            ],
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "camera_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier (within a project) of the camera used for this deployment. This can be e.g. the camera device serial number.",
+            "example": "P800HG08192031",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "camera_model",
+            "type": "string",
+            "format": "default",
+            "description": "Manufacturer and model of the camera provided in this format: `manufacturer-model`.",
+            "example": "Reconyx-PC800",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "camera_interval",
+            "type": "integer",
+            "description": "Time specified between shutter triggers when activity in the sensor will not trigger the shutter. Specified in seconds.",
+            "example": "120",
+            "constraints": {
+              "required": false,
+              "minimum": 0
+            },
+            "format": "default"
+          },
+          {
+            "name": "camera_height",
+            "type": "integer",
+            "description": "An approximate height at which the camera was deployed. Specified in centimeters.",
+            "example": "100",
+            "constraints": {
+              "required": false,
+              "minimum": 0
+            },
+            "format": "default"
+          },
+          {
+            "name": "bait_use",
+            "type": "string",
+            "format": "default",
+            "description": "Type of bait (if any) that was used for this deployment. If other, more info can be provided in the `comments` field.",
+            "example": "food",
+            "constraints": {
+              "required": false,
+              "enum": [
+                "none",
+                "scent",
+                "food",
+                "visual",
+                "acoustic",
+                "other"
+              ]
+            }
+          },
+          {
+            "name": "feature_type",
+            "type": "string",
+            "format": "default",
+            "description": "Type of feature (if any) that camera deployment is associated with. If other, more info can be provided in the `comments` field.",
+            "example": "",
+            "constraints": {
+              "required": false,
+              "enum": [
+                "none",
+                "road paved",
+                "road dirt",
+                "trail hiking",
+                "trail game",
+                "road underpass",
+                "road overpass",
+                "road bridge",
+                "culvert",
+                "burrow",
+                "nest site",
+                "carcass",
+                "water source",
+                "fruiting tree",
+                "other"
+              ]
+            }
+          },
+          {
+            "name": "tags",
+            "type": "string",
+            "format": "default",
+            "description": "User defined tags associated with the deployment, as a pipe (`|`) separated list.",
+            "example": "Outsite NP | Forest edge",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "comments",
+            "type": "string",
+            "format": "default",
+            "description": "Comments or notes about the deployment.",
+            "example": "",
+            "constraints": {
+              "required": false
+            }
+          }
+        ],
+        "missingValues": [
+          "",
+          "NaN",
+          "nan"
+        ],
+        "primaryKey": "deployment_id"
+      }
+    },
+    {
+      "name": "multimedia",
+      "path": "multimedia.csv",
+      "profile": "tabular-data-resource",
+      "title": "Camera trap multimedia",
+      "description": "Table with multimedia files (images/videos) captured by the camera traps. Associated with deployments (`deployment_id`) and organized in sequences (`sequence_id`). Includes timestamp and file path.",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "utf-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "multimedia_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier (within a project) of the multimedia file.",
+            "example": "m1",
+            "constraints": {
+              "required": true,
+              "unique": true
+            }
+          },
+          {
+            "name": "deployment_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier of the deployment this observation belongs to. Foreign key to `deployment:deployment_id`.",
+            "example": "dep1",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "sequence_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier (within a project) of the sequence this multimedia file belongs to. Sequences contain one or more multimedia files (e.g. a single image or video or a sequence of successive images or videos) and are defined by `sequence_interval` in the package metadata.",
+            "example": "seq1",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "datetime",
+            "format": "%Y-%m-%dT%H:%M:%S%z",
+            "description": "Date and time when the multimedia file was recorded, as an ISO 8601 formatted string with timezone designator (`YYYY-MM-DDThh:mm:ssZ` or `YYYY-MM-DDThh:mm:ss±hh:mm`).",
+            "example": "2020-03-24T11:21:46Z",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "file_path",
+            "type": "string",
+            "format": "uri",
+            "description": "Url or relative path to the multimedia file, respectively for externally hosted files or files that are part of this package. Additional information on how to access this file is provided in a package-level metadata.",
+            "example": [
+              "https://trapper.org/storage/resource/media/259024/file/",
+              "gs://wildlife_insights/Project/Images/CT-011/IMG0001.jpg",
+              "DEP0001/IMG0001.jpg"
+            ],
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "file_name",
+            "type": "string",
+            "format": "default",
+            "description": "Name of a multimedia file. When this field is included, one should be able to sort multimedia chronologically within a deployment on `timestamp` (first) and `file_name` (second).",
+            "example": "IMG0001.jpg",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "file_mediatype",
+            "type": "string",
+            "format": "default",
+            "description": "Mediatype of a multimedia file.",
+            "example": "image/jpeg",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "comments",
+            "type": "string",
+            "format": "default",
+            "description": "Comments or notes about the multimedia file.",
+            "example": "marked as favourite",
+            "constraints": {
+              "required": false
+            }
+          }
+        ],
+        "missingValues": [
+          "",
+          "NaN",
+          "nan"
+        ],
+        "primaryKey": "multimedia_id",
+        "foreignKeys": [
+          {
+            "fields": "deployment_id",
+            "reference": {
+              "resource": "deployments",
+              "fields": "deployment_id"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "observations",
+      "path": "observations.csv",
+      "profile": "tabular-data-resource",
+      "title": "Camera trap observations",
+      "description": "Table with observations based on the multimedia files. Associated with deployments (`deployment_id`), sequences (`sequence_id`) and optionally individual multimedia files (`multimedia_id`). Observations can mark non-animal events (camera setup, human, empty) or one or more animal observations (`observation_type` = `animal`) of a certain species, count, age, sex, behaviour and/or individual.",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "utf-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "observation_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier (within a project) of the observation.",
+            "example": "obs1",
+            "constraints": {
+              "required": true,
+              "unique": true
+            }
+          },
+          {
+            "name": "deployment_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier of the deployment this observation belongs to. Foreign key to `deployment:deployment_id`.",
+            "example": "dep1",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "sequence_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier of the sequence (collection of multimedia files grouped by a predefined `sequence_interval`) that is the source of this observation. Foreign key to `multimedia:sequence_id`.",
+            "example": "seq1",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "multimedia_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier of the multimedia file that is the source of this observation. Foreign key to `multimedia:multimedia_id`. Include but leave empty for sequence-based observations.",
+            "example": "m1",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "datetime",
+            "format": "%Y-%m-%dT%H:%M:%S%z",
+            "description": "Date and time of the observation, as an ISO 8601 formatted string with timezone designator (`YYYY-MM-DDThh:mm:ssZ` or `YYYY-MM-DDThh:mm:ss±hh:mm`). For file-based observations this is the `timestamp` of the associated multimedia file (in `multimedia_id`), for sequence-based observations the `timestamp` of the first multimedia file in the associated sequence (in `sequence_id`).",
+            "example": "2020-03-24T11:21:46Z",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "observation_type",
+            "type": "string",
+            "format": "default",
+            "description": "Type of observation. All categories in this vocabulary have to be understandable from an AI point of view. `undefined` describes classifications with a confidence level below some predefined threshold i.e. neither humans nor AI can say what was recorded.",
+            "example": "animal",
+            "constraints": {
+              "required": true,
+              "enum": [
+                "animal",
+                "human",
+                "vehicle",
+                "empty",
+                "undefined",
+                "unclassified"
+              ]
+            }
+          },
+          {
+            "name": "sensor_method",
+            "type": "string",
+            "format": "default",
+            "description": "Method of triggering the camera for this observation.",
+            "example": "motion detection",
+            "constraints": {
+              "required": false,
+              "enum": [
+                "motion detection",
+                "time lapse"
+              ]
+            }
+          },
+          {
+            "name": "camera_setup",
+            "type": "boolean",
+            "format": "default",
+            "description": "`true` if this observation is part of the camera setup process (camera deployment, pickup, maintenance).",
+            "example": "false",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "scientific_name",
+            "type": "string",
+            "format": "default",
+            "description": "Scientific name of the observed individual(s).",
+            "example": "Canis lupus",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "vernacular_name",
+            "type": "string",
+            "format": "default",
+            "description": "Common name of the observed individual(s), preferably in English.",
+            "example": "wolf",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "count",
+            "type": "integer",
+            "format": "default",
+            "description": "Number of observed individuals (optionally of given age, sex and behaviour).",
+            "example": "5",
+            "constraints": {
+              "required": false,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "age",
+            "type": "string",
+            "format": "default",
+            "description": "Age of observed individual(s)",
+            "example": "adult",
+            "constraints": {
+              "required": false,
+              "enum": [
+                "adult",
+                "subadult",
+                "juvenile",
+                "offspring",
+                "undefined"
+              ]
+            }
+          },
+          {
+            "name": "sex",
+            "type": "string",
+            "format": "default",
+            "description": "Sex of observed individual(s)",
+            "example": "female",
+            "constraints": {
+              "required": false,
+              "enum": [
+                "female",
+                "male",
+                "undefined"
+              ]
+            }
+          },
+          {
+            "name": "behaviour",
+            "type": "string",
+            "format": "default",
+            "description": "Dominant behaviour of observed individual(s), ideally expressed as controlled values (e.g. grazing, browsing, rooting, vigilance, running, walking). A combination of dominant (first) and additional behaviours can be expressed as as a pipe (|) separated list.",
+            "example": "vigilance",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "individual_id",
+            "type": "string",
+            "format": "default",
+            "description": "Unique identifier (within a project) of the observed individual.",
+            "example": "RD213",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "classification_method",
+            "type": "string",
+            "format": "default",
+            "description": "Classification method.",
+            "example": "human",
+            "constraints": {
+              "required": false,
+              "enum": [
+                "human",
+                "machine"
+              ]
+            }
+          },
+          {
+            "name": "classified_by",
+            "type": "string",
+            "format": "default",
+            "description": "Name or unique identifier of the person or AI algorithm that classified this observation.",
+            "example": [
+              "Jakub Bubnicki",
+              "Megadetector"
+            ],
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "classification_timestamp",
+            "type": "datetime",
+            "format": "%Y-%m-%dT%H:%M:%S%z",
+            "description": "Date and time of the classification, as an ISO 8601 formatted string with timezone designator (`YYYY-MM-DDThh:mm:ssZ` or `YYYY-MM-DDThh:mm:ss±hh:mm`).",
+            "example": "2020-08-22T10:25:19Z",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "classification_confidence",
+            "type": "number",
+            "format": "default",
+            "description": "Accuracy confidence of the classification. Specified as probability, with `1` being maximum confidence. Provide an approximate value for human classifications.",
+            "example": "0.95",
+            "constraints": {
+              "required": false,
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          {
+            "name": "comments",
+            "type": "string",
+            "format": "default",
+            "description": "Comments or notes about the observation.",
+            "example": "",
+            "constraints": {
+              "required": false
+            }
+          }
+        ],
+        "missingValues": [
+          "",
+          "NaN",
+          "nan"
+        ],
+        "primaryKey": "observation_id",
+        "foreignKeys": [
+          {
+            "fields": "deployment_id",
+            "reference": {
+              "resource": "deployments",
+              "fields": "deployment_id"
+            }
+          },
+          {
+            "fields": "sequence_id",
+            "reference": {
+              "resource": "multimedia",
+              "fields": "sequence_id"
+            }
+          },
+          {
+            "fields": "multimedia_id",
+            "reference": {
+              "resource": "multimedia",
+              "fields": "multimedia_id"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

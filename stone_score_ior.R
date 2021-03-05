@@ -172,3 +172,106 @@ write.csv(d , "tool behav excerpts.csv")
 
 ##Tool 3 dropped from anvil here
 #Tool 4 moved here off anvil,seq 171 photo 97 https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0ae02080-c819-4103-a88b-4ac5d92ecb84
+
+
+#####new files
+library(lubridate)
+library(RColorBrewer)
+
+#load
+dep <- read.csv("/Users/sifaka/Dropbox/camtrap_coiba/agouti_output/coiba-national-park-tool-use-20210305145356/deployments.csv")
+o <- read.csv("/Users/sifaka/Dropbox/camtrap_coiba/agouti_output/coiba-national-park-tool-use-20210305145356/observations.csv")
+ind <- read.csv("/Users/sifaka/Dropbox/camtrap_coiba/agouti_output/202012211222-coiba-tool-use-individuals.csv")
+
+dep_ids <-unique(dep$deployment_id[ dep$tags==c("Brendan Test | R4") | dep$tags==c("Meredith Test | R4") |  dep$tags==c("R4 | Tamara Test") ])
+d <- o[o$deployment_id %in% dep_ids==TRUE,]
+d <- o[o$scientific_name=="Homo",]
+
+d$datetime <- ymd_hms(d$timestamp , tz="America/Panama") #convert TZ
+d$tdiff_sec <- d$datetime - min(d$datetime) #time difffernce in seconds from earliest observation in this subset
+d <- d[d$tdiff_sec>0,] #drop weird outlier
+d <- droplevels(d)
+min(d$datetime)
+#times
+d$tdiff_sec <- d$datetime - min(d$datetime) #time difffernce in seconds from earliest observation in this subset
+d$tdiff_min <- d$tdiff_sec/(60)
+d$tdiff_hours <- d$tdiff_min/60 
+d$tdiff_days <- d$tdiff_hours/24
+d <- droplevels(d)
+d$observer_index <- as.integer(as.factor(d$classified_by)) #add observer index integer
+plot(d$tdiff_days,as.integer(as.factor(d$individual)) , col=d$observer_index)
+
+##add tool ids
+ind$individual_id <- ind$id #create new column to merge
+d <- merge(d, ind[, c("name", "individual_id")], by="individual_id" , all.x = TRUE) #keeps values from d w/ no individuals
+d <- droplevels(d)
+d$individual_index <- as.integer(as.factor(d$name)) # convert to integer
+d$individual_index <-ifelse(is.na(d$individual_index)==TRUE , 0 , d$individual_index) #turn nas where no tool id is there to 0
+
+
+plot(d$tdiff_days,d$individual_index , col=d$observer_index , yaxt='n' )
+axis(2, at=d$individual_index,labels=d$name.x, col.axis="red", las=2)
+axis(2, at=0,labels="No ID", las=2)
+
+f <- c(1,2,3)
+f <- (1-(f/2))*0.5
+
+d$individual_index_jitter <- d$individual_index + f[d$observer_index] #jitter for viz comp
+col.pal <- brewer.pal(3,"Set1")#set color pallete
+
+
+#ploit with no behavioral comparisons
+plot(d$tdiff_days,d$individual_index_jitter , col=col.pal[d$observer_index] , yaxt='n' , ylab='' )
+axis(2, at=d$individual_index,labels=d$name.x, col.axis="red", las=2)
+axis(2, at=0,labels="No ID", las=2)
+legend("topleft", inset=.01 , c("Brendan" , "Meredith" , "Tamara") , fill=col.pal)
+#plot w/ unique poiunts per behavior
+unique(d$behaviour)
+d$behaviour  %in% "HS: Take tool"
+grepl( "HS: Take tool", d$behaviour, fixed = TRUE)
+
+d$tool_on_anvil <- ifelse(grepl( "HS: Tool on anvil", d$behaviour, fixed = TRUE), 1 ,0)
+d$tool_off_anvil <- ifelse( grepl( "HS: Tool off anvil", d$behaviour, fixed = TRUE), 1 ,0 )
+d$bring_tool <- ifelse(grepl( "HS: Bring tool", d$behaviour, fixed = TRUE), 1 ,0 )
+d$take_tool <- ifelse(grepl( "HS: Take tool", d$behaviour, fixed = TRUE), 1 ,0 )
+d$hammerstone_breaks <- ifelse(grepl( "Hammerstone breaks", d$behaviour, fixed = TRUE), 1 ,0 )
+d$hammerstone_breaks <- ifelse(grepl( "TAF: Almendra", d$behaviour, fixed = TRUE), 1 ,0 )
+
+#ab line from tool on anvil to tool off anvil
+
+plot(d$tdiff_days[d$tool_on_anvil==1],d$individual_index_jitter[d$tool_on_anvil==1] , col=col.pal[d$observer_index[d$tool_on_anvil==1]] , yaxt='n' , ylab='' , pch=19 , cex=0.7)
+points(d$tdiff_days[d$tool_off_anvil==1],d$individual_index_jitter[d$tool_off_anvil==1] , col=col.pal[d$observer_index[d$tool_off_anvil==1]] , yaxt='n' , ylab='' , pch=1  , cex=0.7)
+points(d$tdiff_days[d$bring_tool==1],d$individual_index_jitter[d$bring_tool==1] , col=col.pal[d$observer_index[d$bring_tool==1]] , yaxt='n' , ylab='' , pch=15  , cex=0.7)
+points(d$tdiff_days[d$take_tool==1],d$individual_index_jitter[d$take_tool==1] , col=col.pal[d$observer_index[d$take_tool==1]] , yaxt='n' , ylab='' , pch=15  , cex=0.7)
+
+axis(2, at=d$individual_index,labels=d$name.x, col.axis="red", las=2)
+axis(2, at=0,labels="No ID", las=2)
+legend("topleft", inset=.01 , c("Brendan" , "Meredith" , "Tamara") , fill=col.pal)
+
+# tmin <- min(d$tdiff_days[d$individual_index==1 & d$bring_tool==1 | d$tool_on_anvil==1 & d$observer_index==1])
+# tmax <- max(d$tdiff_days[d$individual_index==1 & d$take_tool==1 | d$tool_off_anvil==1 & d$observer_index==1])
+tool_jit <- c(0.25,0,-0.25)
+for (obs in 1:max(d$observer_index)){
+  for (toolid in min(d$individual_index):max(d$individual_index) ){
+    d22 <- d[d$individual_index==toolid & d$observer_index==obs,]
+    tmin <- min(d22$tdiff_days[ d22$bring_tool==1 | d22$tool_on_anvil==1 ])
+    tmax <- max(d22$tdiff_days[ d22$take_tool==1 | d22$tool_off_anvil==1 ])
+    segments(tmin , toolid + tool_jit[obs], tmax , toolid + tool_jit[obs] , col=col.pal[obs])# we might want to exclude some behaviors 
+  }
+}
+
+#####create brendan subset
+d_bb <- d[d$observer=="Brendan Barrett",]
+#####something else to see what are most common species for AI
+sort(table(o$scientific_name))
+
+write.csv(d , "tool behav excerpts.csv")
+
+
+#######Brendan notes
+###tool 3 picked up 1st here https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/968dbcf0-bd5d-4c72-bf4d-e82e7e149809
+
+##Tool 3 dropped from anvil here
+#Tool 4 moved here off anvil,seq 171 photo 97 https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0ae02080-c819-4103-a88b-4ac5d92ecb84
+
+
