@@ -1079,9 +1079,15 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/bde98f22-b178-4577-824f-f012600e6b79",
                        1 ,
                        "TOM" , 
-                       "Both Brendan and ZG think so, but not 100%"
+                       ""
 )
 
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/f0d05749-529e-48e1-9644-b2f8856cdc79",
+                       1 ,
+                       "SMG" , 
+                       ""
+)
 
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
