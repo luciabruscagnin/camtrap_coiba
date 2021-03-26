@@ -1,0 +1,5265 @@
+<?xml version="1.0"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:gpxtrx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:trp="http://www.garmin.com/xmlschemas/TripExtensions/v1" xmlns:adv="http://www.garmin.com/xmlschemas/AdventuresExtensions/v1" xmlns:prs="http://www.garmin.com/xmlschemas/PressureExtension/v1" xmlns:tmd="http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1" xmlns:vptm="http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1" xmlns:ctx="http://www.garmin.com/xmlschemas/CreationTimeExtension/v1" xmlns:gpxacc="http://www.garmin.com/xmlschemas/AccelerationExtension/v1" xmlns:gpxpx="http://www.garmin.com/xmlschemas/PowerExtension/v1" xmlns:vidx1="http://www.garmin.com/xmlschemas/VideoExtension/v1" creator="Garmin Desktop App" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/ActivityExtension/v1 http://www8.garmin.com/xmlschemas/ActivityExtensionv1.xsd http://www.garmin.com/xmlschemas/AdventuresExtensions/v1 http://www8.garmin.com/xmlschemas/AdventuresExtensionv1.xsd http://www.garmin.com/xmlschemas/PressureExtension/v1 http://www.garmin.com/xmlschemas/PressureExtensionv1.xsd http://www.garmin.com/xmlschemas/TripExtensions/v1 http://www.garmin.com/xmlschemas/TripExtensionsv1.xsd http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1 http://www.garmin.com/xmlschemas/TripMetaDataExtensionsv1.xsd http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1 http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensionsv1.xsd http://www.garmin.com/xmlschemas/CreationTimeExtension/v1 http://www.garmin.com/xmlschemas/CreationTimeExtensionsv1.xsd http://www.garmin.com/xmlschemas/AccelerationExtension/v1 http://www.garmin.com/xmlschemas/AccelerationExtensionv1.xsd http://www.garmin.com/xmlschemas/PowerExtension/v1 http://www.garmin.com/xmlschemas/PowerExtensionv1.xsd http://www.garmin.com/xmlschemas/VideoExtension/v1 http://www.garmin.com/xmlschemas/VideoExtensionv1.xsd">
+
+  <metadata>
+    <link href="http://www.garmin.com">
+      <text>Garmin International</text>
+    </link>
+    <time>2018-03-24T03:58:11Z</time>
+    <bounds maxlat="7.657893989235163" maxlon="-81.007076036185026" minlat="7.227633967995644" minlon="-81.823246339336038"/>
+  </metadata>
+
+  <wpt lat="7.27427582256496" lon="-81.823246339336038">
+    <time>2018-02-14T14:36:43Z</time>
+    <name>040118T01</name>
+    <cmt>random almendra on beach</cmt>
+    <desc>random almendra on beach</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-02-14T14:36:43Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.275653975084424" lon="-81.822580983862281">
+    <ele>8</ele>
+    <time>2018-01-05T16:40:59Z</time>
+    <name>050118T01(caracol)</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T16:40:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270991038531065" lon="-81.821274999529123">
+    <ele>14.86618</ele>
+    <time>2018-01-05T18:24:40Z</time>
+    <name>050118T02</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T18:24:40Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268814006820321" lon="-81.819701967760921">
+    <ele>25.622169</ele>
+    <time>2018-01-05T18:48:50Z</time>
+    <name>050118T03</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T18:48:50Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268185028806329" lon="-81.819515973329544">
+    <ele>25.830988000000001</ele>
+    <time>2018-01-05T18:52:59Z</time>
+    <name>050118T04</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T18:52:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269794018939137" lon="-81.820486010983586">
+    <ele>21.156929000000002</ele>
+    <time>2018-01-06T16:51:16Z</time>
+    <name>060101T14</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:51:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272482011467218" lon="-81.822855994105339">
+    <ele>12.121162</ele>
+    <time>2018-01-06T13:28:48Z</time>
+    <name>060118T01</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:28:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271751025691628" lon="-81.822018977254629">
+    <ele>12.683306</ele>
+    <time>2018-01-06T13:42:41Z</time>
+    <name>060118T02</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:42:41Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271725963801146" lon="-81.822029035538435">
+    <ele>11.724902</ele>
+    <time>2018-01-06T13:43:42Z</time>
+    <name>060118T03</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:43:42Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271657986566424" lon="-81.82191202417016">
+    <ele>15.585580999999999</ele>
+    <time>2018-01-06T14:03:46Z</time>
+    <name>060118T04</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:03:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271608030423522" lon="-81.821830971166492">
+    <ele>12.254496</ele>
+    <time>2018-01-06T14:14:23Z</time>
+    <name>060118T05</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:14:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271716995164752" lon="-81.82159099727869">
+    <ele>11.623578</ele>
+    <time>2018-01-06T14:24:20Z</time>
+    <name>060118T06</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:24:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271709032356739" lon="-81.821639025583863">
+    <ele>10.896046</ele>
+    <time>2018-01-06T14:26:07Z</time>
+    <name>060118T07</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:26:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271460006013513" lon="-81.821709014475346">
+    <ele>15.006577999999999</ele>
+    <time>2018-01-06T14:47:21Z</time>
+    <name>060118T08</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:47:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27091702632606" lon="-81.820955984294415">
+    <ele>14.246574000000001</ele>
+    <time>2018-01-06T15:35:43Z</time>
+    <name>060118T09</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:35:43Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270991038531065" lon="-81.82103200815618">
+    <ele>14.350478000000001</ele>
+    <time>2018-01-06T15:36:48Z</time>
+    <name>060118T10</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:36:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270614020526409" lon="-81.821157988160849">
+    <ele>15.196958</ele>
+    <time>2018-01-06T16:02:28Z</time>
+    <name>060118T11</name>
+    <cmt>COCO SNAIL TC FEW</cmt>
+    <desc>COCO SNAIL TC FEW</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:02:28Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270238008350134" lon="-81.820905022323132">
+    <ele>12.386229</ele>
+    <time>2018-01-06T16:17:50Z</time>
+    <name>060118T12</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:17:50Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269860990345478" lon="-81.820381991565228">
+    <ele>19.857357</ele>
+    <time>2018-01-06T16:46:27Z</time>
+    <name>060118T13</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:46:27Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269903989508748" lon="-81.820561029016972">
+    <ele>18.447289999999999</ele>
+    <time>2018-01-06T16:36:40Z</time>
+    <name>060118T14</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:36:40Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269567037001252" lon="-81.8203229829669">
+    <ele>19.767883000000001</ele>
+    <time>2018-01-06T17:05:31Z</time>
+    <name>060118T15</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:05:31Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269593020901084" lon="-81.820274032652378">
+    <ele>22.661048999999998</ele>
+    <time>2018-01-06T17:10:37Z</time>
+    <name>060118T16</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:10:37Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269320022314787" lon="-81.820198008790612">
+    <ele>18.273219999999998</ele>
+    <time>2018-01-06T17:15:25Z</time>
+    <name>060118T17</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:15:25Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268845019862056" lon="-81.819853009656072">
+    <ele>18.24605</ele>
+    <time>2018-01-06T17:29:29Z</time>
+    <name>060118T18</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:29:29Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.26967197842896" lon="-81.820393977686763">
+    <ele>18.89789</ele>
+    <time>2018-01-06T17:12:00Z</time>
+    <name>060118T19</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:12:00Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268792968243361" lon="-81.819754019379616">
+    <ele>16.597204000000001</ele>
+    <time>2018-01-06T17:41:09Z</time>
+    <name>060118T20</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:41:09Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268240014091134" lon="-81.819540029391646">
+    <ele>16.550222000000002</ele>
+    <time>2018-01-06T17:46:33Z</time>
+    <name>060118T21</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:46:33Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268181005492806" lon="-81.819374989718199">
+    <ele>16</ele>
+    <time>2018-01-06T17:51:48Z</time>
+    <name>060118T22</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:51:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268277984112501" lon="-81.819482026621699">
+    <ele>16</ele>
+    <time>2018-01-06T17:52:23Z</time>
+    <name>060118T23</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:52:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268320983275771" lon="-81.819464005529881">
+    <ele>15.550542999999999</ele>
+    <time>2018-01-06T17:53:15Z</time>
+    <name>060118T24</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:53:15Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268334981054068" lon="-81.819486971944571">
+    <ele>16.972307000000001</ele>
+    <time>2018-01-06T17:54:08Z</time>
+    <name>060118T25</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:54:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268386026844382" lon="-81.819328973069787">
+    <ele>17.681443999999999</ele>
+    <time>2018-01-06T17:55:56Z</time>
+    <name>060118T26</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:55:56Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.26827303878963" lon="-81.819426035508513">
+    <ele>17.420784000000001</ele>
+    <time>2018-01-06T17:54:48Z</time>
+    <name>060818T26</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:54:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.294978033751249" lon="-81.820137994363904">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>103Tc</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271102014929056" lon="-81.821383964270353">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L1</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268739994615316" lon="-81.819601971656084">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L10</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268734965473413" lon="-81.819859966635704">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L11</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270203977823257" lon="-81.821037037298083">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L2</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.2697579767555" lon="-81.82038601487875">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L3</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269638031721115" lon="-81.820393977686763">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L4</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.26881199516356" lon="-81.819595014676452">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L5</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268928000703454" lon="-81.819504993036389">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L6</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268260968849063" lon="-81.8194629997015">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L7</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268316959962249" lon="-81.819476997479796">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L8</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268369011580944" lon="-81.819507004693151">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>7-27-17.L9</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.237810017541051" lon="-81.805892027914524">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A-20</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.231775969266891" lon="-81.80401599034667">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A-21</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.23121203482151" lon="-81.803552974015474">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A-22</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.231065016239882" lon="-81.803478039801121">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A-23</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.230948004871607" lon="-81.803376032039523">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A-24</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229070039466023" lon="-81.801537964493036">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A16</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228740965947509" lon="-81.801985977217555">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A17</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228719005361199" lon="-81.802054038271308">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A18</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228606017306447" lon="-81.802086979150772">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>A19</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.240283014252782" lon="-81.802470032125711">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRA 8</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229630034416914" lon="-81.800688961520791">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS10</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229492990300059" lon="-81.800886020064354">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS11</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229420989751816" lon="-81.80092197842896">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS12</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.22934303805232" lon="-81.801173016428947">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS13</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229281011968851" lon="-81.801238982006907">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS14</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229130975902081" lon="-81.801473004743457">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS15</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.240802021697164" lon="-81.802150011062622">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS6</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.240643016993999" lon="-81.802385039627552">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS7</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229744028300047" lon="-81.800241032615304">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS8</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229703040793538" lon="-81.800357038155198">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>ALMENDRAS9</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.285766992717981" lon="-81.817466011270881">
+    <ele>52.991199000000002</ele>
+    <time>2017-12-20T21:57:26Z</time>
+    <name>AULLADOR FS</name>
+    <sym>Parachute Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-12-20T21:57:26Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270842008292675" lon="-81.821165028959513">
+    <ele>14.604673999999999</ele>
+    <time>2018-01-06T15:32:32Z</time>
+    <name>BBC0701</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:32:32Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270837984979153" lon="-81.821115994825959">
+    <ele>13.865974</ele>
+    <time>2018-01-06T15:32:05Z</time>
+    <name>BBC0702</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:32:05Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271074019372463" lon="-81.821420006453991">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>BEACHWOOD TOOL SITE Jul 17</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290525985881686" lon="-81.803397992625833">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CAMP JICARON</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.262044027447701" lon="-81.817282028496265">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CAT2</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.28941798210144" lon="-81.796206990256906">
+    <time>2018-01-04T16:14:59Z</time>
+    <name>Cebus track s</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:14:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290630005300045" lon="-81.790947010740638">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-01-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.240663971751928" lon="-81.802393002435565">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-02-01A (LW)</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.240663971751928" lon="-81.802393002435565">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-02-02 (LW)</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228510966524482" lon="-81.802730038762093">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-03-01A</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228510966524482" lon="-81.802730038762093">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-03-01B (labeled 03-02-B)</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228714982047677" lon="-81.802599029615521">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>Cebus-03-03A (LW)</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228710958734155" lon="-81.802599029615521">
+    <time>2018-01-06T16:36:26Z</time>
+    <name>Cebus-03-04C</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:36:26Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.228675000369549" lon="-81.802759040147066">
+    <time>2018-01-06T17:40:30Z</time>
+    <name>Cebus-03-04C 2</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:40:30Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.230945993214846" lon="-81.803363040089607">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-04-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.289691986516118" lon="-81.805410739034414">
+    <time>2018-02-11T12:08:04Z</time>
+    <name>CEBUS-05-HAIRTRAP?</name>
+    <cmt>CoibaTopo 1 1</cmt>
+    <desc>CoibaTopo 1 1</desc>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-02-11T12:08:04Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.227693982422352" lon="-81.802376993000507">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-06</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.227863967418671" lon="-81.802299041301012">
+    <ele>11.452085</ele>
+    <time>2017-12-20T15:45:19Z</time>
+    <name>CEBUS-06-STOLEN1</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-12-20T15:45:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270791968330741" lon="-81.821163017302752">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-07-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270833374932408" lon="-81.821116665378213">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-07-02</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271729987114668" lon="-81.821969021111727">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-08-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.257485026493669" lon="-81.790791023522615">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-09-01A</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.257485026493669" lon="-81.790791023522615">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-09-01B</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.28956701233983" lon="-81.805759007111192">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-10-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.527792016044259" lon="-81.677283039316535">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-11-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.529827980324626" lon="-81.677800035104156">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-12-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.62609195895493" lon="-81.729468014091253">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-13-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.529592029750347" lon="-81.677946969866753">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-14-01 (aka Stone Trap/Hair Trap)</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268936969339848" lon="-81.819556960836053">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-15-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269062027335167" lon="-81.81954899802804">
+    <time>2018-01-05T19:54:29Z</time>
+    <name>Cebus-15-02C</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T19:54:29Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268739994615316" lon="-81.819928027689457">
+    <time>2018-01-05T20:12:04Z</time>
+    <name>Cebus-15-03C</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T20:12:04Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269893009215593" lon="-81.820388026535511">
+    <time>2018-01-05T20:25:23Z</time>
+    <name>Cebus-16-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T20:25:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269893009215593" lon="-81.820388026535511">
+    <time>2018-01-05T20:25:23Z</time>
+    <name>Cebus-16-02C</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T20:25:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268289970234036" lon="-81.819408014416695">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-17-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268271027132869" lon="-81.819423018023372">
+    <time>2018-01-05T18:34:00Z</time>
+    <name>Cebus-17-02C</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T18:34:00Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.265429981052876" lon="-81.78624602034688">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-18-01-(WAS LABELED 17 WRONG)</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290391037240624" lon="-81.797462850809097">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-19-01 clams</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290679961442947" lon="-81.803449038416147">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CEBUS-20-01 (stolen)</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.638269271701574" lon="-81.700011240318418">
+    <ele>0</ele>
+    <time>2018-02-11T13:39:22Z</time>
+    <name>CEBUS-21-01</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-02-11T13:39:22Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.244016984477639" lon="-81.800431972369552">
+    <time>2018-01-06T17:42:19Z</time>
+    <name>Cebus-22-01C</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:42:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.289001988247037" lon="-81.812629988417029">
+    <time>2018-01-06T15:02:58Z</time>
+    <name>Cebus-23-01C</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:02:58Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.288715997710824" lon="-81.812629988417029">
+    <time>2018-01-06T15:04:26Z</time>
+    <name>Cebus-23-01C 2</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:04:26Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.227863967418671" lon="-81.802299041301012">
+    <ele>11.452085</ele>
+    <time>2017-12-20T15:45:19Z</time>
+    <name>CEBUS-STOLEN2</name>
+    <sym>Scenic Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-12-20T15:45:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.229574965313077" lon="-81.803550040349364">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CLAM-02</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.22986196167767" lon="-81.803575018420815">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CLAM-03</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.230192041024566" lon="-81.803559008985758">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CLAM-04</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.231702040880919" lon="-81.803977014496922">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CLAM-06</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.227633967995644" lon="-81.802389984950423">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CLAMS-01</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.230800986289978" lon="-81.803630003705621">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CLAMS-05</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.281562965363264" lon="-81.819983012974262">
+    <ele>15.196691</ele>
+    <time>2017-12-20T23:18:33Z</time>
+    <name>CLIF</name>
+    <sym>Parachute Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-12-20T23:18:33Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.238705959171057" lon="-81.802542032673955">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>COCO 3</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.278451016172767" lon="-81.820692038163543">
+    <ele>13.440362</ele>
+    <time>2017-12-20T23:27:27Z</time>
+    <name>COCO ACTIV</name>
+    <sym>Parachute Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-12-20T23:27:27Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.241869959980249" lon="-81.802062001079321">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>COCOS 3</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.289045993238688" lon="-81.813072971999645">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>COCOSTONE</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.625315962359309" lon="-81.731284037232399">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>COIBAHAIRNANCE</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.230620021000504" lon="-81.803598990663886">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>CRAB-01</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.284855041652918" lon="-81.818978022783995">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>GIANT FIG</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.279965039342642" lon="-81.820253999903798">
+    <ele>15.996446000000001</ele>
+    <time>2017-12-20T23:22:28Z</time>
+    <name>GOOD EXIT</name>
+    <sym>Parachute Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-12-20T23:22:28Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.528553009033203" lon="-81.677613034844398">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>Hair Trap 1</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.529053995385766" lon="-81.677799029275775">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>Hair Trap 2</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.5291040353477" lon="-81.677829958498478">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>Hair Trap 3</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.650874983519316" lon="-81.028708973899484">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>HAIRMONTIJO3</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.650730982422829" lon="-81.02871903218329">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>HAIRTMONTIJO3</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.65045203268528" lon="-81.028973003849387">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>HAIRTRAPMARIATO1</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.288293968886137" lon="-81.813956005498767">
+    <ele>22.823402000000002</ele>
+    <time>2017-12-20T20:53:28Z</time>
+    <name>LLANTA</name>
+    <sym>Parachute Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-12-20T20:53:28Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.657893989235163" lon="-81.033613979816437">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>MANGMONOS</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.642342960461974" lon="-81.01329498924315">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>MARIATO1</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.657223017886281" lon="-81.031208038330078">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>MONTIJOCOCO</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290593963116407" lon="-81.774023026227951">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>No Almendro</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.243091035634279" lon="-81.800909992307425">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>SE Landing Spo</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.243091035634279" lon="-81.800910998135805">
+    <ele>27.754677000000001</ele>
+    <time>2017-03-24T16:50:48Z</time>
+    <name>SE Landing Spot Near Quebrada</name>
+    <cmt>BOAT 1</cmt>
+    <desc>BOAT 1</desc>
+    <sym>Parking Area</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-03-24T16:50:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269223965704441" lon="-81.820096001029015">
+    <ele>22.486056999999999</ele>
+    <time>2018-01-06T17:25:33Z</time>
+    <name>STOP MAP 6 JAN 2018</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:25:33Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.637682035565376" lon="-81.70389398932457">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>STRI COIBITA</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269968027248979" lon="-81.820609979331493">
+    <ele>15.123509</ele>
+    <time>2018-01-06T16:27:49Z</time>
+    <name>TC 001</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:27:49Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269999040290713" lon="-81.820533033460379">
+    <ele>19.800514</ele>
+    <time>2018-01-06T16:25:12Z</time>
+    <name>TC 002</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:25:12Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269988982006907" lon="-81.820579972118139">
+    <ele>17.811083</ele>
+    <time>2018-01-06T16:24:03Z</time>
+    <name>TC 003</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:24:03Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270041033625603" lon="-81.820631017908454">
+    <ele>11.650038</ele>
+    <time>2018-01-06T16:21:41Z</time>
+    <name>TC 004</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:21:41Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270137006416917" lon="-81.820736965164542">
+    <ele>11.931971000000001</ele>
+    <time>2018-01-06T16:21:06Z</time>
+    <name>TC 005</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:21:06Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.2702950052917" lon="-81.82088197208941">
+    <ele>14.865235</ele>
+    <time>2018-01-06T16:15:45Z</time>
+    <name>TC 006</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:15:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270221998915076" lon="-81.820912985131145">
+    <ele>12.332599999999999</ele>
+    <time>2018-01-06T16:13:45Z</time>
+    <name>TC 007</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:13:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270242031663656" lon="-81.820919020101428">
+    <ele>11.599189000000001</ele>
+    <time>2018-01-06T16:13:17Z</time>
+    <name>TC 008</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:13:17Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270343033596873" lon="-81.820991020649672">
+    <ele>12.249936</ele>
+    <time>2018-01-06T16:12:29Z</time>
+    <name>TC 009</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:12:29Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270373040810227" lon="-81.821022033691406">
+    <ele>12.306972999999999</ele>
+    <time>2018-01-06T16:11:48Z</time>
+    <name>TC 011</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:11:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270414028316736" lon="-81.82105396874249">
+    <ele>12.028028000000001</ele>
+    <time>2018-01-06T16:11:24Z</time>
+    <name>TC 012</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:11:24Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270571021363139" lon="-81.821109037846327">
+    <ele>12.492547999999999</ele>
+    <time>2018-01-06T16:10:03Z</time>
+    <name>TC 013</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:10:03Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270693983882666" lon="-81.82116100564599">
+    <ele>12.870455</ele>
+    <time>2018-01-06T16:06:30Z</time>
+    <name>TC 014</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:06:30Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270593987777829" lon="-81.821164023131132">
+    <ele>13.851964000000001</ele>
+    <time>2018-01-06T16:04:50Z</time>
+    <name>TC 015</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:04:50Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270604968070984" lon="-81.821157988160849">
+    <ele>15.276866</ele>
+    <time>2018-01-06T16:02:05Z</time>
+    <name>TC 016</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:02:05Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270563980564475" lon="-81.821111971512437">
+    <ele>17.073616000000001</ele>
+    <time>2018-01-06T15:59:27Z</time>
+    <name>TC 017</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:59:27Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270580995827913" lon="-81.821038965135813">
+    <ele>18.517557</ele>
+    <time>2018-01-06T15:57:46Z</time>
+    <name>TC 018</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:57:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270617038011551" lon="-81.821065032854676">
+    <ele>17.263324999999998</ele>
+    <time>2018-01-06T15:54:47Z</time>
+    <name>TC 019</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:54:47Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270560963079333" lon="-81.821168968454003">
+    <ele>15.908901</ele>
+    <time>2018-01-06T15:53:14Z</time>
+    <name>TC 020</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:53:14Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270813006907701" lon="-81.821122029796243">
+    <ele>13.852475</ele>
+    <time>2018-01-06T15:48:26Z</time>
+    <name>TC 021</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:48:26Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270712004974484" lon="-81.821179026737809">
+    <ele>14.744987</ele>
+    <time>2018-01-06T15:18:46Z</time>
+    <name>TC 022</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:18:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270765984430909" lon="-81.821236023679376">
+    <ele>14.339127</ele>
+    <time>2018-01-06T15:15:49Z</time>
+    <name>TC 023</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:15:49Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27078802883625" lon="-81.821220014244318">
+    <ele>14.50123</ele>
+    <time>2018-01-06T15:15:26Z</time>
+    <name>TC 024</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:15:26Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270786017179489" lon="-81.821177015081048">
+    <ele>14.768647</ele>
+    <time>2018-01-06T15:13:07Z</time>
+    <name>TC 025</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:13:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270800014957786" lon="-81.821205010637641">
+    <ele>14.352281</ele>
+    <time>2018-01-06T15:10:15Z</time>
+    <name>TC 026</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:10:15Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270827004685998" lon="-81.82120299898088">
+    <ele>14.476464</ele>
+    <time>2018-01-06T15:08:10Z</time>
+    <name>TC 027</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:08:10Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270825998857617" lon="-81.821306012570858">
+    <ele>13.474114999999999</ele>
+    <time>2018-01-06T15:06:12Z</time>
+    <name>TC 028</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:06:12Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27083102799952" lon="-81.821234012022614">
+    <ele>14.547238</ele>
+    <time>2018-01-06T15:02:44Z</time>
+    <name>TC 029</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:02:44Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270847959443927" lon="-81.821284973993897">
+    <ele>14.510536</ele>
+    <time>2018-01-06T15:02:15Z</time>
+    <name>TC 030</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:02:15Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270901016891003" lon="-81.821239963173866">
+    <ele>14.263337</ele>
+    <time>2018-01-06T15:00:41Z</time>
+    <name>TC 031</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T15:00:41Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271062033250928" lon="-81.821472980082035">
+    <ele>14.336784</ele>
+    <time>2018-01-06T14:55:56Z</time>
+    <name>TC 032</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:55:56Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271097991615534" lon="-81.821493012830615">
+    <ele>14.494904</ele>
+    <time>2018-01-06T14:55:34Z</time>
+    <name>TC 033</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:55:34Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271331008523703" lon="-81.821659980341792">
+    <ele>14.489658</ele>
+    <time>2018-01-06T14:53:21Z</time>
+    <name>TC 034</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:53:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271394040435553" lon="-81.821658974513412">
+    <ele>14.532391000000001</ele>
+    <time>2018-01-06T14:51:22Z</time>
+    <name>TC 035</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:51:22Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271395968273282" lon="-81.82169702835381">
+    <ele>14.917158000000001</ele>
+    <time>2018-01-06T14:49:51Z</time>
+    <name>TC 036</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:49:51Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271465035155416" lon="-81.82165302336216">
+    <ele>14.844474</ele>
+    <time>2018-01-06T14:42:50Z</time>
+    <name>TC 037</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:42:50Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271501999348402" lon="-81.821788977831602">
+    <ele>14.510522999999999</ele>
+    <time>2018-01-06T14:40:42Z</time>
+    <name>TC 038</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:40:42Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27147500962019" lon="-81.82174296118319">
+    <ele>14.474026</ele>
+    <time>2018-01-06T14:39:16Z</time>
+    <name>TC 039</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:39:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271551033481956" lon="-81.821702979505062">
+    <ele>14.747999999999999</ele>
+    <time>2018-01-06T14:37:37Z</time>
+    <name>TC 040</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:37:37Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271752031520009" lon="-81.821597032248974">
+    <ele>11.853460999999999</ele>
+    <time>2018-01-06T14:23:54Z</time>
+    <name>TC 041</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:23:54Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271528989076614" lon="-81.821731980890036">
+    <ele>14.437863999999999</ele>
+    <time>2018-01-06T14:36:04Z</time>
+    <name>TC 041-1</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:36:04Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271667961031199" lon="-81.821673978120089">
+    <ele>12.458218</ele>
+    <time>2018-01-06T14:19:50Z</time>
+    <name>TC 042</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:19:50Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271654969081283" lon="-81.821836000308394">
+    <ele>12.333128</ele>
+    <time>2018-01-06T14:13:16Z</time>
+    <name>TC 043</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:13:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271585986018181" lon="-81.821857960894704">
+    <ele>12.771036</ele>
+    <time>2018-01-06T14:10:56Z</time>
+    <name>TC 044</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:10:56Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27164801210165" lon="-81.821816973388195">
+    <ele>13.791347</ele>
+    <time>2018-01-06T14:09:16Z</time>
+    <name>TC 045</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:09:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271623034030199" lon="-81.821892997249961">
+    <ele>14.542439999999999</ele>
+    <time>2018-01-06T14:07:14Z</time>
+    <name>TC 046</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:07:14Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271679025143385" lon="-81.821874976158142">
+    <ele>15.116104</ele>
+    <time>2018-01-06T14:03:00Z</time>
+    <name>TC 047</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T14:03:00Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271640971302986" lon="-81.821928033605218">
+    <ele>14.924619</ele>
+    <time>2018-01-06T13:57:27Z</time>
+    <name>TC 048</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:57:27Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271693022921681" lon="-81.821960974484682">
+    <ele>15.884328999999999</ele>
+    <time>2018-01-06T13:54:55Z</time>
+    <name>TC 049</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:54:55Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271762005984783" lon="-81.821959968656301">
+    <ele>12.949328</ele>
+    <time>2018-01-06T13:52:07Z</time>
+    <name>TC 050</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:52:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271721018478274" lon="-81.821978995576501">
+    <ele>12.852826</ele>
+    <time>2018-01-06T13:41:07Z</time>
+    <name>TC 051</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:41:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271785978227854" lon="-81.821972960606217">
+    <ele>16.610389999999999</ele>
+    <time>2018-01-05T23:02:43Z</time>
+    <name>TC 053</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T23:02:43Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271802993491292" lon="-81.821992993354797">
+    <ele>16.249689</ele>
+    <time>2018-01-05T23:02:05Z</time>
+    <name>TC 054</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T23:02:05Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271784972399473" lon="-81.82208402082324">
+    <ele>15.967921</ele>
+    <time>2018-01-05T22:59:07Z</time>
+    <name>TC 055</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:59:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271753959357738" lon="-81.822014031931758">
+    <ele>15.842133</ele>
+    <time>2018-01-05T22:56:39Z</time>
+    <name>TC 056</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:56:39Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27171397767961" lon="-81.82199701666832">
+    <ele>15.606544</ele>
+    <time>2018-01-05T22:54:14Z</time>
+    <name>TC 057</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:54:14Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271810034289956" lon="-81.822005985304713">
+    <ele>15.702677</ele>
+    <time>2018-01-05T22:52:16Z</time>
+    <name>TC 058</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:52:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271837024018168" lon="-81.822058036923409">
+    <ele>14.960462</ele>
+    <time>2018-01-05T22:50:20Z</time>
+    <name>TC 059</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:50:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271868037059903" lon="-81.822081003338099">
+    <ele>14.302645</ele>
+    <time>2018-01-05T22:48:35Z</time>
+    <name>TC 060</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:48:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272135000675917" lon="-81.822309996932745">
+    <ele>14.444476999999999</ele>
+    <time>2018-01-05T22:45:35Z</time>
+    <name>TC 061</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:45:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271916987374425" lon="-81.822114028036594">
+    <ele>16.403048999999999</ele>
+    <time>2018-01-05T22:43:35Z</time>
+    <name>TC 062</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:43:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272071968764067" lon="-81.822190973907709">
+    <ele>16.912554</ele>
+    <time>2018-01-05T22:39:00Z</time>
+    <name>TC 063</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:39:00Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272052019834518" lon="-81.82223598472774">
+    <ele>16.517319000000001</ele>
+    <time>2018-01-05T22:36:50Z</time>
+    <name>TC 064</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:36:50Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272085966542363" lon="-81.822226010262966">
+    <ele>17.096122999999999</ele>
+    <time>2018-01-05T22:34:36Z</time>
+    <name>TC 065</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:34:36Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272102981805801" lon="-81.82225501164794">
+    <ele>14.633292000000001</ele>
+    <time>2018-01-05T22:33:19Z</time>
+    <name>TC 066</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:33:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272113040089607" lon="-81.822248976677656">
+    <ele>11.674061</ele>
+    <time>2018-01-05T22:20:27Z</time>
+    <name>TC 067</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T22:20:27Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272283025085926" lon="-81.82247000746429">
+    <ele>16.254154</ele>
+    <time>2018-01-05T21:32:48Z</time>
+    <name>TC 068</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:32:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272197026759386" lon="-81.8223209772259">
+    <ele>18.274550999999999</ele>
+    <time>2018-01-05T21:31:46Z</time>
+    <name>TC 069</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:31:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27222602814436" lon="-81.822399012744427">
+    <ele>19.043268000000001</ele>
+    <time>2018-01-05T21:26:48Z</time>
+    <name>TC 071</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:26:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27225000038743" lon="-81.822371017187834">
+    <ele>19.969093000000001</ele>
+    <time>2018-01-05T21:23:59Z</time>
+    <name>TC 072</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:23:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272258969023824" lon="-81.822360958904028">
+    <ele>21.881215999999998</ele>
+    <time>2018-01-05T21:22:16Z</time>
+    <name>TC 073</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:22:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272296017035842" lon="-81.822389960289001">
+    <ele>21.644736999999999</ele>
+    <time>2018-01-05T21:21:44Z</time>
+    <name>TC 074</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:21:44Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272357037290931" lon="-81.822375040501356">
+    <ele>22.835467999999999</ele>
+    <time>2018-01-05T21:18:57Z</time>
+    <name>TC 075</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:18:57Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27227296680212" lon="-81.82249397970736">
+    <ele>16.917975999999999</ele>
+    <time>2018-01-05T21:16:10Z</time>
+    <name>TC 076</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:16:10Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272343039512634" lon="-81.82253597304225">
+    <ele>18.877419</ele>
+    <time>2018-01-05T21:14:22Z</time>
+    <name>TC 077</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:14:22Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272357037290931" lon="-81.82249297387898">
+    <ele>20.794896999999999</ele>
+    <time>2018-01-05T21:12:00Z</time>
+    <name>TC 078</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:12:00Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272391989827156" lon="-81.822474030777812">
+    <ele>21.906663999999999</ele>
+    <time>2018-01-05T21:10:29Z</time>
+    <name>TC 079</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:10:29Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272472037002444" lon="-81.82264300994575">
+    <ele>21.472456000000001</ele>
+    <time>2018-01-05T21:06:27Z</time>
+    <name>TC 080</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:06:27Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272360976785421" lon="-81.822628006339073">
+    <ele>17.992386</ele>
+    <time>2018-01-05T21:04:05Z</time>
+    <name>TC 081</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:04:05Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272407999262214" lon="-81.822666982188821">
+    <ele>17.783812999999999</ele>
+    <time>2018-01-05T21:02:12Z</time>
+    <name>TC 082</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T21:02:12Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27252702228725" lon="-81.822677040472627">
+    <ele>20.562187000000002</ele>
+    <time>2018-01-05T20:58:44Z</time>
+    <name>TC 083</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T20:58:44Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272502966225147" lon="-81.822711993008852">
+    <ele>20.410889000000001</ele>
+    <time>2018-01-05T20:54:58Z</time>
+    <name>TC 084</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T20:54:58Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272458961233497" lon="-81.822718027979136">
+    <ele>17.768450000000001</ele>
+    <time>2018-01-05T20:53:30Z</time>
+    <name>TC 085</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T20:53:30Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272601034492254" lon="-81.822904022410512">
+    <ele>24.008265000000002</ele>
+    <time>2018-01-05T20:45:55Z</time>
+    <name>TC 086</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-05T20:45:55Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272524004802108" lon="-81.822795979678631">
+    <ele>15.900895999999999</ele>
+    <time>2018-01-04T17:31:35Z</time>
+    <name>TC 087</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T17:31:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272491985931993" lon="-81.822935035452247">
+    <ele>10.408125</ele>
+    <time>2018-01-04T16:48:51Z</time>
+    <name>TC 088</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:48:51Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282528979703784" lon="-81.819498036056757">
+    <ele>19.138535000000001</ele>
+    <time>2018-01-04T16:16:23Z</time>
+    <name>TC 089</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:16:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282517999410629" lon="-81.819584034383297">
+    <ele>14.100712</ele>
+    <time>2018-01-04T16:13:18Z</time>
+    <name>TC 090</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:13:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282630987465382" lon="-81.819626027718186">
+    <ele>14.529863000000001</ele>
+    <time>2018-01-04T16:07:47Z</time>
+    <name>TC 091</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:07:47Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.28256301023066" lon="-81.819580011069775">
+    <ele>14.309055000000001</ele>
+    <time>2018-01-04T16:10:19Z</time>
+    <name>TC 091-1</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:10:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282696031033993" lon="-81.819581016898155">
+    <ele>21.179725999999999</ele>
+    <time>2018-01-04T16:04:03Z</time>
+    <name>TC 092</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:04:03Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282750010490417" lon="-81.819577999413013">
+    <ele>22.457666</ele>
+    <time>2018-01-04T16:01:11Z</time>
+    <name>TC 093</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T16:01:11Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282838020473719" lon="-81.819544974714518">
+    <ele>18.553948999999999</ele>
+    <time>2018-01-04T15:55:51Z</time>
+    <name>TC 094</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:55:51Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282844977453351" lon="-81.819573976099491">
+    <ele>17.250847</ele>
+    <time>2018-01-04T15:51:23Z</time>
+    <name>TC 095</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:51:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282844977453351" lon="-81.819599037989974">
+    <ele>17.361575999999999</ele>
+    <time>2018-01-04T15:51:04Z</time>
+    <name>TC 096</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:51:04Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282904991880059" lon="-81.819667015224695">
+    <ele>17.353327</ele>
+    <time>2018-01-04T15:46:51Z</time>
+    <name>TC 097</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:46:51Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.28290700353682" lon="-81.81965502910316">
+    <ele>17.577728</ele>
+    <time>2018-01-04T15:46:25Z</time>
+    <name>TC 098</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:46:25Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.282881019636989" lon="-81.81948596611619">
+    <ele>23.240780000000001</ele>
+    <time>2018-01-04T15:41:36Z</time>
+    <name>TC 099</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:41:36Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.293138457462192" lon="-81.820299932733178">
+    <ele>15.2666015625</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 100</name>
+    <cmt>28-JUL-17 11:48:06AM</cmt>
+    <desc>28-JUL-17 11:48:06AM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.294846773147583" lon="-81.820214688777924">
+    <ele>16.4681396484375</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 101</name>
+    <cmt>28-JUL-17 11:58:38AM</cmt>
+    <desc>28-JUL-17 11:58:38AM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.294917097315192" lon="-81.820290461182594">
+    <ele>19.832763671875</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 102</name>
+    <cmt>28-JUL-17 12:00:58PM</cmt>
+    <desc>28-JUL-17 12:00:58PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.29021199978888" lon="-81.804263005033135">
+    <ele>19.213566</ele>
+    <time>2017-07-29T13:21:48Z</time>
+    <name>TC 105</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>5</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:21:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.29023102670908" lon="-81.804231991991401">
+    <ele>19.188288</ele>
+    <time>2017-07-29T13:20:31Z</time>
+    <name>TC 106</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>3</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:20:31Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290508970618248" lon="-81.8035429995507">
+    <ele>19.058879999999998</ele>
+    <time>2017-07-29T13:25:14Z</time>
+    <name>TC 107</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>3</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:25:14Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290626987814903" lon="-81.803492959588766">
+    <ele>21.183734999999999</ele>
+    <time>2017-07-29T13:29:57Z</time>
+    <name>TC 108</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>3</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:29:57Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290594968944788" lon="-81.803406039252877">
+    <ele>19.903994000000001</ele>
+    <time>2017-07-29T13:31:29Z</time>
+    <name>TC 109</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>3</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:31:29Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.29053596034646" lon="-81.803396986797452">
+    <ele>17.744097</ele>
+    <time>2017-07-29T13:32:47Z</time>
+    <name>TC 110</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>3</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:32:47Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290478041395545" lon="-81.803392041474581">
+    <ele>17.790213000000001</ele>
+    <time>2017-07-29T13:34:28Z</time>
+    <name>TC 111</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>3</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:34:28Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290474018082023" lon="-81.803363040089607">
+    <ele>20.622938000000001</ele>
+    <time>2017-07-29T13:47:23Z</time>
+    <name>TC 112</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>3</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-07-29T13:47:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290451973676682" lon="-81.803377037867904">
+    <ele>10.136298999999999</ele>
+    <time>2018-01-03T23:01:57Z</time>
+    <name>TC 113</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-03T23:01:57Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291075000539422" lon="-81.802990967407823">
+    <ele>10.622484999999999</ele>
+    <time>2018-01-03T23:19:08Z</time>
+    <name>TC 114</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-03T23:19:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291047004982829" lon="-81.80292097851634">
+    <ele>11.093558</ele>
+    <time>2018-01-03T23:22:13Z</time>
+    <name>TC 115</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-03T23:22:13Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290956983342767" lon="-81.803157012909651">
+    <ele>9.573135000000001</ele>
+    <time>2018-01-03T23:11:52Z</time>
+    <name>TC 116</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-03T23:11:52Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291115988045931" lon="-81.802932964637876">
+    <ele>10.757607</ele>
+    <time>2018-01-03T23:24:04Z</time>
+    <name>TC 117</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-03T23:24:04Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291096961125731" lon="-81.802891977131367">
+    <ele>11.228146000000001</ele>
+    <time>2018-01-03T23:27:19Z</time>
+    <name>TC 118</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-03T23:27:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291072988882661" lon="-81.800765991210938">
+    <time>2018-01-04T14:37:45Z</time>
+    <name>TC 119</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:37:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291073994711041" lon="-81.800658032298088">
+    <time>2018-01-04T14:42:52Z</time>
+    <name>TC 120</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:42:52Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291053961962461" lon="-81.800654008984566">
+    <time>2018-01-04T14:43:08Z</time>
+    <name>TC 120-1</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:43:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290965029969811" lon="-81.800561975687742">
+    <time>2018-01-04T14:45:05Z</time>
+    <name>TC 121</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:45:05Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291034013032913" lon="-81.800434989854693">
+    <time>2018-01-04T14:50:50Z</time>
+    <name>TC 122</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:50:50Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290970981121063" lon="-81.800456028431654">
+    <time>2018-01-04T14:51:53Z</time>
+    <name>TC 123</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:51:53Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290971986949444" lon="-81.800431972369552">
+    <time>2018-01-04T14:55:15Z</time>
+    <name>TC 124</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:55:15Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.29104801081121" lon="-81.800032993778586">
+    <time>2018-01-04T14:58:07Z</time>
+    <name>TC 125</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T14:58:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290997970849276" lon="-81.799799976870418">
+    <time>2018-01-04T15:01:35Z</time>
+    <name>TC 126</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:01:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290987996384501" lon="-81.799729987978935">
+    <time>2018-01-04T15:05:35Z</time>
+    <name>TC 127</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:05:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290998976677656" lon="-81.799533013254404">
+    <time>2018-01-04T15:08:35Z</time>
+    <name>TC 128</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:08:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291020015254617" lon="-81.799494037404656">
+    <time>2018-01-04T15:10:52Z</time>
+    <name>TC 129</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:10:52Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.291010040789843" lon="-81.799485990777612">
+    <time>2018-01-04T15:12:35Z</time>
+    <name>TC 130</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:12:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290653977543116" lon="-81.798274973407388">
+    <time>2018-01-04T15:18:01Z</time>
+    <name>TC 131</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:18:01Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290624976158142" lon="-81.797859985381365">
+    <time>2018-01-04T15:21:08Z</time>
+    <name>TC 132</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:21:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290416015312076" lon="-81.797532001510262">
+    <time>2018-01-04T15:24:16Z</time>
+    <name>TC 133</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:24:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290368992835283" lon="-81.797512974590063">
+    <time>2018-01-04T15:27:11Z</time>
+    <name>TC 134</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:27:11Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290362035855651" lon="-81.79744097404182">
+    <time>2018-01-04T15:29:21Z</time>
+    <name>TC 135</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:29:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290064981207252" lon="-81.797099998220801">
+    <time>2018-01-04T15:33:11Z</time>
+    <name>TC 136</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:33:11Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.289789970964193" lon="-81.796533968299627">
+    <time>2018-01-04T15:37:10Z</time>
+    <name>TC 137</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:37:10Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.289209021255374" lon="-81.794521976262331">
+    <time>2018-01-04T15:47:11Z</time>
+    <name>TC 138</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:47:11Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.289231987670064" lon="-81.794456010684371">
+    <time>2018-01-04T15:48:31Z</time>
+    <name>TC 139</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:48:31Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.290492039173841" lon="-81.791685037314892">
+    <time>2018-01-04T15:58:22Z</time>
+    <name>TC 140</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-04T15:58:22Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.266997983679175" lon="-81.785387294366956">
+    <ele>22.95703125</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 150</name>
+    <cmt>29-JUL-17 1:43:48PM</cmt>
+    <desc>29-JUL-17 1:43:48PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.266306225210428" lon="-81.785435322672129">
+    <ele>14.06494140625</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 151</name>
+    <cmt>29-JUL-17 1:48:17PM</cmt>
+    <desc>29-JUL-17 1:48:17PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.265480775386095" lon="-81.786083830520511">
+    <ele>21.034423828125</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 152</name>
+    <cmt>29-JUL-17 1:51:16PM</cmt>
+    <desc>29-JUL-17 1:51:16PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.279292475432158" lon="-81.780125135555863">
+    <ele>13.343994140625</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 153</name>
+    <cmt>29-JUL-17 2:53:58PM</cmt>
+    <desc>29-JUL-17 2:53:58PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.283520558848977" lon="-81.769654545933008">
+    <ele>28.96533203125</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 154</name>
+    <cmt>29-JUL-17 3:09:52PM</cmt>
+    <desc>29-JUL-17 3:09:52PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.28352609090507" lon="-81.769713973626494">
+    <ele>21.9957275390625</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 155</name>
+    <cmt>29-JUL-17 3:11:16PM</cmt>
+    <desc>29-JUL-17 3:11:16PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.283582920208573" lon="-81.769773149862885">
+    <ele>27.7635498046875</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 156</name>
+    <cmt>29-JUL-17 3:14:11PM</cmt>
+    <desc>29-JUL-17 3:14:11PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.283558193594217" lon="-81.769818244501948">
+    <ele>20.5537109375</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 157</name>
+    <cmt>29-JUL-17 3:12:40PM</cmt>
+    <desc>29-JUL-17 3:12:40PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.283523827791214" lon="-81.769912037998438">
+    <ele>29.4459228515625</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 158</name>
+    <cmt>29-JUL-17 3:15:58PM</cmt>
+    <desc>29-JUL-17 3:15:58PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.283523911610246" lon="-81.770005496218801">
+    <ele>21.9957275390625</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 159</name>
+    <cmt>29-JUL-17 3:16:51PM</cmt>
+    <desc>29-JUL-17 3:16:51PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.284074518829584" lon="-81.768765226006508">
+    <ele>17.189208984375</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 160</name>
+    <cmt>29-JUL-17 3:19:27PM</cmt>
+    <desc>29-JUL-17 3:19:27PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.284072423353791" lon="-81.768848206847906">
+    <ele>17.6697998046875</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 161</name>
+    <cmt>29-JUL-17 3:19:51PM</cmt>
+    <desc>29-JUL-17 3:19:51PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.283081263303757" lon="-81.770841088145971">
+    <ele>33.2911376953125</ele>
+    <time>2017-08-01T14:18:59Z</time>
+    <name>TC 162</name>
+    <cmt>29-JUL-17 3:23:55PM</cmt>
+    <desc>29-JUL-17 3:23:55PM</desc>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:18:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.286547012627125" lon="-81.769734006375074">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>TC 163</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.28677399456501" lon="-81.769885970279574">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>TC 164</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271662009879947" lon="-81.822072034701705">
+    <ele>12.405423000000001</ele>
+    <time>2018-01-06T13:38:52Z</time>
+    <name>TC 52x</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T13:38:52Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269290015101433" lon="-81.820157021284103">
+    <ele>22.578748999999998</ele>
+    <time>2018-01-06T17:22:25Z</time>
+    <name>TC 967</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:22:25Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269357992336154" lon="-81.820160960778594">
+    <ele>22.792960999999998</ele>
+    <time>2018-01-06T17:21:46Z</time>
+    <name>TC 968</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:21:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269379030913115" lon="-81.820134976878762">
+    <ele>21.791554999999999</ele>
+    <time>2018-01-06T17:21:25Z</time>
+    <name>TC 969</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:21:25Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269332008436322" lon="-81.820176970213652">
+    <ele>19.807805999999999</ele>
+    <time>2018-01-06T17:20:31Z</time>
+    <name>TC 970</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:20:31Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269362015649676" lon="-81.820179987698793">
+    <ele>19.834313999999999</ele>
+    <time>2018-01-06T17:20:12Z</time>
+    <name>TC 971</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:20:12Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269362015649676" lon="-81.820175964385271">
+    <ele>19.400822000000002</ele>
+    <time>2018-01-06T17:19:44Z</time>
+    <name>TC 972</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:19:44Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269323039799929" lon="-81.820218041539192">
+    <ele>19.573768999999999</ele>
+    <time>2018-01-06T17:19:19Z</time>
+    <name>TC 973</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:19:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269326979294419" lon="-81.820238996297121">
+    <ele>19.230695999999998</ele>
+    <time>2018-01-06T17:18:55Z</time>
+    <name>TC 974</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:18:55Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269384982064366" lon="-81.820222986862063">
+    <ele>17.121212</ele>
+    <time>2018-01-06T17:14:13Z</time>
+    <name>TC 975</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:14:13Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269455976784229" lon="-81.820284007117152">
+    <ele>21.466829000000001</ele>
+    <time>2018-01-06T17:09:16Z</time>
+    <name>TC 976</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:09:16Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269473997876048" lon="-81.820217035710812">
+    <ele>23.689769999999999</ele>
+    <time>2018-01-06T17:08:39Z</time>
+    <name>TC 978</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:08:39Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269486989825964" lon="-81.820226004347205">
+    <ele>22.661757999999999</ele>
+    <time>2018-01-06T17:08:19Z</time>
+    <name>TC 979</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:08:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269533006474376" lon="-81.820223992690444">
+    <ele>21.635446999999999</ele>
+    <time>2018-01-06T17:07:45Z</time>
+    <name>TC 980</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:07:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.26956301368773" lon="-81.82030102238059">
+    <ele>21.815162999999998</ele>
+    <time>2018-01-06T17:06:42Z</time>
+    <name>TC 981</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:06:42Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269508028402925" lon="-81.820379979908466">
+    <ele>19.708819999999999</ele>
+    <time>2018-01-06T17:04:36Z</time>
+    <name>TC 982</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:04:36Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269567959010601" lon="-81.820283001288772">
+    <ele>22.736519000000001</ele>
+    <time>2018-01-06T17:03:48Z</time>
+    <name>TC 983</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:03:48Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269667033106089" lon="-81.82047201320529">
+    <ele>18.603812999999999</ele>
+    <time>2018-01-06T16:59:11Z</time>
+    <name>TC 984</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:59:11Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.26962998509407" lon="-81.820405041798949">
+    <ele>19.544827999999999</ele>
+    <time>2018-01-06T17:02:54Z</time>
+    <name>TC 985</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T17:02:54Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269723024219275" lon="-81.820333041250706">
+    <ele>23.428228000000001</ele>
+    <time>2018-01-06T16:56:59Z</time>
+    <name>TC 986</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:56:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269762000069022" lon="-81.820392971858382">
+    <ele>21.193805999999999</ele>
+    <time>2018-01-06T16:55:10Z</time>
+    <name>TC 988</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:55:10Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269816985353827" lon="-81.820348966866732">
+    <ele>21.704266000000001</ele>
+    <time>2018-01-06T16:54:43Z</time>
+    <name>TC 989</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:54:43Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269802987575531" lon="-81.820551976561546">
+    <ele>20.449169000000001</ele>
+    <time>2018-01-06T16:53:21Z</time>
+    <name>TC 990</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:53:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269896026700735" lon="-81.820290964096785">
+    <ele>21.214130000000001</ele>
+    <time>2018-01-06T16:44:39Z</time>
+    <name>TC 991</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:44:39Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269777003675699" lon="-81.820521969348192">
+    <ele>20.644783</ele>
+    <time>2018-01-06T16:52:24Z</time>
+    <name>TC 9911</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:52:24Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269937014207244" lon="-81.820378974080086">
+    <ele>20.510929000000001</ele>
+    <time>2018-01-06T16:42:33Z</time>
+    <name>TC 992</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:42:33Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269807010889053" lon="-81.820391966030002">
+    <ele>21.271467000000001</ele>
+    <time>2018-01-06T16:43:46Z</time>
+    <name>TC 9921</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:43:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269883034750819" lon="-81.820418033748865">
+    <ele>19.883472000000001</ele>
+    <time>2018-01-06T16:41:59Z</time>
+    <name>TC 993</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:41:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269827965646982" lon="-81.820470001548529">
+    <ele>18.812850999999998</ele>
+    <time>2018-01-06T16:41:21Z</time>
+    <name>TC 994</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:41:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269796030595899" lon="-81.820523981004953">
+    <ele>17.746915999999999</ele>
+    <time>2018-01-06T16:40:51Z</time>
+    <name>TC 995</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:40:51Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269674995914102" lon="-81.82025802321732">
+    <ele>22.259129000000001</ele>
+    <time>2018-01-06T16:57:33Z</time>
+    <name>TC 995-1</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:57:33Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269856967031956" lon="-81.820491040125489">
+    <ele>19.908939</ele>
+    <time>2018-01-06T16:39:52Z</time>
+    <name>TC 996</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:39:52Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269880017265677" lon="-81.820571003481746">
+    <ele>18.420846999999998</ele>
+    <time>2018-01-06T16:36:23Z</time>
+    <name>TC 997</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:36:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269826959818602" lon="-81.820261962711811">
+    <ele>24.498837000000002</ele>
+    <time>2018-01-06T16:56:01Z</time>
+    <name>TC 997-1</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:56:01Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269931985065341" lon="-81.820499002933502">
+    <ele>21.587641000000001</ele>
+    <time>2018-01-06T16:34:54Z</time>
+    <name>TC 998</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:34:54Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269859984517097" lon="-81.820540996268392">
+    <ele>11.937818999999999</ele>
+    <time>2018-01-06T16:29:21Z</time>
+    <name>TC 999</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-06T16:29:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.253788439556956" lon="-81.813031062483788">
+    <time>2017-08-01T14:27:32Z</time>
+    <name>TC handmap</name>
+    <sym>Park</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2017-08-01T14:27:32Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.639609035104513" lon="-81.007389016449451">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>TRAPMARIATO4</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.639691010117531" lon="-81.007176032289863">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>TRAPMARIATO5</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.639725040644407" lon="-81.007076036185026">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>TRAPMARIATO6</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268905034288764" lon="-81.819466017186642">
+    <time>2018-01-02T03:55:18Z</time>
+    <name>WATERFALL</name>
+    <sym>Flag, Blue</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-01-02T03:55:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+</gpx>

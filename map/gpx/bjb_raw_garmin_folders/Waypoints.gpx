@@ -1,0 +1,972 @@
+<?xml version="1.0"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:gpxtrx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:trp="http://www.garmin.com/xmlschemas/TripExtensions/v1" xmlns:adv="http://www.garmin.com/xmlschemas/AdventuresExtensions/v1" xmlns:prs="http://www.garmin.com/xmlschemas/PressureExtension/v1" xmlns:tmd="http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1" xmlns:vptm="http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1" xmlns:ctx="http://www.garmin.com/xmlschemas/CreationTimeExtension/v1" xmlns:gpxacc="http://www.garmin.com/xmlschemas/AccelerationExtension/v1" xmlns:gpxpx="http://www.garmin.com/xmlschemas/PowerExtension/v1" xmlns:vidx1="http://www.garmin.com/xmlschemas/VideoExtension/v1" creator="Garmin Desktop App" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/ActivityExtension/v1 http://www8.garmin.com/xmlschemas/ActivityExtensionv1.xsd http://www.garmin.com/xmlschemas/AdventuresExtensions/v1 http://www8.garmin.com/xmlschemas/AdventuresExtensionv1.xsd http://www.garmin.com/xmlschemas/PressureExtension/v1 http://www.garmin.com/xmlschemas/PressureExtensionv1.xsd http://www.garmin.com/xmlschemas/TripExtensions/v1 http://www.garmin.com/xmlschemas/TripExtensionsv1.xsd http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1 http://www.garmin.com/xmlschemas/TripMetaDataExtensionsv1.xsd http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1 http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensionsv1.xsd http://www.garmin.com/xmlschemas/CreationTimeExtension/v1 http://www.garmin.com/xmlschemas/CreationTimeExtensionsv1.xsd http://www.garmin.com/xmlschemas/AccelerationExtension/v1 http://www.garmin.com/xmlschemas/AccelerationExtensionv1.xsd http://www.garmin.com/xmlschemas/PowerExtension/v1 http://www.garmin.com/xmlschemas/PowerExtensionv1.xsd http://www.garmin.com/xmlschemas/VideoExtension/v1 http://www.garmin.com/xmlschemas/VideoExtensionv1.xsd">
+
+  <metadata>
+    <link href="http://www.garmin.com">
+      <text>Garmin International</text>
+    </link>
+    <time>2017-05-13T17:32:00Z</time>
+    <bounds maxlat="38.503264971077442" maxlon="-122.152870008721948" minlat="38.50160451605916" minlon="-122.15517402626574"/>
+  </metadata>
+
+  <wpt lat="38.501662" lon="-122.155212">
+    <ele>211.772125</ele>
+    <time>2017-11-02T21:11:31Z</time>
+    <name>WC01</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-15T16:43:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501711" lon="-122.155103">
+    <ele>208.707443</ele>
+    <time>2017-11-02T21:13:28Z</time>
+    <name>WC01B</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-30T17:33:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501714" lon="-122.154903">
+    <ele>204.733154</ele>
+    <time>2017-11-02T21:29:36Z</time>
+    <name>WC02</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501847" lon="-122.154658">
+    <ele>207.483047</ele>
+    <time>2017-11-02T21:34:05Z</time>
+    <name>WC02B</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501785" lon="-122.154935">
+    <ele>201.259338</ele>
+    <time>2017-11-02T21:24:47Z</time>
+    <name>WC03</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501892" lon="-122.154714">
+    <ele>202.653366</ele>
+    <time>2017-11-02T21:41:53Z</time>
+    <name>WC04</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502001" lon="-122.154698">
+    <ele>203.519836</ele>
+    <time>2017-06-11T15:04:19Z</time>
+    <name>WC05</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-15T16:43:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502249" lon="-122.154145">
+    <ele>192.678009</ele>
+    <time>2017-06-11T15:16:44Z</time>
+    <name>WC05B</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-15T16:43:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502104" lon="-122.154746">
+    <ele>186.867828</ele>
+    <time>2017-06-11T15:02:43Z</time>
+    <name>WC06</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501979019492865" lon="-122.154553011059761">
+    <ele>186.132918999999987</ele>
+    <time>2013-04-22T16:59:45Z</time>
+    <name>WC07</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502041" lon="-122.154636">
+    <ele>194.417587</ele>
+    <time>2017-11-02T21:46:55Z</time>
+    <name>WC08</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502139" lon="-122.154533">
+    <ele>192.938904</ele>
+    <time>2017-11-02T21:54:33Z</time>
+    <name>WC08B</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-30T17:33:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502297" lon="-122.154439">
+    <ele>180.427826</ele>
+    <time>2017-06-11T15:13:40Z</time>
+    <name>WC08C</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-30T17:33:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.50237900391221" lon="-122.154061999171972">
+    <ele>175.275620000000004</ele>
+    <time>2013-04-30T17:33:18Z</time>
+    <name>WC08D</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-30T17:33:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502403981983662" lon="-122.154184961691499">
+    <ele>168.318389999999994</ele>
+    <time>2013-07-18T21:47:08Z</time>
+    <name>WC08E</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-07-18T21:47:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502713" lon="-122.153935">
+    <ele>178.431427</ele>
+    <time>2017-08-20T15:56:57Z</time>
+    <name>WC09</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-30T17:33:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502862" lon="-122.153794">
+    <ele>172.745621</ele>
+    <time>2017-08-20T16:05:03Z</time>
+    <name>WC10</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-30T17:33:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501952" lon="-122.154335">
+    <ele>209.317566</ele>
+    <time>2017-06-14T17:09:20Z</time>
+    <name>WC11</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-15T16:43:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501754" lon="-122.154356">
+    <ele>214.935394</ele>
+    <time>2017-09-03T00:02:14Z</time>
+    <name>WC12</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-15T16:43:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501749" lon="-122.154267">
+    <ele>214.028397</ele>
+    <time>2017-09-03T00:04:27Z</time>
+    <name>WC13</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-15T16:43:20Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501767" lon="-122.154612">
+    <ele>210.352722</ele>
+    <time>2017-09-02T23:59:56Z</time>
+    <name>WC14</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-30T17:33:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501621" lon="-122.155245">
+    <ele>204.729309</ele>
+    <time>2017-07-09T16:56:00Z</time>
+    <name>WC15</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502287" lon="-122.153751">
+    <ele>195.581482</ele>
+    <time>2017-09-03T00:10:31Z</time>
+    <name>WC18</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502226" lon="-122.153755">
+    <ele>195.064331</ele>
+    <time>2017-09-03T00:07:56Z</time>
+    <name>WC19</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502112" lon="-122.153651">
+    <ele>209.318054</ele>
+    <time>2017-06-11T00:29:43Z</time>
+    <name>WC20</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2014-07-12T01:15:44Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502243" lon="-122.153666">
+    <ele>201.652115</ele>
+    <time>2017-09-03T00:16:50Z</time>
+    <name>WC21</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502267" lon="-122.153635">
+    <ele>201.824661</ele>
+    <time>2017-09-03T00:13:37Z</time>
+    <name>WC22</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502295" lon="-122.153586">
+    <ele>206.806763</ele>
+    <time>2017-09-03T00:19:02Z</time>
+    <name>WC23</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502351" lon="-122.153566">
+    <ele>203.336792</ele>
+    <time>2017-09-03T00:22:06Z</time>
+    <name>WC24</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>4</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502423" lon="-122.153639">
+    <ele>197.893387</ele>
+    <time>2017-09-03T00:27:14Z</time>
+    <name>WC25</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502470" lon="-122.153692">
+    <ele>195.058807</ele>
+    <time>2017-09-03T00:30:15Z</time>
+    <name>WC26</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502388" lon="-122.153731">
+    <ele>195.214081</ele>
+    <time>2017-09-03T00:32:29Z</time>
+    <name>WC27</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>4</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502331" lon="-122.153793">
+    <ele>194.723236</ele>
+    <time>2017-09-03T00:34:45Z</time>
+    <name>WC28</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2014-07-12T01:33:06Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502412" lon="-122.153867">
+    <ele>192.403961</ele>
+    <time>2017-09-03T00:39:18Z</time>
+    <name>WC29</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2014-07-12T01:33:53Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502117" lon="-122.153732">
+    <ele>195.150970</ele>
+    <time>2017-09-03T00:43:17Z</time>
+    <name>WC30</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502052" lon="-122.153739">
+    <ele>202.510162</ele>
+    <time>2017-09-03T00:52:02Z</time>
+    <name>WC31</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502015" lon="-122.153697">
+    <ele>201.019318</ele>
+    <time>2017-06-11T00:18:46Z</time>
+    <name>WC32</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501893" lon="-122.153875">
+    <ele>206.248001</ele>
+    <time>2017-08-20T17:19:23Z</time>
+    <name>WC33</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501888" lon="-122.153926">
+    <ele>200.080582</ele>
+    <time>2017-06-11T00:01:22Z</time>
+    <name>WC34</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.501963" lon="-122.153937">
+    <ele>197.931564</ele>
+    <time>2017-06-11T00:04:18Z</time>
+    <name>WC35</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502020" lon="-122.154046">
+    <ele>192.321854</ele>
+    <time>2017-06-11T00:10:33Z</time>
+    <name>WC36</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-04-22T16:59:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502489" lon="-122.153865">
+    <ele>200.964691</ele>
+    <time>2017-11-02T23:05:33Z</time>
+    <name>WC37</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-06-14T20:16:39Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502563" lon="-122.153731">
+    <ele>190.544754</ele>
+    <time>2017-11-02T22:55:33Z</time>
+    <name>WC38</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-06-14T20:16:39Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502509" lon="-122.153701">
+    <ele>194.576447</ele>
+    <time>2017-09-03T00:28:17Z</time>
+    <name>WC39</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-06-14T20:16:39Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502879" lon="-122.153618">
+    <ele>184.569397</ele>
+    <time>2017-11-02T22:41:13Z</time>
+    <name>WC40</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>4</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-06-14T20:16:39Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502995" lon="-122.153571">
+    <ele>183.730988</ele>
+    <time>2017-11-02T22:04:30Z</time>
+    <name>WC41</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-07-18T21:47:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502807" lon="-122.153492">
+    <ele>192.772064</ele>
+    <time>2017-11-02T22:47:23Z</time>
+    <name>WC42</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-07-18T21:47:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502715034410357" lon="-122.153549026697874">
+    <ele>186.613814999999988</ele>
+    <time>2013-07-18T21:47:08Z</time>
+    <name>WC43</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2013-07-18T21:47:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.503210" lon="-122.153521">
+    <ele>178.697632</ele>
+    <time>2017-11-02T22:37:52Z</time>
+    <name>WC44</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-06-11T14:58:24Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.503042012453079" lon="-122.153185000643134">
+    <ele>185.226456000000013</ele>
+    <time>2016-06-11T15:12:36Z</time>
+    <name>WC45</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-06-11T15:12:36Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.503003" lon="-122.152859">
+    <ele>199.135651</ele>
+    <time>2017-11-02T23:28:18Z</time>
+    <name>WC46</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-06-11T15:17:18Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.503082999959588" lon="-122.152893980965018">
+    <ele>192.718245999999994</ele>
+    <time>2016-06-11T15:45:05Z</time>
+    <name>WC47</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-06-11T15:45:05Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.503129016608" lon="-122.153040999546647">
+    <ele>185.176498000000009</ele>
+    <time>2016-06-11T15:06:53Z</time>
+    <name>WC48</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-06-11T15:06:53Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.50293799303472" lon="-122.153294971212745">
+    <ele>190.528563999999989</ele>
+    <time>2016-06-11T15:27:08Z</time>
+    <name>WC49</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-06-11T15:27:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502886025235057" lon="-122.153296982869506">
+    <ele>194.044846000000007</ele>
+    <time>2016-06-11T15:32:31Z</time>
+    <name>WC50</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-06-11T15:32:31Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502994989976287" lon="-122.153269993141294">
+    <ele>186.191528000000005</ele>
+    <time>2016-08-14T00:52:35Z</time>
+    <name>WC51</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-08-14T00:52:35Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502910" lon="-122.153133">
+    <ele>196.878067</ele>
+    <time>2017-11-02T23:32:46Z</time>
+    <name>WC52</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>2</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-08-14T00:43:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502843" lon="-122.153109">
+    <ele>198.034775</ele>
+    <time>2017-09-03T01:04:44Z</time>
+    <name>WC53</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-08-14T00:41:14Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502785" lon="-122.153133">
+    <ele>208.608597</ele>
+    <time>2017-09-03T00:57:22Z</time>
+    <name>WC54</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-08-14T00:36:21Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="38.502899" lon="-122.153026">
+    <ele>202.640747</ele>
+    <time>2017-09-03T01:01:08Z</time>
+    <name>WC55</name>
+    <sym>Waypoint</sym>
+    <type>user</type>
+    <extensions>
+      <wptx1:WaypointExtension><wptx1:Samples>3</wptx1:Samples>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2016-08-14T00:31:57Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+</gpx>

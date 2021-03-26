@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?><gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" creator="GPSMAP 62s" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackStatsExtension/v1 http://www8.garmin.com/xmlschemas/TrackStatsExtension.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd"><metadata><link href="http://www.garmin.com"><text>Garmin International</text></link><time>2019-03-25T20:26:59Z</time></metadata>
+<wpt lat="7.273648" lon="-81.821827"><ele>22.547592</ele><time>2019-03-25T20:26:59Z</time><name>STREAM1HT1</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.273641" lon="-81.821796"><ele>22.517630</ele><time>2019-03-25T20:29:56Z</time><name>STREAM2HT2</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.272778" lon="-81.822118"><ele>23.551910</ele><time>2019-03-25T20:40:46Z</time><name>STREAM1HT3</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.270862" lon="-81.821183"><ele>11.420240</ele><time>2019-03-26T14:10:38Z</time><name>AIHT1</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.270909" lon="-81.821056"><ele>15.323035</ele><time>2019-03-26T14:23:36Z</time><name>AIHT2</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.270988" lon="-81.820957"><ele>15.235519</ele><time>2019-03-26T14:34:30Z</time><name>AIHT3</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.268342" lon="-81.819356"><ele>21.308701</ele><time>2019-03-26T16:56:15Z</time><name>DCHT2</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.268292" lon="-81.819442"><ele>19.994123</ele><time>2019-03-26T16:57:35Z</time><name>DCHT1</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.268280" lon="-81.819090"><ele>19.256979</ele><time>2019-03-26T17:15:03Z</time><name>DCHT3</name><sym>City (Small)</sym></wpt>
+<wpt lat="7.268250" lon="-81.818996"><ele>22.842291</ele><time>2019-03-26T17:17:11Z</time><name>DCHT4</name><sym>City (Small)</sym></wpt>
+</gpx>

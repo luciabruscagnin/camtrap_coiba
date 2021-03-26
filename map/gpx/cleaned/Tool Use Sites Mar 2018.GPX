@@ -1,0 +1,1004 @@
+<?xml version="1.0"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:gpxtrx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:trp="http://www.garmin.com/xmlschemas/TripExtensions/v1" xmlns:adv="http://www.garmin.com/xmlschemas/AdventuresExtensions/v1" xmlns:prs="http://www.garmin.com/xmlschemas/PressureExtension/v1" xmlns:tmd="http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1" xmlns:vptm="http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1" xmlns:ctx="http://www.garmin.com/xmlschemas/CreationTimeExtension/v1" xmlns:gpxacc="http://www.garmin.com/xmlschemas/AccelerationExtension/v1" xmlns:gpxpx="http://www.garmin.com/xmlschemas/PowerExtension/v1" xmlns:vidx1="http://www.garmin.com/xmlschemas/VideoExtension/v1" creator="Garmin Desktop App" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/ActivityExtension/v1 http://www8.garmin.com/xmlschemas/ActivityExtensionv1.xsd http://www.garmin.com/xmlschemas/AdventuresExtensions/v1 http://www8.garmin.com/xmlschemas/AdventuresExtensionv1.xsd http://www.garmin.com/xmlschemas/PressureExtension/v1 http://www.garmin.com/xmlschemas/PressureExtensionv1.xsd http://www.garmin.com/xmlschemas/TripExtensions/v1 http://www.garmin.com/xmlschemas/TripExtensionsv1.xsd http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1 http://www.garmin.com/xmlschemas/TripMetaDataExtensionsv1.xsd http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1 http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensionsv1.xsd http://www.garmin.com/xmlschemas/CreationTimeExtension/v1 http://www.garmin.com/xmlschemas/CreationTimeExtensionsv1.xsd http://www.garmin.com/xmlschemas/AccelerationExtension/v1 http://www.garmin.com/xmlschemas/AccelerationExtensionv1.xsd http://www.garmin.com/xmlschemas/PowerExtension/v1 http://www.garmin.com/xmlschemas/PowerExtensionv1.xsd http://www.garmin.com/xmlschemas/VideoExtension/v1 http://www.garmin.com/xmlschemas/VideoExtensionv1.xsd">
+
+  <metadata>
+    <link href="http://www.garmin.com">
+      <text>Garmin International</text>
+    </link>
+    <time>2018-12-27T22:37:13Z</time>
+    <bounds maxlat="7.273231018334627" maxlon="-81.818565968424082" minlat="7.268107999116182" minlon="-81.822189968079329"/>
+  </metadata>
+
+  <wpt lat="7.270536990836263" lon="-81.821166034787893">
+    <ele>20.958832000000001</ele>
+    <time>2018-03-25T21:27:29Z</time>
+    <name>180325T01</name>
+    <cmt>1ST SPOT TOOK IT 25-MARCH-2018</cmt>
+    <desc>1ST SPOT TOOK IT 25-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-25T21:27:29Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270276984199882" lon="-81.821066038683057">
+    <ele>15.889329</ele>
+    <time>2018-03-25T22:24:31Z</time>
+    <name>180325T03</name>
+    <cmt>3ER SPOOT TOOK IT 25-MARCH-2018</cmt>
+    <desc>3ER SPOOT TOOK IT 25-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-25T22:24:31Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270640004426241" lon="-81.821309030056">
+    <ele>20.504249999999999</ele>
+    <time>2018-03-25T22:45:07Z</time>
+    <name>180325T04</name>
+    <cmt>4TH SPOOT TOOK IT 25-MARCH-18</cmt>
+    <desc>4TH SPOOT TOOK IT 25-MARCH-18</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-25T22:45:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268107999116182" lon="-81.818565968424082">
+    <ele>46.802067000000001</ele>
+    <time>2018-03-26T14:55:23Z</time>
+    <name>180326T01</name>
+    <cmt>1ST SPOOT 26-MARCH 2018 UP THE STREAM</cmt>
+    <desc>1ST SPOOT 26-MARCH 2018 UP THE STREAM</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T14:55:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268222998827696" lon="-81.818808037787676">
+    <ele>45.458981000000001</ele>
+    <time>2018-03-26T15:12:45Z</time>
+    <name>180326T02</name>
+    <cmt>2ND SPOOT 26-MARCH-2018 DONW THE STREAM</cmt>
+    <desc>2ND SPOOT 26-MARCH-2018 DONW THE STREAM</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T15:12:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268242025747895" lon="-81.818955978378654">
+    <ele>43.009914000000002</ele>
+    <time>2018-03-26T15:20:54Z</time>
+    <name>180326T03</name>
+    <cmt>3TH PROBABLY SPOOT 26-MARCH-2018 NOTHING WAS COLE</cmt>
+    <desc>3TH PROBABLY SPOOT 26-MARCH-2018 NOTHING WAS COLE</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T15:20:54Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268224004656076" lon="-81.819063015282154">
+    <ele>36.938648000000001</ele>
+    <time>2018-03-26T15:33:30Z</time>
+    <name>180326T04</name>
+    <cmt>4TH SPOOT 26-MARCH-2018 CRAB &amp; SHELL EVIDENCE</cmt>
+    <desc>4TH SPOOT 26-MARCH-2018 CRAB &amp; SHELL EVIDENCE</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T15:33:30Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268355013802648" lon="-81.819187989458442">
+    <ele>27.591694</ele>
+    <time>2018-03-26T15:43:59Z</time>
+    <name>180326T05</name>
+    <cmt>5TH SPOOT 26-MARCH-2018 STREAM</cmt>
+    <desc>5TH SPOOT 26-MARCH-2018 STREAM</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T15:43:59Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268378986045718" lon="-81.819351017475128">
+    <ele>34.743316999999998</ele>
+    <time>2018-03-26T15:51:23Z</time>
+    <name>180326T06</name>
+    <cmt>6TH SPOOT 26-MARCH-2018  STREAM</cmt>
+    <desc>6TH SPOOT 26-MARCH-2018  STREAM</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T15:51:23Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268436988815665" lon="-81.819388987496495">
+    <ele>35.524239000000001</ele>
+    <time>2018-03-26T15:59:13Z</time>
+    <name>180326T07</name>
+    <cmt>7TH SPOOT 26-MARCH-2018 STREAM</cmt>
+    <desc>7TH SPOOT 26-MARCH-2018 STREAM</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T15:59:13Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268386026844382" lon="-81.819404996931553">
+    <ele>25.500277000000001</ele>
+    <time>2018-03-26T16:07:03Z</time>
+    <name>180326T08</name>
+    <cmt>8TH SPOOT 26-MARCH-2018</cmt>
+    <desc>8TH SPOOT 26-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T16:07:03Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268341016024351" lon="-81.819465011358261">
+    <ele>14.180796000000001</ele>
+    <time>2018-03-26T16:19:19Z</time>
+    <name>180326T09</name>
+    <cmt>9TH SPOOT 26-MARCH-2018</cmt>
+    <desc>9TH SPOOT 26-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T16:19:19Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268292987719178" lon="-81.819473979994655">
+    <ele>9.930006000000001</ele>
+    <time>2018-03-26T16:27:24Z</time>
+    <name>180326T10</name>
+    <cmt>10TH SPOOT 26-MARCH-2018 STREAM</cmt>
+    <desc>10TH SPOOT 26-MARCH-2018 STREAM</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T16:27:24Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268828004598618" lon="-81.819686964154243">
+    <ele>37.027203</ele>
+    <time>2018-03-26T19:10:14Z</time>
+    <name>180326T11</name>
+    <cmt>11TH SPOOT 26-MARCH-2018 HAMM IMPACT</cmt>
+    <desc>11TH SPOOT 26-MARCH-2018 HAMM IMPACT</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T19:10:14Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.269838023930788" lon="-81.820320971310139">
+    <ele>28.224347999999999</ele>
+    <time>2018-03-26T19:40:01Z</time>
+    <name>180326T12</name>
+    <cmt>12TH SPOOT 26-MARCH-2018 IN FRONT OF TRAP NICOFAVO</cmt>
+    <desc>12TH SPOOT 26-MARCH-2018 IN FRONT OF TRAP NICOFAVO</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T19:40:01Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270817030221224" lon="-81.821211967617273">
+    <ele>26.599968000000001</ele>
+    <time>2018-03-26T20:30:53Z</time>
+    <name>180326T13</name>
+    <cmt>13TH SPOOT 26-MARCH-2018 FRON TRAP CAM</cmt>
+    <desc>13TH SPOOT 26-MARCH-2018 FRON TRAP CAM</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-26T20:30:53Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270707981660962" lon="-81.821148013696074">
+    <ele>24</ele>
+    <time>2018-03-27T13:57:54Z</time>
+    <name>180327T01</name>
+    <cmt>1ST SPOOT 27-MARCH-2018 SHELLS ON THE TRUNK</cmt>
+    <desc>1ST SPOOT 27-MARCH-2018 SHELLS ON THE TRUNK</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-27T13:57:54Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270925994962454" lon="-81.82103200815618">
+    <ele>24</ele>
+    <time>2018-03-27T14:25:45Z</time>
+    <name>180327T03</name>
+    <cmt>3TH SPOOT 27-MARCH-2018</cmt>
+    <desc>3TH SPOOT 27-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-27T14:25:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270870003849268" lon="-81.820994960144162">
+    <ele>24.010729000000001</ele>
+    <time>2018-03-27T14:38:40Z</time>
+    <name>180327T04</name>
+    <cmt>4TH SPOOT 27-MARCH-2018</cmt>
+    <desc>4TH SPOOT 27-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-27T14:38:40Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270864974707365" lon="-81.820856994017959">
+    <ele>27.163847000000001</ele>
+    <time>2018-03-27T14:49:06Z</time>
+    <name>180327T05</name>
+    <cmt>5TH SPOOT 27-MARCH-2018</cmt>
+    <desc>5TH SPOOT 27-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-27T14:49:06Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270845025777817" lon="-81.820758003741503">
+    <ele>33.091468999999996</ele>
+    <time>2018-03-27T15:01:58Z</time>
+    <name>180327T06</name>
+    <cmt>6TH SPOOT 27-MARCH-2018</cmt>
+    <desc>6TH SPOOT 27-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-27T15:01:58Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271517002955079" lon="-81.820111004635692">
+    <ele>27</ele>
+    <time>2018-03-28T19:46:41Z</time>
+    <name>180328T01</name>
+    <cmt>old name T01</cmt>
+    <desc>old name T01</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T19:46:41Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270818036049604" lon="-81.820797985419631">
+    <ele>22</ele>
+    <time>2018-03-28T19:53:07Z</time>
+    <name>180328T02</name>
+    <cmt>old name T02</cmt>
+    <desc>old name T02</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T19:53:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.273231018334627" lon="-81.822054013609886">
+    <ele>28.775151999999999</ele>
+    <time>2018-03-28T21:29:45Z</time>
+    <name>180328T03</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T21:29:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.273091040551662" lon="-81.822018977254629">
+    <ele>40</ele>
+    <time>2018-03-28T21:45:00Z</time>
+    <name>180328T04</name>
+    <cmt>old name XXX</cmt>
+    <desc>old name XXX</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T21:45:00Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272544037550688" lon="-81.821962986141443">
+    <ele>40</ele>
+    <time>2018-03-28T21:51:17Z</time>
+    <name>180328T05</name>
+    <cmt>5 old name</cmt>
+    <desc>5 old name</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T21:51:17Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272726008668542" lon="-81.822087038308382">
+    <ele>39.487319999999997</ele>
+    <time>2018-03-28T22:05:02Z</time>
+    <name>180328T06</name>
+    <cmt>NEXT TO7 HCRAB</cmt>
+    <desc>NEXT TO7 HCRAB</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:05:02Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.27265995927155" lon="-81.822132971137762">
+    <ele>38.979827999999998</ele>
+    <time>2018-03-28T22:15:55Z</time>
+    <name>180328T07</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:15:55Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272602962329984" lon="-81.822187034413218">
+    <ele>47.625701999999997</ele>
+    <time>2018-03-28T22:26:26Z</time>
+    <name>180328T08</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:26:26Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272362988442183" lon="-81.822111010551453">
+    <ele>38.458770999999999</ele>
+    <time>2018-03-28T22:29:40Z</time>
+    <name>180328T09</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:29:40Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272354019805789" lon="-81.82217001914978">
+    <ele>39.978000999999999</ele>
+    <time>2018-03-28T22:35:17Z</time>
+    <name>180328T10</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:35:17Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272327030077577" lon="-81.822189968079329">
+    <ele>38.565697</ele>
+    <time>2018-03-28T22:40:12Z</time>
+    <name>180328T11</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:40:12Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272203983739018" lon="-81.821929039433599">
+    <ele>38.337887000000002</ele>
+    <time>2018-03-28T22:44:56Z</time>
+    <name>180328T12</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:44:56Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272101975977421" lon="-81.82176299393177">
+    <ele>37.362206</ele>
+    <time>2018-03-28T22:48:38Z</time>
+    <name>180328T13</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:48:38Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272150004282594" lon="-81.821986036375165">
+    <ele>35.541054000000003</ele>
+    <time>2018-03-28T22:51:46Z</time>
+    <name>180328T14</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:51:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271982030943036" lon="-81.821866007521749">
+    <ele>35.38702</ele>
+    <time>2018-03-28T22:56:07Z</time>
+    <name>180328T15</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:56:07Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272117985412478" lon="-81.821814961731434">
+    <ele>34.825263999999997</ele>
+    <time>2018-03-28T22:58:08Z</time>
+    <name>180328T16</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T22:58:08Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271986976265907" lon="-81.821966003626585">
+    <ele>33.338332999999999</ele>
+    <time>2018-03-28T23:02:13Z</time>
+    <name>180328T17</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:02:13Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271996028721333" lon="-81.821855027228594">
+    <ele>30.559555</ele>
+    <time>2018-03-28T23:11:05Z</time>
+    <name>180328T18</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:11:05Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.272027041763067" lon="-81.821952005848289">
+    <ele>32.032401999999998</ele>
+    <time>2018-03-28T23:08:25Z</time>
+    <name>180328T19</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:08:25Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271771980449557" lon="-81.82180498726666">
+    <ele>28.448073999999998</ele>
+    <time>2018-03-28T23:16:25Z</time>
+    <name>180328T20</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:16:25Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271752031520009" lon="-81.821857038885355">
+    <ele>28.150272000000001</ele>
+    <time>2018-03-28T23:18:45Z</time>
+    <name>180328T21</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:18:45Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271724035963416" lon="-81.821877993643284">
+    <ele>27.827514999999998</ele>
+    <time>2018-03-28T23:21:33Z</time>
+    <name>180328T22</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:21:33Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271739961579442" lon="-81.821746984496713">
+    <ele>26.063046</ele>
+    <time>2018-03-28T23:27:10Z</time>
+    <name>180328T23</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:27:10Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271612975746393" lon="-81.821730975061655">
+    <ele>26.10689</ele>
+    <time>2018-03-28T23:32:43Z</time>
+    <name>180328T24</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:32:43Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.271656980738044" lon="-81.821794006973505">
+    <ele>25.215627999999999</ele>
+    <time>2018-03-28T23:36:25Z</time>
+    <name>180328T25</name>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-28T23:36:25Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.268349984660745" lon="-81.819669026881456">
+    <ele>16</ele>
+    <time>2018-03-29T13:44:10Z</time>
+    <name>180329T01</name>
+    <cmt>CALLED T012DAY BEFORE</cmt>
+    <desc>CALLED T012DAY BEFORE</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-29T13:44:10Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+  <wpt lat="7.270426014438272" lon="-81.821212973445654">
+    <ele>28.258344999999998</ele>
+    <time>2018-03-25T21:56:46Z</time>
+    <name>182503T02</name>
+    <cmt>2ND SPOOT TOOK IT 25-MARCH-2018</cmt>
+    <desc>2ND SPOOT TOOK IT 25-MARCH-2018</desc>
+    <sym>Mine</sym>
+    <type>user</type>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+      <ctx:CreationTimeExtension>
+        <ctx:CreationTime>2018-03-25T21:56:46Z</ctx:CreationTime>
+      </ctx:CreationTimeExtension>
+    </extensions>
+  </wpt>
+
+</gpx>
