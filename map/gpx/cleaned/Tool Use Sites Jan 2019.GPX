@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<gpx version="1.1" creator="Brendan Barrett">
+    
+    <wpt lat="7.270926" lon="-81.820991">
+        <time>2019-01-04T18:05:00.2113431Z</time>
+        <name>190104T03</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.270879" lon="-81.821014">
+        <time>2019-01-04T18:05:00.6321094Z</time>
+        <name>190104T01</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.270868" lon="-81.821021">
+        <time>2019-01-04T18:05:01.2578381Z</time>
+        <name>190104T02</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.269830" lon="-81.820419">
+        <time>2019-01-04T19:20:22.4039557Z</time>
+        <name>190104T04</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.269651" lon="-81.820318">
+        <time>2019-01-04T19:41:31.7586981Z</time>
+        <name>190104T05</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268261" lon="-81.819449">
+        <time>2019-01-04T20:01:38.9718468Z</time>
+        <name>190104T06</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268280" lon="-81.819459">
+        <time>2019-01-04T20:02:31.7957567Z</time>
+        <name>190104T07</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268287" lon="-81.819466">
+        <time>2019-01-04T20:06:08.8127494Z</time>
+        <name>190104T08</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268324" lon="-81.819426">
+        <time>2019-01-04T20:23:47.0999027Z</time>
+        <name>190104T09</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268717" lon="-81.819804">
+        <time>2019-01-04T20:49:55.3328129Z</time>
+        <name>190104T10</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268846" lon="-81.819832">
+        <time>2019-01-04T20:49:55.8601334Z</time>
+        <name>190104T11</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268823" lon="-81.819583">
+        <time>2019-01-04T20:50:04.3223354Z</time>
+        <name>190104T12</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.268850" lon="-81.819835">
+        <time>2019-01-04T20:59:48.1591829Z</time>
+        <name>190104T13</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.271418" lon="-81.821689">
+        <time>2019-01-04T22:35:38.5170986Z</time>
+        <name>190104T14</name>
+        <desc />
+    </wpt>
+    <wpt lat="7.272519" lon="-81.822980">
+        <time>2019-01-05T00:33:50.9666917Z</time>
+        <name>190104T15</name>
+        <desc />
+    </wpt>
+
+</gpx>
