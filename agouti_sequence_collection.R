@@ -1089,6 +1089,13 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd5dac1d-cfe7-427e-90b7-8f3dfa050190",
+                       1 ,
+                       "BEA" , 
+                       "80% sure, could be OLG too"
+)
+
+
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
 # https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/a6ea1cc5-9ab9-4f1a-9554-dfc876663d91
@@ -1125,6 +1132,8 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
 #sharp peak juv looks like dashiki https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/da171c17-fd20-4266-a996-d92cece793a2
   
 #SAD of effed up ear female https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ac7c0cc2-644c-4b26-a2b9-0e28dd52d5b0
+# more of effed up ear female https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/e61a1cdf-650d-4a6d-aaeb-24a649bbc4a9
+
 
 #flufy forehead, some peak, maybe YODA? https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c9a13818-bce5-4d33-8437-3ca86cbbedc5
 
