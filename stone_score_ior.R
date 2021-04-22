@@ -1,20 +1,33 @@
 library(lubridate)
 library(RColorBrewer)
 
-seq <-  read.csv("agouti_output/202012211221-coiba-tool-use-sequences.csv")
-obs <- read.csv("agouti_output/202012211220-coiba-tool-use-observations.csv")
-beh <- read.csv("agouti_output/202102081715-coiba-tool-use-behaviours.csv")
-ind <- read.csv("agouti_output/202012211222-coiba-tool-use-individuals.csv")
-str(obs)
-str(beh)
-str(seq)
-str(ind)
-unique(obs$observer)
-d <- obs[obs$location_label=="CEBUS-02" & obs$scientificName=="Homo",]
-d <- d[c("observation_id","scientificName","individual" , "observation_notes" , "behaviours" , "observer" , "sequence_start" , "originalFilename","location_label","link")]
+#seq <-  read.csv("agouti_output/202012211221-coiba-tool-use-sequences.csv")
+obs <- read.csv("agouti_output/coiba-national-park-tool-use-20210414131405/observations.csv")
+dep <- read.csv("agouti_output/coiba-national-park-tool-use-20210414131405/deployments.csv")
+dep_ss <- dep[c("deployment_id" , "location_id" , "location_name")]
+#beh <- read.csv("agouti_output/202102081715-coiba-tool-use-behaviours.csv")
+#ind <- read.csv("agouti_output/202012211222-coiba-tool-use-individuals.csv")
+d <- merge(obs,dep_ss,by="deployment_id")
+# str(beh)
+# str(seq)
+# str(ind)
+unique(d$classified_by)
+d$location_name <- as.character(d$location_name)
+d$scientific_name <- as.character(d$scientific_name)
 str(d)
-d$sequence_start
-d$datetime <- ymd_hms(d$sequence_start , tz="America/Panama")
+d2 <- d[d$location_name=="CEBUS-02" & d$classified_by==c("Brendan Barrett","Tamara Dogandzic" , "Meredith Carlson"),]
+d2 <- d[d$location_name=="CEBUS-02" & d$classified_by=="Tamara Dogandzic" ,]
+d3 <- d[d$location_name=="CEBUS-02" & d$classified_by=="Meredith Carlson" ,]
+
+str(d2)
+unique(d2$individual_id)
+unique(d3$individual_id)
+
+#d <- d[c("observation_id","scientificName","individual" , "observation_notes" , "behaviours" , "observer" , "sequence_start" , "originalFilename","location_label","link")]
+str(d)
+x <- d$timestamp[1:20]
+as_datetime(d$timestamp)
+d$datetime <- ymd_hms(d$timestamp , tz="America/Panama")
 
 d$tdiff_sec <- d$datetime - min(d$datetime) #time difffernce in seconds from earliest observation in this subset
 d$tdiff_min <- d$tdiff_sec/(60)

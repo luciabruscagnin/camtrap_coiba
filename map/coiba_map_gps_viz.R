@@ -11,6 +11,20 @@ all_cams_map <- mapview(all_cams , col.regions="gold"  )
 
 filelist <- list.files(path="~/Dropbox/camtrap_coiba/map/gpx/bjb_raw_garmin_folders" , full.names=TRUE)
 filelist 
+bjb_cm_se_sw_thru_20170324  <- readOGR(dsn =filelist[7] , layer="tracks")
+mapview(bjb_cm_se_sw_thru_20170324)
+
+for(i in 1:length(filelist)){
+  x  <- readOGR(dsn =filelist[i] , layer="tracks")
+  print(mapview(x))
+}
+filelist
+
+i <- 18
+mapview(readOGR(dsn =filelist[i] , layer="tracks")) + mapview(readOGR(dsn =filelist[i] , layer="track_points"))
+mapview(readOGR(dsn =filelist[i] , layer="waypoints" ) , col.regions="red")
+
+
 
 ##### load stream gps points
 #####here is how we turn streams to lines and trim
@@ -79,8 +93,10 @@ mapview(pois)
 mapview(pois2)
 pois$name
 pois2$name
-mccir <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
-mapview(mccir)
+mccir_wp <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
+mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
+
+mapview(mccir_wp) + mapview(mccir_tr)
 mccir$name
 almendras$name
 #useful resource https://cmerow.github.io/RDataScience/04_Spatial.html
