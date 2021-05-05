@@ -34,7 +34,7 @@ tool_questions <- taipanQuestions(
   )
 )
 
-image_dir <- list.files("~/Downloads/100RECNX" , full.names=TRUE)
+image_dir <- list.files("~/Dropbox/taipan_tool/images" , full.names=TRUE)
 image_dir <- as.vector(image_dir[700:800])
 
 buildTaipan(
