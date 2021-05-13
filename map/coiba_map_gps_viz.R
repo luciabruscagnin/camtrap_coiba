@@ -32,7 +32,7 @@ filelist
 #quebrada catarata
 s1 <- readOGR(dsn =filelist[3] , layer="track_points")
 mapview(s1)
-s2 <- d[3:6,]
+s2 <- s2[3:6,]
 coord<-as.data.frame(coordinates(s2))
 queb_cat <- Line(as.data.frame(coordinates(s2)))
 queb_cat <-Lines(list(queb_cat),ID="queb_catarata")
@@ -83,6 +83,7 @@ almendras <- readOGR(dsn = "map/gpx/cleaned/T_catappa_points.GPX", layer="waypoi
 almendras$name
 #mccir <- readOGR(dsn ="~/Dropbox/Capuchin Monkeys, Coiba National Park_July2018/GPS Points/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
 most_almendras_map <- mapview(almendras , col.regions="green" , alpha.regions = 0.2 , cex=1.5)
+
 all_tools_map + all_streams_map + all_cams_map + most_almendras_map #map of all trees, tools, camerasm etc
 
 
