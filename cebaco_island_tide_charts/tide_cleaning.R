@@ -4,6 +4,7 @@ require(stringr)
 require(lubridate) # not used yet, but necessary if we potentially want to use date objects
 require(magrittr)
 require(rlist)
+require(reshape2)
 
 # make list of all tidal csvs in folder
 tidal_files <- list.files(path = "cebaco_island_tide_charts/csvs")
@@ -157,7 +158,51 @@ Tides <- list.rbind(tidal_data_clean)
 # check if you got all the dates per year
 table(Tides$YEAR)
 
-write.csv(Tides, "cebaco_island_tide_charts/TidesClean.csv")
+#write.csv(Tides, "cebaco_island_tide_charts/TidesClean.csv")
+
+##### ADVANCED CLEANUP #####
+# High or low tide?
+Tides$TIDE_1_HEIGHT <- as.numeric(Tides$TIDE_1_HEIGHT)
+Tides$TIDE_2_HEIGHT <- as.numeric(Tides$TIDE_2_HEIGHT)
+Tides$TIDE_3_HEIGHT <- as.numeric(Tides$TIDE_3_HEIGHT)
+Tides$TIDE_4_HEIGHT <- as.numeric(Tides$TIDE_4_HEIGHT)
+
+hist(Tides$TIDE_1_HEIGHT)
+# low tide is always below 2, high tide above 2 meters
+
+# Go from wide to long format
+# drop coef & average
+TidesW <- Tides[, -c(14,15)]
+
+# split into 4 datasets
+Tides1 <- TidesW[, c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_1_TIME", "TIDE_1_HEIGHT")]
+Tides2 <- TidesW[, c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_2_TIME", "TIDE_2_HEIGHT")]
+Tides3 <- TidesW[, c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_3_TIME", "TIDE_3_HEIGHT")]
+Tides4 <- TidesW[, c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_4_TIME", "TIDE_4_HEIGHT")]
+
+Tides1$TIDE_NR <- 1
+Tides2$TIDE_NR <- 2
+Tides3$TIDE_NR <- 3
+Tides4$TIDE_NR <- 4
+
+colnames(Tides1) <- c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_TIME", "TIDE_HEIGHT", "TIDE_NR")
+colnames(Tides2) <- c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_TIME", "TIDE_HEIGHT", "TIDE_NR")
+colnames(Tides3) <- c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_TIME", "TIDE_HEIGHT", "TIDE_NR")
+colnames(Tides4) <- c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_TIME", "TIDE_HEIGHT", "TIDE_NR")
+
+TidesF <- rbind(Tides1, Tides2, Tides3, Tides4)
+
+# turn tide time into date/time object
+TidesF$MONTH <- match(TidesF$MONTH, month.name)
+
+TidesF$DATE <- paste(TidesF$YEAR, TidesF$MONTH, TidesF$DAY, sep = "-")
+TidesF$TIDE_TIME <- as.POSIXct(paste(TidesF$DATE, TidesF$TIDE_TIME), format = "%Y-%B-%d %H:%M")
+TidesF <- TidesF[order(TidesF$TIDE_TIME),]
+TidesF$HIGH <- ifelse(TidesF$TIDE_HEIGHT > 2, "TRUE", "FALSE")
+
+# make sunrise and sunset date/time classes too
+TidesF$SUNRISE <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNRISE), format = "%Y-%B-%d %H:%M")
+TidesF$SUNSET <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNSET), format = "%Y-%B-%d %H:%M")
 
 ###### WORKING CODE TO CLEAN ONE CSV ######
 # I used this a lot for troubleshooting
