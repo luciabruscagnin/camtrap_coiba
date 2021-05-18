@@ -193,16 +193,19 @@ colnames(Tides4) <- c("YEAR", "MONTH", "DAY", "SUNRISE", "SUNSET", "TIDE_TIME", 
 TidesF <- rbind(Tides1, Tides2, Tides3, Tides4)
 
 # turn tide time into date/time object
-TidesF$MONTH <- match(TidesF$MONTH, month.name)
-
 TidesF$DATE <- paste(TidesF$YEAR, TidesF$MONTH, TidesF$DAY, sep = "-")
-TidesF$TIDE_TIME <- as.POSIXct(paste(TidesF$DATE, TidesF$TIDE_TIME), format = "%Y-%B-%d %H:%M")
+TidesF$TIDE_TIME <- as.POSIXct(paste(TidesF$DATE, TidesF$TIDE_TIME), tz = "America/Panama", format = "%Y-%B-%d %H:%M")
 TidesF <- TidesF[order(TidesF$TIDE_TIME),]
 TidesF$HIGH <- ifelse(TidesF$TIDE_HEIGHT > 2, "TRUE", "FALSE")
 
 # make sunrise and sunset date/time classes too
-TidesF$SUNRISE <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNRISE), format = "%Y-%B-%d %H:%M")
-TidesF$SUNSET <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNSET), format = "%Y-%B-%d %H:%M")
+TidesF$SUNRISE <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNRISE), tz = "America/Panama", format = "%Y-%B-%d %H:%M")
+TidesF$SUNSET <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNSET),tz = "America/Panama", format = "%Y-%B-%d %H:%M")
+
+TidesLow <- TidesF[TidesF$HIGH == FALSE,]
+
+h.lub <- hour(TidesLow$TIDE_TIME)
+hist(h.lub)
 
 ###### WORKING CODE TO CLEAN ONE CSV ######
 # I used this a lot for troubleshooting
