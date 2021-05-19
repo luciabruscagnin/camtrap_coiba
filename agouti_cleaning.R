@@ -37,17 +37,22 @@ length(unique(agoutisequence$sequence_id))
 agoutisequence$time <- str_replace(agoutisequence$timestamp, "T", " ")
 agoutisequence$time <- as.POSIXct(agoutisequence$time, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
 
+agoutisequence$tidedif <- NA
+which(is.na(agoutisequence$time))
+
 # for each sequence get time to nearest low tide (need to match day and get low tide times then)
+
 for (i in 1:nrow(agoutisequence)) {
-  agoutisequence$tidedif[i] <- min(abs(agoutisequence$time[i] - TidesLow$TIDE_TIME), na.rm = TRUE)
+  agoutisequence$tidedif[i] <- min(abs(difftime(agoutisequence$time[i], TidesLow$TIDE_TIME, units = "hours")))
 }
 
-hist(agoutisequence$tidedif) # still have a problem with the tidedif, check this! 
+# temporarily exclude the wrong dates 
+agoutisequence2 <- subset(agoutisequence, agoutisequence$tidedif < 12)
+hist(agoutisequence2$tidedif)  
+plot(agoutisequence2$tidedif, agoutisequence2$count)
 
 #checking distributions of hours
-h.lub <- hour(agoutisequence$time)
+h.lub <- hour(agoutisequence2$time)
 hist(h.lub)
 
 # for each camera trap add get distance from coast
-
-

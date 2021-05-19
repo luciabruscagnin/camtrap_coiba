@@ -202,7 +202,7 @@ TidesF$HIGH <- ifelse(TidesF$TIDE_HEIGHT > 2, "TRUE", "FALSE")
 TidesF$SUNRISE <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNRISE), tz = "America/Panama", format = "%Y-%B-%d %H:%M")
 TidesF$SUNSET <- as.POSIXct(paste(TidesF$DATE, TidesF$SUNSET),tz = "America/Panama", format = "%Y-%B-%d %H:%M")
 
-TidesLow <- TidesF[TidesF$HIGH == FALSE,]
+TidesLow <- subset(TidesF, TidesF$HIGH == FALSE)
 
 h.lub <- hour(TidesLow$TIDE_TIME)
 hist(h.lub)
