@@ -11,6 +11,13 @@ depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20210518123935
 # filter out test ones/not relevant ones (so create variable to filter test ones)
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0)
 
+# add deployment length in hours, this is an exposure
+depl_keys$dep_start <- str_replace(depl_keys$start, "T", " ")
+depl_keys$dep_end<- str_replace(depl_keys$end, "T", " ")
+depl_keys$dep_start <-  as.POSIXct(depl_keys$dep_start, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
+depl_keys$dep_end <-  as.POSIXct(depl_keys$dep_end, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
+depl_keys$dep_length_hours <-as.numeric(difftime(depl_keys$dep_end,depl_keys$dep_start,units="hours"))
+
 # match deployment IDS in keys to observations
 agoutigross <- left_join(agoutigross, depl_keys, "deployment_id")
 
@@ -56,3 +63,4 @@ h.lub <- hour(agoutisequence2$time)
 hist(h.lub)
 
 # for each camera trap add get distance from coast
+str(agoutisequence2)
