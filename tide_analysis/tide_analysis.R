@@ -89,6 +89,8 @@ m4 <- ulam(
     
   ), data=dlist , chains=4 ,cores=4 , log_lik=TRUE )
 
+precis(m4 , depth=2)
+
 m5 <- ulam(
   alist(
     num_capuchins ~ dpois( lambda ),
@@ -107,3 +109,5 @@ m5 <- ulam(
 
 precis(m5 , depth=3)
 plot(precis(m5 , depth=3))
+post <- extract.samples((m5))
+str(post)
