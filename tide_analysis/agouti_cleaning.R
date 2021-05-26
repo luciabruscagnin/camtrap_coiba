@@ -2,22 +2,16 @@
 require(dplyr)
 require(lubridate)
 require(stringr)
+require(ggplot2)
 
 # open Agouti output file (observations)
 agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20210518123935/observations.csv", header = TRUE)
 
-# deployment keys
+ # deployment keys
 depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20210518123935/deployments.csv", header = TRUE)
 
 # filter out test ones/not relevant ones (so create variable to filter test ones)
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0)
-
-# add deployment length in hours, this is an exposure
-depl_keys$dep_start <- str_replace(depl_keys$start, "T", " ")
-depl_keys$dep_end<- str_replace(depl_keys$end, "T", " ")
-depl_keys$dep_start <-  as.POSIXct(depl_keys$dep_start, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
-depl_keys$dep_end <-  as.POSIXct(depl_keys$dep_end, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
-depl_keys$dep_length_hours <-as.numeric(difftime(depl_keys$dep_end,depl_keys$dep_start,units="hours"))
 
 # match deployment IDS in keys to observations
 agoutigross <- left_join(agoutigross, depl_keys, "deployment_id")
@@ -36,14 +30,10 @@ agoutigross <- left_join(agoutigross, cap_numbers, "sequence_id")
 # replace NAs with 0 for the capuchin count
 agoutigross$n[is.na(agoutigross$n)] <- 0
 
-# drop duplicated sequences to get one row per sequence
-agoutisequence <- agoutigross[!duplicated(agoutigross$sequence_id),]
-length(unique(agoutisequence$sequence_id)) 
-
 # turn sequence start time into POSIXct format same as tide stuff
 # replace T with a space
-agoutisequence$time <- str_replace(agoutisequence$timestamp, "T", " ")
-agoutisequence$time <- as.POSIXct(agoutisequence$time, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
+agoutigross$time <- str_replace(agoutigross$timestamp, "T", " ")
+agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
 
 # identify wrong timestamps
 # multimedia excel with correct timestamps
@@ -51,7 +41,7 @@ multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-2021051812393
 
 # first those that were just entry mistakes (e.g. 1970)
 # create dataset with these sequence ids
-wrongseq <- agoutisequence$sequence_id[agoutisequence$timestamp < 2017-01-01 | agoutisequence$timestamp > Sys.Date()]
+wrongseq <- agoutigross$sequence_id[agoutigross$timestamp < 2017-01-01 | agoutigross$timestamp > Sys.Date()]
 
 # extract rows of multimedia excel with the same sequence ids
 multimedia2 <- subset(multimedia, multimedia$sequence_id %in% wrongseq)
@@ -62,28 +52,82 @@ multimedia2$date <- sapply(str_split(multimedia2$file_name, "__"), '[', 2)
 multimedia2$time <- sapply(str_split(multimedia2$file_name, "__"), '[', 3) 
 multimedia2$time <- substr(multimedia2$time, 1, nchar(multimedia2$time)-4)
 multimedia2$timestamp_correct <- as.POSIXct(paste(multimedia2$date, multimedia2$time), tz = "America/Panama", format = "%Y-%m-%d %H-%M-%S")
+multimedia2 <- multimedia2[,c("sequence_id", "timestamp_correct")]
 
 #make new time column
-agoutisequence$time[which(agoutisequence$sequence_id %in% multimedia2$sequence_id)] <- multimedia2$timestamp_correct
-which(agoutisequence$sequence_id %in% multimedia2$sequence_id)
-agoutisequence[which(agoutisequence$sequence_id %in% multimedia2$sequence_id),]
-for (i in 1:nrow(multimedia2)) {
-  if (agoutisequence$sequence_id == multimedia2$sequence_id[i]) {
-    agoutisequence$time <- multimedia2$timestamp_correct
-  }
+agoutigross <- left_join(agoutigross, multimedia2, "sequence_id")
+
+agoutigross <- agoutigross %>%
+  mutate(timestamp_correct = coalesce(timestamp_correct, time))
+
+# add correct deployment start and end time (can still double check, now took the minimum and maximum sequence time within deployment id)
+startdep <- aggregate(x = list(dep_start = agoutigross$timestamp_correct), by = list(deployment_id = agoutigross$deployment_id), FUN = min)
+enddep <- aggregate(x = list(dep_end = agoutigross$timestamp_correct), by = list(deployment_id = agoutigross$deployment_id), FUN = max)
+
+agoutigross <- left_join(agoutigross, startdep, "deployment_id")
+agoutigross <- left_join(agoutigross, enddep, "deployment_id")
+# add deployment length in hours, this is an exposure
+agoutigross$dep_length_hours <-as.numeric(difftime(agoutigross$dep_end,agoutigross$dep_start,units="hours"))
+
+# drop duplicated sequences to get one row per sequence, necessary form for tidal analyses and data exploration
+agoutisequence <- agoutigross[!duplicated(agoutigross$sequence_id),]
+length(unique(agoutisequence$sequence_id)) 
+
+### EXPLORING DATA
+
+h.lub <- hour(agoutisequence$time[agoutisequence$capuchin == 1])
+hist(h.lub)
+head(agoutisequence)
+
+# loop over camera id make density plot for each camera when capuchins are present
+# use location name (where the camera is, can have separate deployments on that location)
+# number of sequences per location name
+length(unique(agoutisequence$sequence_id))
+
+aggregate(agoutisequence$sequence_id, by = list(location_name = agoutisequence$location_name), FUN = length)
+
+# filter out when capuchins weren't present
+onlycap <- subset(agoutisequence, agoutisequence$capuchin == 1)
+onlycap$hour <- hour(onlycap$timestamp_correct)
+
+locations <- unique(onlycap$location_name)
+table(agoutisequence$location_name, agoutisequence$capuchin ) # nr of sequences per location with and without capuchins
+
+# to get pdf of output
+# pdf("tide_analysis/camera_traps_density.pdf", width = 9, height = 11)
+# par(mfrow=c(4,3)) #sets number of rows and columns per page, could also change margins
+# par(cex = 0.5)
+
+for (l in 1:length(locations)) {
+  hist(onlycap$hour[onlycap$location_name == locations[l]], main = locations[l], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
 }
-# then look for one's that are around midnight (00:00:00) to see if there's a mistake there
-str(agoutisequence$time)
-# need to fix deployment start variable too (at 1970 now) and date end.... 
-agoutisequence$timeonly <- format(agoutisequence$time, format = "%H:%M:%S")
-wrongseq2 <- agoutisequence$sequence_id[agoutisequence$timeonly == "00:00:00"]
-multimedia3 <- subset(multimedia, multimedia$sequence_id %in% wrongseq2)
+
+# dev.off()
+
+## Mean number of capuchins per sequence
+# to get PDF, the par doesn't work for ggplot
+# can't really find how to do this in base r with barplot() 
+
+# pdf("tide_analysis/camera_traps_counts.pdf", width = 9, height = 11)
+# par(mfrow=c(4,3)) #sets number of rows and columns per page, could also change margins
+# par(cex = 0.5)
+
+for (l in 1:length(locations)) {
+  dora_l <- subset(onlycap, onlycap$location_name == locations[l])
+  print(ggplot(dora_l) + geom_bar(aes(x = hour, y = n), stat = "summary", fun = "mean") + xlab("Time of Day") + ylab("Average Number of Capuchins per Sequence") + xlim(0, 24) + labs(title = locations[l]))
+}
+
+# dev.off()
+
+# very crude looking at tool users vs non tool users
+onlycap$tooluser <- ifelse((onlycap$location_name == "CEBUS-01" | onlycap$location_name == "CEBUS-02" | onlycap$location_name == "CEBUS-05" | onlycap$location_name == "SURVEY-CEBUS-24-01" | onlycap$location_name == "CEBUS-09"), 
+                           1, 0)
+
+hist(onlycap$hour[onlycap$tooluser == 1], main = "tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+hist(onlycap$hour[onlycap$tooluser == 0], main = "non-tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
 
 
-agoutisequence[,agoutisequence$timeonly == 00:00:00]
-agoutisequence
 ## TIDAL
-
 
 # for each sequence get time to nearest low tide (need to match day and get low tide times then)
 agoutisequence$tidedif <- NA
@@ -104,9 +148,3 @@ hist(h.lub)
 
 # for each camera trap add get distance from coast
 str(agoutisequence2)
-
-
-
-### exploring
-
-# loop over camera id make density plot for each camera (potentially only with capuchin present)
