@@ -72,7 +72,7 @@ tools_w201807 <- readOGR(dsn = "map/gpx/cleaned/Tool Use Site July 2018.GPX", la
 tools_w201901 <- readOGR(dsn = "map/gpx/cleaned/Tool Use Sites Jan 2019.GPX", layer="waypoints")
 tools_w201903 <- readOGR(dsn = "map/gpx/cleaned/Tool Sites Mar 2019.GPX", layer="waypoints")
 
-all_tools_map <- mapview(tools_w201707201901 , col.region="red" , cex=2) + mapview(tools_w201803 , col.region="orange" , cex=2) + mapview(tools_w201807 , col.region="yellow" , cex=2) + mapview(tools_w201901 , col.region="violet" , cex=2) + mapview(tools_w201903 , col.region="blue" , cex=2)
+all_tools_map <- mapview(tools_w201707201901 , col.region="red" , cex=3) + mapview(tools_w201803 , col.region="orange" , cex=3) + mapview(tools_w201807 , col.region="yellow" , cex=3) + mapview(tools_w201901 , col.region="violet" , cex=3) + mapview(tools_w201903 , col.region="blue" , cex=3)
 
 all_tools_map + all_streams_map + all_cams_map
 
@@ -82,11 +82,11 @@ all_tools_map + all_streams_map + all_cams_map
 almendras <- readOGR(dsn = "map/gpx/cleaned/T_catappa_points.GPX", layer="waypoints")
 almendras$name
 #mccir <- readOGR(dsn ="~/Dropbox/Capuchin Monkeys, Coiba National Park_July2018/GPS Points/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
-most_almendras_map <- mapview(almendras , col.regions="green" , alpha.regions = 0.2 , cex=1.5)
+most_almendras_map <- mapview(almendras , col.regions="green" , alpha.regions = 0.2 , cex=1)
 
 all_tools_map + all_streams_map + all_cams_map + most_almendras_map #map of all trees, tools, camerasm etc
 
-
+all_tools_map + all_streams_map +  most_almendras_map #map of all trees, tools, camerasm etc
 #####
 pois <- readOGR(dsn = "map/gpx/cleaned/Coiba POI.GPX", layer="waypoints")
 pois2 <- readOGR(dsn = "map/gpx/cleaned/Points of Interest.GPX", layer="waypoints")
