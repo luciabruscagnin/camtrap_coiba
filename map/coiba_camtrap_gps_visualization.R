@@ -277,6 +277,7 @@ mapview(all_cams)
 # all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326)
 
 # or read directly w/o access to localized files and running above code
-cam_ids <- read.csv(file="coiba_camtrap_ids_gps.csv")
+cam_ids <- read.csv(file="map/coiba_camtrap_ids_gps.csv")
 all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
 mapview(all_cams)
+
