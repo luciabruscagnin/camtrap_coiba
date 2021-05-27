@@ -25,22 +25,23 @@ filelist
 #####here is how we turn streams to lines and trim
 
 #quebrada catarata
-s1 <- readOGR(dsn =filelist[3] , layer="track_points")
+
+s1 <- readOGR(dsn ="map/gpx/bjb_raw_garmin_folders/Track_CAARATA QUEB2353.gpx" , layer="track_points")
 mapview(s1)
-s2 <- s2[3:6,]
+s2 <- s1[3:6,]
 coord<-as.data.frame(coordinates(s2))
 queb_cat <- Line(as.data.frame(coordinates(s2)))
 queb_cat <-Lines(list(queb_cat),ID="queb_catarata")
 
 ###discovery/watersource
-s1 <- readOGR(dsn =filelist[4] , layer="track_points")
+s1 <- readOGR(dsn ="map/gpx/bjb_raw_garmin_folders/Track_DISCO QUEB 121828.gpx" , layer="track_points")
 mapview(s1)
 coord<-as.data.frame(coordinates(s1))
 queb_watersource <- Line(as.data.frame(coordinates(s1)))
 queb_watersource <-Lines(list(queb_watersource),ID="queb_watersource")
 
 ###bbc/alicia
-s1 <- readOGR(dsn =filelist[5] , layer="track_points")
+s1 <- readOGR(dsn ="map/gpx/bjb_raw_garmin_folders/Track_QUEB BBC28 145539.gpx", layer="track_points")
 mapview(s1)
 s2 <- s1[4:108,]
 coord<-as.data.frame(coordinates(s2))
@@ -48,7 +49,7 @@ queb_alicia <- Line(as.data.frame(coordinates(s2)))
 queb_alicia <-Lines(list(queb_alicia),ID="queb_alicia")
 
 ###posa
-s1 <- readOGR(dsn =filelist[6] , layer="track_points")
+s1 <- readOGR(dsn ="map/gpx/bjb_raw_garmin_folders/Track_QUEB POSA8 135357.gpx" , layer="track_points")
 mapview(s1[4:30,])
 s2 <- s1[4:30,]
 coord<-as.data.frame(coordinates(s2))
@@ -77,12 +78,13 @@ all_tools_map + all_streams_map + all_cams_map
 almendras <- readOGR(dsn = "map/gpx/cleaned/T_catappa_points.GPX", layer="waypoints")
 almendras$name
 #mccir <- readOGR(dsn ="~/Dropbox/Capuchin Monkeys, Coiba National Park_July2018/GPS Points/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
-most_almendras_map <- mapview(almendras , col.regions="green" , alpha.regions = 0.2 , cex=1)
+most_almendras_map <- mapview(almendras , col.regions="green" , alpha.regions = 0.2 , cex=1.2)
 
 all_tools_map + all_streams_map + all_cams_map + most_almendras_map #map of all trees, tools, camerasm etc
 
 all_tools_map + all_streams_map +  most_almendras_map #map of all trees, tools, camerasm etc
-#####
+
+#####brendan needs to pick up here before publishing
 pois <- readOGR(dsn = "map/gpx/cleaned/Coiba POI.GPX", layer="waypoints")
 pois2 <- readOGR(dsn = "map/gpx/cleaned/Points of Interest.GPX", layer="waypoints")
 mapview(pois)
