@@ -9,8 +9,9 @@ cam_ids <- read.csv(file="map/coiba_camtrap_ids_gps.csv") #generated with this s
 all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
 all_cams_map <- mapview(all_cams , col.regions="gold"  )
 
-filelist <- list.files(path="~/Dropbox/camtrap_coiba/map/gpx/bjb_raw_garmin_folders" , full.names=TRUE)
-filelist 
+#filelist <- list.files(path="~/Dropbox/camtrap_coiba/map/gpx/bjb_raw_garmin_folders" , full.names=TRUE)
+filelist <- list.files(path="map/gpx/bjb_raw_garmin_folders" , full.names=TRUE)
+
 bjb_cm_se_sw_thru_20170324  <- readOGR(dsn =filelist[7] , layer="tracks")
 mapview(bjb_cm_se_sw_thru_20170324)
 
@@ -20,15 +21,9 @@ for(i in 1:length(filelist)){
 }
 filelist
 
-i <- 18
-mapview(readOGR(dsn =filelist[i] , layer="tracks")) + mapview(readOGR(dsn =filelist[i] , layer="track_points"))
-mapview(readOGR(dsn =filelist[i] , layer="waypoints" ) , col.regions="red")
-
-
-
 ##### load stream gps points
 #####here is how we turn streams to lines and trim
-filelist
+
 #quebrada catarata
 s1 <- readOGR(dsn =filelist[3] , layer="track_points")
 mapview(s1)
