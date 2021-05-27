@@ -1,5 +1,5 @@
 #master map for all coiba stuff
-library(rethinking)
+#library(rethinking)
 library(mapview)
 library(rgdal)
 library(sf)
