@@ -3,7 +3,7 @@
 library(mapview)
 library(rgdal)
 library(sf)
-
+library(raster)
 ##### load camera traps
 cam_ids <- read.csv(file="map/coiba_camtrap_ids_gps.csv") #generated with this script file https://github.com/bjbarrett/camtrap_coiba/blob/main/coiba_camtrap_gps_visualization.R
 all_cams <- st_as_sf(cam_ids , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
@@ -84,6 +84,26 @@ all_tools_map + all_streams_map + all_cams_map + most_almendras_map #map of all 
 
 all_tools_map + all_streams_map +  most_almendras_map #map of all trees, tools, camerasm etc
 
+
+##grids? 
+
+##########new way from Kate#######
+#maybe use gridshapes
+
+grid_shapes <- rbind(tools_w201707201901,tools_w201803,tools_w201807) # define grid area using a subset of tools w/ same number columns
+str(grid_shapes)
+e <- as(raster::extent(min(grid_shapes@coords[,1]), max(grid_shapes@coords[,1]), min(grid_shapes@coords[,2]), max(grid_shapes@coords[,2])), "SpatialPolygons")
+proj4string(e) <- crs(grid_shapes)
+e3 <- spTransform(e, CRS("+init=EPSG:32616"))
+ebuf <- buffer(e3, width = 500) #add 500 m buffer
+e2 <- st_as_sf(e)
+e2b <- st_as_sf(ebuf)
+grid_100m <- st_make_grid(e2b, square = T, cellsize = c(100, 100) ) %>% 
+  st_sf() #100m grid
+grid_250m <- st_make_grid(e2b, square = T, cellsize = c(250, 250)) %>% # the grid, covering bounding box
+  st_sf() # not really required, but makes the grid nicer to work with later
+mapview(grid_250m , col.regions="white")  + all_tools_map + all_streams_map + all_cams_map + most_almendras_map
+mapview(grid_100m , col.regions="white") + all_tools_map + all_streams_map + all_cams_map + most_almendras_map
 #####brendan needs to pick up here before publishing
 pois <- readOGR(dsn = "map/gpx/cleaned/Coiba POI.GPX", layer="waypoints")
 pois2 <- readOGR(dsn = "map/gpx/cleaned/Points of Interest.GPX", layer="waypoints")
