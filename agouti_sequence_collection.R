@@ -1095,6 +1095,25 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "80% sure, could be OLG too"
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/3af54491-c48e-4c57-a9b8-bfd682304324" ,
+                       1 ,
+                       "ROS" , 
+                       "messed up ear here"
+)
+
+##brendan
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/cd5dac1d-cfe7-427e-90b7-8f3dfa050190" ,
+                         1 ,
+                       "LEO" , 
+                       "LEO or ROS , cut on back"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/21fed649-4c78-4bec-8595-713abcdec782
+" ,
+                       1 ,
+                       "BEA" , 
+                       "messed up right ear with blob, big brows"
+)
 
 write.csv(d , file="agout_seqience_collection_ids.csv")
 
