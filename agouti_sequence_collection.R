@@ -1115,6 +1115,41 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "messed up right ear with blob, big brows"
 )
 
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/ba0d8482-550a-43f8-a61d-4b770d183230
+" ,
+                       1 ,
+                       "OLG" , 
+                       "messed up left ear"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/67d47fd6-a2f5-480e-866a-c9b0584882ef
+" ,
+                       1 ,
+                       "CYS" , 
+                       "eyes closer together than ABE, cyst is small atm"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/1eb0e1dc-b457-4c72-8109-e1b6db891fb2
+" ,
+                       1 ,
+                       "ABE" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/42cd3b29-b5e4-4232-8c49-502a15530aa5
+" ,
+                       1 ,
+                       "RIC" , 
+                       "bald knees, slick forehead, no marks"
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/f2c3f728-9be0-4df1-a32a-e6940d1e5eca
+" ,
+                       1 ,
+                       "RIC" , 
+                       ""
+)
+
 write.csv(d , file="agout_seqience_collection_ids.csv")
 
 #### From here on down notes (not yet identified individuals)
