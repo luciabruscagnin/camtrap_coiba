@@ -1108,6 +1108,7 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "LEO or ROS , cut on back"
 )
 
+<<<<<<< HEAD
 d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/c8caab4e-02cb-41a7-969a-5379cf422cd0
 " ,
                        1 ,
@@ -1115,6 +1116,14 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        "tool using female lookin one"
 )
 
+=======
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/21fed649-4c78-4bec-8595-713abcdec782
+" ,
+                       1 ,
+                       "BEA" , 
+                       "messed up right ear with blob, big brows"
+)
+>>>>>>> 0c0f8d6b8b1783128e7122d31da04b688d9b493c
 
 write.csv(d , file="agout_seqience_collection_ids.csv")
 
