@@ -98,12 +98,16 @@ e3 <- spTransform(e, CRS("+init=EPSG:32616"))
 ebuf <- buffer(e3, width = 500) #add 500 m buffer
 e2 <- st_as_sf(e)
 e2b <- st_as_sf(ebuf)
-grid_100m <- st_make_grid(e2b, square = T, cellsize = c(100, 100) ) %>% 
+grid_1000m <- st_make_grid(e2b, square = T, cellsize = c(1000, 1000) ) %>% 
+  st_sf() #100m grid
+grid_500m <- st_make_grid(e2b, square = T, cellsize = c(500, 500) ) %>% 
   st_sf() #100m grid
 grid_250m <- st_make_grid(e2b, square = T, cellsize = c(250, 250)) %>% # the grid, covering bounding box
   st_sf() # not really required, but makes the grid nicer to work with later
 mapview(grid_250m , col.regions="white")  + all_tools_map + all_streams_map + all_cams_map + most_almendras_map
-mapview(grid_100m , col.regions="white") + all_tools_map + all_streams_map + all_cams_map + most_almendras_map
+mapview(grid_500m , col.regions="white") + all_tools_map + all_streams_map + all_cams_map + most_almendras_map
+mapview(grid_1000m , col.regions="white") + all_tools_map + all_streams_map + all_cams_map + most_almendras_map
+
 #####brendan needs to pick up here before publishing
 pois <- readOGR(dsn = "map/gpx/cleaned/Coiba POI.GPX", layer="waypoints")
 pois2 <- readOGR(dsn = "map/gpx/cleaned/Points of Interest.GPX", layer="waypoints")
@@ -115,6 +119,8 @@ mccir_wp <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="wayp
 mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
 
 mapview(mccir_wp) + mapview(mccir_tr)
-mccir$name
+mccir_wp$name
 almendras$name
+mccir_wp@data$name
+mccir_wp@coords[mccir_wp@data$name=="TC 107",]
 #useful resource https://cmerow.github.io/RDataScience/04_Spatial.html
