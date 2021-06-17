@@ -78,6 +78,14 @@ agoutigross$season <- ifelse(agoutigross$month == 12 | agoutigross$month == 1 | 
                          agoutigross$month == 4, "Dry", "Wet") 
 
 # pull island location and tool use/non tool use from coiba_camtrap_ids_gps.csv
+deployment_info <- read.csv("coiba_camtrap_ids_gps.csv")
+deployment_info$location_name <- deployment_info$camera_id
+
+# drop columns we don't want to attach
+deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id", "number", "longitude", "latitude")]
+str(deployment_info2)
+
+agoutigross <- left_join(agoutigross, deployment_info2, "location_name")
 
 # can still clean up by removing unnecessary columns, e.g.
 # keep checking if these are the right ones to remove
@@ -124,9 +132,9 @@ for (l in 1:length(locations)) {
 # add dry vs wet season comparison
 season <- c("Dry", "Wet")
 
-pdf("tide_analysis/camera_traps_density_season.pdf", width = 9, height = 11)
-par(mfrow=c(4,2)) #sets number of rows and columns per page, could also change margins
-par(cex = 0.5)
+#pdf("tide_analysis/camera_traps_density_season.pdf", width = 9, height = 11)
+#par(mfrow=c(4,2)) #sets number of rows and columns per page, could also change margins
+#par(cex = 0.5)
 
 # sort order you want (by island, tool use non tool use, location). Can plot over that
 
@@ -136,7 +144,7 @@ for (l in 1:length(locations)) {
   }
 } 
 
-dev.off()
+# dev.off()
 
 table(onlycap$location_name, onlycap$season) # see how many observations of capuchins per season
 # also still need to look into how many deployment days per season 
@@ -156,12 +164,9 @@ for (l in 1:length(locations)) {
 
 # dev.off()
 
-# very crude looking at tool users vs non tool users
-onlycap$tooluser <- ifelse((onlycap$location_name == "CEBUS-01" | onlycap$location_name == "CEBUS-02" | onlycap$location_name == "CEBUS-05" | onlycap$location_name == "SURVEY-CEBUS-24-01" | onlycap$location_name == "CEBUS-09"), 
-                           1, 0)
-
-hist(onlycap$hour[onlycap$tooluser == 1], main = "tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
-hist(onlycap$hour[onlycap$tooluser == 0], main = "non-tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+# looking at tool users vs non tool users
+hist(onlycap$hour[onlycap$tool_site == 1], main = "tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+hist(onlycap$hour[onlycap$tool_site == 0], main = "non-tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
 
 
 ## TIDAL
