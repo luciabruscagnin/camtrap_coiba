@@ -69,11 +69,28 @@ agoutigross <- left_join(agoutigross, enddep, "deployment_id")
 # add deployment length in hours, this is an exposure
 agoutigross$dep_length_hours <-as.numeric(difftime(agoutigross$dep_end,agoutigross$dep_start,units="hours"))
 
-# drop duplicated sequences to get one row per sequence, necessary form for tidal analyses and data exploration
-agoutisequence <- agoutigross[!duplicated(agoutigross$sequence_id),]
+#### TIME OF YEAR/WET OR DRY SEASON ####
+# make month column
+agoutigross$month <- month(agoutigross$timestamp_correct)
+
+# make wet season may-nov and dry deason dec-april
+agoutigross$season <- ifelse(agoutigross$month == 12 | agoutigross$month == 1 | agoutigross$month == 2 | agoutigross$month == 3 | 
+                         agoutigross$month == 4, "Dry", "Wet") 
+
+# pull island location and tool use/non tool use from coiba_camtrap_ids_gps.csv
+
+# can still clean up by removing unnecessary columns, e.g.
+# keep checking if these are the right ones to remove
+agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","multimedia_id", "start", "end", "camera_id", "camera_model", "bait_use", "feature_type",
+                                             "comments.y", "time")]
+
+## FORMAT: ONE ROW PER SEQUENCE
+# drop duplicated sequences, necessary form for tidal analyses and data exploration
+# lose individual info etc so to analyze like that need to use agoutigross
+agoutisequence <- agouticlean[!duplicated(agouticlean$sequence_id),]
 length(unique(agoutisequence$sequence_id)) 
 
-### EXPLORING DATA
+### EXPLORING DATA ####
 
 h.lub <- hour(agoutisequence$time[agoutisequence$capuchin == 1])
 hist(h.lub)
@@ -103,6 +120,26 @@ for (l in 1:length(locations)) {
 }
 
 # dev.off()
+
+# add dry vs wet season comparison
+season <- c("Dry", "Wet")
+
+pdf("tide_analysis/camera_traps_density_season.pdf", width = 9, height = 11)
+par(mfrow=c(4,2)) #sets number of rows and columns per page, could also change margins
+par(cex = 0.5)
+
+# sort order you want (by island, tool use non tool use, location). Can plot over that
+
+for (l in 1:length(locations)) {
+  for (s in 1:length(season)) {
+  hist(onlycap$hour[onlycap$location_name == locations[l] & onlycap$season == season[s]], main = paste(locations[l], season[s]), breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+  }
+} 
+
+dev.off()
+
+table(onlycap$location_name, onlycap$season) # see how many observations of capuchins per season
+# also still need to look into how many deployment days per season 
 
 ## Mean number of capuchins per sequence
 # to get PDF, the par doesn't work for ggplot
