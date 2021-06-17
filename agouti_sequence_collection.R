@@ -1160,7 +1160,21 @@ d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-
                        ""
 )
 
-write.csv(d , file="agout_seqience_collection_ids.csv")
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/0e96178f-0356-49cd-b46e-318e12c1be47
+" ,
+                       1 ,
+                       "LEO" , 
+                       ""
+)
+
+d[nrow(d) + 1 , ] <- c("https://www.agouti.eu/#/project/0e0508af-d3dc-4be6-9806-dbdba5ec3368/annotate/sequence/4a62c10e-4af4-4fb0-b627-1159a53c3279
+" ,
+                       1 ,
+                       "CYS" , 
+                       ""
+)
+
+write.csv(d , file="agout_sequence_collection_ids.csv")
 
 #### From here on down notes (not yet identified individuals)
 ## Double white dots, dark temples, larger male:
