@@ -87,6 +87,17 @@ str(deployment_info2)
 
 agoutigross <- left_join(agoutigross, deployment_info2, "location_name")
 
+# whether tool-using occurred in the sequence or not
+agoutigross$tooluse <- str_detect(agoutigross$behaviour, "TAF")
+agoutigross_tools <- agoutigross[agoutigross$tooluse == TRUE,]
+tooluse_count <- agoutigross_tools %>% 
+  count(sequence_id)
+colnames(tooluse_count)[2] <- "n_tooluse"
+
+agoutigross <- left_join(agoutigross, tooluse_count, "sequence_id")
+# replace NAs with 0 for the capuchin count
+agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
+
 # can still clean up by removing unnecessary columns, e.g.
 # keep checking if these are the right ones to remove
 agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","multimedia_id", "start", "end", "camera_id", "camera_model", "bait_use", "feature_type",
@@ -96,6 +107,7 @@ agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","multimedia_
 # drop duplicated sequences, necessary form for tidal analyses and data exploration
 # lose individual info etc so to analyze like that need to use agoutigross
 agoutisequence <- agouticlean[!duplicated(agouticlean$sequence_id),]
+agoutisequence$tooluse <- agoutisequence$n_tooluse > 0
 length(unique(agoutisequence$sequence_id)) 
 
 ### EXPLORING DATA ####
@@ -164,9 +176,75 @@ for (l in 1:length(locations)) {
 
 # dev.off()
 
+# colors for two histograms in one
+c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
+c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
+
 # looking at tool users vs non tool users
-hist(onlycap$hour[onlycap$tool_site == 1], main = "tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
-hist(onlycap$hour[onlycap$tool_site == 0], main = "non-tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+# sequences with capuchins present 
+histtool <- hist(onlycap$hour[onlycap$tool_site == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+histnotool <- hist(onlycap$hour[onlycap$tool_site == 0], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+
+plot(histtool, col = c1, freq = FALSE, main = "Tool users (blue) vs non-tool users (red)", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins")
+plot(histnotool, col = c2, freq = FALSE, add = TRUE)
+
+# wet vs dry season
+histwet <- hist(onlycap$hour[onlycap$season == "Wet"], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+histdry <- hist(onlycap$hour[onlycap$season == "Dry"], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+
+plot(histdry, col = c2, freq = FALSE, main = "Wet (blue) vs dry (red) season", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins")
+plot(histwet, col = c1, freq = FALSE, add = TRUE)
+
+histwet <- hist(onlycap$hour[onlycap$season == "Wet" & onlycap$tooluse == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+histdry <- hist(onlycap$hour[onlycap$season == "Dry" & onlycap$tooluse == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+
+# is there more tool use in the dry or wet season?
+table(onlycap$tooluse, onlycap$season)
+
+
+### considering presence of tool use
+ftable(onlycap$tooluse)
+# mostly see tool-using of one individual in a sequence, not of more
+ftable(onlycap$n_tooluse)
+
+# more individuals, more tool using?
+plot(onlycap$n_tooluse, onlycap$n)
+
+# how many locations in the tool using range show tool use and how much (of the sequences with capuchins in them)?
+ftable(onlycap$location_name[onlycap$tool_site == 1], onlycap$tooluse[onlycap$tool_site == 1])
+ftable(onlycap$tool_site)
+
+ftable(onlycap$island)
+
+## when do capuchins use tools (what time of day)
+hist(onlycap$hour[onlycap$tooluse == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with tool using capuchins")
+## compared to all occurrences of tool users
+hist(onlycap$hour[onlycap$tool_site == 1], main = "Tool users", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+## occurrences of tool using group, not tool using
+hist(onlycap$hour[onlycap$tool_site == 1 & onlycap$tooluse == FALSE], main = "Tool users, no tool use", breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins not using tools")
+
+# plot together tool use and non tool use behaviors of tool using groups
+
+
+#### Late night parties
+# can select all sequences with time > sunset (or 8 pm or something) and then try to extract the behaviors? Will have to come from the agouticlean dataset, not agoutisequences
+agouticlean$hour <- hour(agouticlean$timestamp_correct)
+
+latenight <- subset(agouticlean, agouticlean$hour > 20 & agouticlean$capuchin == 1)
+# drop down to sequences level
+latenightsequence <- latenight[!duplicated(latenight$sequence_id),]
+
+ftable(latenightsequence$hour)
+# are they using tools?
+ftable(latenightsequence$tooluse)
+# is this the tool using pop or the non toolusers
+ftable(latenightsequence$tool_site)
+# which sites?
+ftable(latenightsequence$location_name)
+
+# how many capuchins are spotted?
+ftable(latenightsequence$n)
+
 
 
 ## TIDAL
@@ -190,3 +268,5 @@ hist(h.lub)
 
 # for each camera trap add get distance from coast
 str(agoutisequence2)
+
+
