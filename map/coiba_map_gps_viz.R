@@ -115,10 +115,49 @@ mapview(pois)
 mapview(pois2)
 pois$name
 pois2$name
+
+pois_4_map_and_gps <- pois2[pois2$name!="SE Landing Spo",]
+pois_4_map_and_gps$name
+
+mono_encounters <-
+  rbind(
+  pois[str_detect(pois$name, "TROPA"), ] ,
+  pois[str_detect(pois$name, "Cebus track s"), ] ,
+  pois[str_detect(pois$name, "MONO"), ] , 
+  pois[str_detect(pois$name, "MONKEY"), ] , 
+  pois[str_detect(pois$name, "SOUTHERN GROUP"), ]
+  )
+
+mapview(mono_encounters)
+
+####tracks we walked
+
+#bind in raster package can deal with combining
+#2018.03.28
+trk_20180328<- readOGR(dsn =filelist[2] , layer="tracks")
+trk_20180328$name
+print(mapview(tracks_4_site))
+#2017.03.24 bjb and claudio initial cross
+trk_20170324  <- readOGR(dsn =filelist[7] , layer="tracks")
+#2017.07.29 BJB PC cross
+trk_20170729  <- readOGR(dsn =filelist[8] , layer="tracks")
+#2017.12.20 cmm cross
+trk_20171220   <- readOGR(dsn =filelist[9] , layer="tracks")
+tracks_4_site <- bind(x,tracks_4_site)
+
+mapview(trk_20180328) + mapview(trk_20170324) + mapview(trk_20170729) + mapview(trk_20171220 )
+#READ IN MEGS INREACH ORANGE
+
+mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
+mapview(mccir_tr , zcol="name") + mapview(trk_20180328) + mapview(trk_20170324) + mapview(trk_20170729) + mapview(trk_20171220 )
+mccir_tr$name
+all_tracks <- bind(mccir_tr ,trk_20180328 ,trk_20170324,trk_20170729 ,trk_20171220)
+mapview(all_tracks , zcol="name") + mapview(grid_250m) + all_tools_map + all_streams_map + mapview(mono_encounters)
+####tracks
 mccir_wp <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
 mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
-
 mapview(mccir_wp) + mapview(mccir_tr)
+
 mccir_wp$name
 almendras$name
 mccir_wp@data$name
