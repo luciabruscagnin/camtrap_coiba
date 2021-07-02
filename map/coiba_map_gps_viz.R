@@ -95,7 +95,7 @@ str(grid_shapes)
 e <- as(raster::extent(min(grid_shapes@coords[,1]), max(grid_shapes@coords[,1]), min(grid_shapes@coords[,2]), max(grid_shapes@coords[,2])), "SpatialPolygons")
 proj4string(e) <- crs(grid_shapes)
 e3 <- spTransform(e, CRS("+init=EPSG:32616"))
-ebuf <- buffer(e3, width = 500) #add 500 m buffer
+ebuf <- buffer(e3, width = 1500) #add 500 m buffer
 e2 <- st_as_sf(e)
 e2b <- st_as_sf(ebuf)
 grid_1000m <- st_make_grid(e2b, square = T, cellsize = c(1000, 1000) ) %>% 
@@ -152,14 +152,14 @@ mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="trac
 mapview(mccir_tr , zcol="name") + mapview(trk_20180328) + mapview(trk_20170324) + mapview(trk_20170729) + mapview(trk_20171220 )
 mccir_tr$name
 all_tracks <- bind(mccir_tr ,trk_20180328 ,trk_20170324,trk_20170729 ,trk_20171220)
-mapview(all_tracks , zcol="name") + mapview(grid_250m) + all_tools_map + all_streams_map + mapview(mono_encounters)
+mapview(all_tracks , zcol="name") + mapview(grid_250m , col.regions="white") + all_tools_map + all_streams_map + mapview(mono_encounters)
 ####tracks
-mccir_wp <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
-mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
-mapview(mccir_wp) + mapview(mccir_tr)
-
-mccir_wp$name
-almendras$name
-mccir_wp@data$name
-mccir_wp@coords[mccir_wp@data$name=="TC 107",]
+# mccir_wp <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="waypoints")##inreaches need a space on xml code in first line removed to code
+# mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
+# mapview(mccir_wp) + mapview(mccir_tr)
+# 
+# mccir_wp$name
+# almendras$name
+# mccir_wp@data$name
+# mccir_wp@coords[mccir_wp@data$name=="TC 107",]
 #useful resource https://cmerow.github.io/RDataScience/04_Spatial.html
