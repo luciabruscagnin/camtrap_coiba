@@ -33,3 +33,14 @@ grid_250m <- st_make_grid(e2b, square = T, cellsize = c(250, 250)) %>% # the gri
   st_sf() # not really required, but makes the grid nicer to work with later
 
 all_tools_map + all_streams_map +  most_almendras_map + all_cams_map + all_tracks + mapview(grid_250m, col.regions = "white")
+
+grid <- SpatialGrid(GridTopology(c(0, 0), c(1, 1), c(5, 4)))
+
+# get coordinates of center coordinates of each cell
+# https://gis.stackexchange.com/questions/203760/calculate-centre-point-of-spatialgrid-object
+#above uses sp, so we can convert an sf to an sp object
+grid_cams <- sf:::as_Spatial(grid_250m) #convert to 
+grid_ctr <- coordinates(grid_cams) #this contains points, need to convert format and save as gpx
+plot(grid_cams, axes=TRUE)
+points(grid_ctr, col="red", pch=16 , cex=0.3) #converst to spartial points dataframe
+mapview(grid) + all_tools_map
