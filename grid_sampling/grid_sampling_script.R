@@ -38,4 +38,26 @@ grid_cams <- sf:::as_Spatial(grid_250m) #convert to
 grid_ctr <- sp:::coordinates(grid_cams) #this contains points, need to convert format and save as gpx
 plot(grid_cams, axes=TRUE)
 points(grid_ctr, col="red", pch=16 , cex=0.3) #converst to spartial points dataframe
-mapview(grid) + all_tools_map
+mapview(grid_250m) + all_tools_map
+
+# plot over topo map
+grid_centers <- as.data.frame(grid_ctr)
+grid_centers$ID <- 1:nrow(grid_centers)
+grid_centers_map <- st_as_sf(grid_centers, coords = c("V1", "V2"), crs = "+init=EPSG:32616")
+
+mapview(grid_centers_map) + all_streams_map + all_tracks
+
+# check if transformation went okay
+plot(grid_cams)
+plot(grid_centers_map, add = TRUE)
+
+head(grid_centers_map)
+## convert points and save as gpx
+
+grid_centers_map2 <- SpatialPointsDataFrame(coords=grid_centers[,c(1,2)],data=grid_centers,proj4string =CRS("+init=EPSG:32616")) 
+# need to transform to longitude/latitude 
+grid_centers_map3 <- spTransform(grid_centers_map2, CRS("+init=EPSG:4326"))
+crs(grid_centers_map3)
+
+# to write GPX file, only re-run if something changed
+# writeOGR(grid_centers_map3, dsn = "grid_sampling/JicaronTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
