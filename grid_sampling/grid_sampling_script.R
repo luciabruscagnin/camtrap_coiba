@@ -10,11 +10,6 @@ library(raster)
 
 
 
-
-
-
-
-
 #maybe use gridshapes
 mapview(tools_w201803)
 grid_shapes <- rbind(tools_w201707201901,tools_w201803,tools_w201807) # define grid area using a subset of tools w/ same number columns
