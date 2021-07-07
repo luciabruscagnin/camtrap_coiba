@@ -42,7 +42,7 @@ mapview(grid_250m) + all_tools_map
 
 # plot over topo map
 grid_centers <- as.data.frame(grid_ctr)
-grid_centers$ID <- 1:nrow(grid_centers)
+grid_centers$name <- paste("ZG", 1:nrow(grid_centers), sep = "_") # label per waypoint, needs to be called "name" to show up in GPX file
 grid_centers_map <- st_as_sf(grid_centers, coords = c("V1", "V2"), crs = "+init=EPSG:32616")
 
 mapview(grid_centers_map) + all_streams_map + all_tracks
@@ -52,8 +52,8 @@ plot(grid_cams)
 plot(grid_centers_map, add = TRUE)
 
 head(grid_centers_map)
-## convert points and save as gpx
 
+## convert points and save as gpx
 grid_centers_map2 <- SpatialPointsDataFrame(coords=grid_centers[,c(1,2)],data=grid_centers,proj4string =CRS("+init=EPSG:32616")) 
 # need to transform to longitude/latitude 
 grid_centers_map3 <- spTransform(grid_centers_map2, CRS("+init=EPSG:4326"))
@@ -61,3 +61,5 @@ crs(grid_centers_map3)
 
 # to write GPX file, only re-run if something changed
 # writeOGR(grid_centers_map3, dsn = "grid_sampling/JicaronTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
+
+# afterwards upload gpx tracks to Garmin basecamp to put on Garmin
