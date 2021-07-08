@@ -163,3 +163,12 @@ mapview(all_tracks , zcol="name") + mapview(grid_250m , col.regions="white") + a
 # mccir_wp@data$name
 # mccir_wp@coords[mccir_wp@data$name=="TC 107",]
 #useful resource https://cmerow.github.io/RDataScience/04_Spatial.html
+
+
+#gpx to write-- camera traps, all tracks, almendras, pois, tools, 
+
+all_cams
+writeOGR(pois_4_map_and_gps, dsn = "map/gpx/coiba_pois_4_map_and_gps.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
+writeOGR(all_cams, dsn = "map/gpx/all_cameratraps_2020.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
+#fix above to sp
+
