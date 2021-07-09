@@ -47,7 +47,7 @@ grid_centers_map <- st_as_sf(grid_centers, coords = c("V1", "V2"), crs = "+init=
 
 mapview(grid_centers_map) + all_streams_map + all_tracks
 mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + all_tracks + mapview(grid_cams , alpha.regions=0.01)
-mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + mapview(grid_cams , alpha.regions=0.01) + all_cams_map
+mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + mapview(grid_cams , alpha.regions=0.01) + mapview(all_tracks) + all_streams_map
 
 
 # check if transformation went okay
