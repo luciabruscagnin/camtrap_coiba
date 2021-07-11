@@ -80,3 +80,46 @@ all_tools_map + all_streams_map + all_cams_map + most_almendras_map #map of all 
 #all_tools_map + all_streams_map +  most_almendras_map #map of all trees, tools, camerasm etc
 
 ```
+
+```{r map grid , echo=FALSE , verbose=FALSE , message=FALSE}
+
+## map with grid
+grid_shapes <- rbind(tools_w201707201901,tools_w201803,tools_w201807) # define grid area using a subset of tools w/ same number columns
+
+e <- as(raster::extent(min(grid_shapes@coords[,1]), max(grid_shapes@coords[,1]), min(grid_shapes@coords[,2]), max(grid_shapes@coords[,2])), "SpatialPolygons")
+proj4string(e) <- crs(grid_shapes)
+e3 <- spTransform(e, CRS("+init=EPSG:32616"))
+ebuf <- buffer(e3, width = 1500) #add 500 m buffer
+e2 <- st_as_sf(e)
+e2b <- st_as_sf(ebuf)
+grid_250m <- st_make_grid(e2b, square = T, cellsize = c(250, 250)) %>% # the grid, covering bounding box
+  st_sf() # not really required, but makes the grid nicer to work with later
+
+grid <- SpatialGrid(GridTopology(c(0, 0), c(1, 1), c(5, 4)))
+
+# get coordinates of center coordinates of each cell
+#above uses sp, so we can convert an sf to an sp object
+grid_cams <- sf:::as_Spatial(grid_250m) #convert to
+grid_ctr <- sp:::coordinates(grid_cams)
+
+# plot over topo map
+grid_centers <- as.data.frame(grid_ctr)
+grid_centers$name <- paste("ZG", 1:nrow(grid_centers), sep = "_") # label per waypoint, needs to be called "name" to show up in GPX file
+grid_centers_map <- st_as_sf(grid_centers, coords = c("V1", "V2"), crs = "+init=EPSG:32616")
+
+# add tracks
+#bind in raster package can deal with combining
+#2018.03.28
+trk_20180328<- readOGR(dsn =filelist[2] , layer="tracks")
+#2017.03.24 bjb and claudio initial cross
+trk_20170324  <- readOGR(dsn =filelist[7] , layer="tracks")
+#2017.07.29 BJB PC cross
+trk_20170729  <- readOGR(dsn =filelist[8] , layer="tracks")
+#2017.12.20 cmm cross
+trk_20171220   <- readOGR(dsn =filelist[9] , layer="tracks")
+
+mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
+all_tracks <- bind(mccir_tr ,trk_20180328 ,trk_20170324,trk_20170729 ,trk_20171220)
+
+mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + mapview(grid_cams , alpha.regions=0.01) + all_cams_map + all_streams_map + all_tools_map + mapview(all_tracks)
+```

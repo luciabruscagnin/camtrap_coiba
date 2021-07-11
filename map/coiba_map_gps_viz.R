@@ -143,10 +143,8 @@ trk_20170324  <- readOGR(dsn =filelist[7] , layer="tracks")
 trk_20170729  <- readOGR(dsn =filelist[8] , layer="tracks")
 #2017.12.20 cmm cross
 trk_20171220   <- readOGR(dsn =filelist[9] , layer="tracks")
-tracks_4_site <- bind(x,tracks_4_site)
 
 mapview(trk_20180328) + mapview(trk_20170324) + mapview(trk_20170729) + mapview(trk_20171220 )
-#READ IN MEGS INREACH ORANGE
 
 mccir_tr <- readOGR(dsn ="map/gpx/gps_dumps/MCCinreachJan2020.GPX" , layer="tracks")##inreaches need a space on xml code in first line removed to code
 mapview(mccir_tr , zcol="name") + mapview(trk_20180328) + mapview(trk_20170324) + mapview(trk_20170729) + mapview(trk_20171220 )
