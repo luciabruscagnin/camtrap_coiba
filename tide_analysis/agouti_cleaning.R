@@ -6,11 +6,11 @@ require(ggplot2)
 
 #### GENERAL CLEANING ####
 
-# open Agouti output file (observations) that you have downloaded from the agouti website
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20210518123935/observations.csv", header = TRUE)
+# open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20210518123935/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
@@ -39,7 +39,7 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20210518123935/multimedia.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/multimedia.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -138,7 +138,7 @@ length(unique(agoutisequence$sequence_id))
 #### ACTIVITY PER HOUR (many histograms)
 
 hist(hour(agoutisequence$seq_start[agoutisequence$capuchin == 1]))
-hist(hour(agoutisequence$seq_start[agoutisequence$vernacular_name == "human"]))
+hist(hour(agoutisequence$seq_start[agoutisequence$scientific_name == "Homo sapiens"]))
 
 ## Per location
 
