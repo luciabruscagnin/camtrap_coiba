@@ -207,6 +207,8 @@ for (l in 1:length(locations)) {
 c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
 c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
 
+## NEED TO MAKE TOOL_SITE COLUMN. sO WHICH PACES ARE TOOL SITES. 
+
 ### Tool users vs non tool users
 histtool <- hist(onlycap$hour[onlycap$tool_site == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
 histnotool <- hist(onlycap$hour[onlycap$tool_site == 0], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
@@ -252,7 +254,7 @@ plot(histwetnotool, col = c2, freq = FALSE, main = "Tool using (blue) vs non-too
 plot(histwettool, col = c1, freq = FALSE, add = TRUE)
 
 # dry
-histdrytool <- hist(onlycap$hour[onlycap$season == "Dry" & onlycap$tool_site == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+histdrytool <- hist(onlycap$hour[onlycap$season == "Dry" & onlycap$tool_site == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24),  freq = FALSE)
 histdrynotool <- hist(onlycap$hour[onlycap$season == "Dry" & onlycap$tool_site == FALSE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
 
 plot(histdrynotool, col = c2, freq = FALSE, main = "Tool using (blue) vs non-tool using (red) capuchins: Dry Season", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins")
