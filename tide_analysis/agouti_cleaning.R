@@ -121,8 +121,6 @@ agoutigross <- left_join(agoutigross, tooluse_count, "sequence_id")
 # replace NAs with 0 for the tool use
 agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
 
-### MERGE WITH FILE THAT HAS INFO ON ALL THE LOCATIONS
-
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
 agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","multimedia_id", "start", "end", "camera_id", "camera_model", "bait_use", "feature_type",
