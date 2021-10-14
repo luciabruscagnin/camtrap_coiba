@@ -118,8 +118,10 @@ tooluse_count <- agoutigross_tools %>%
 colnames(tooluse_count)[2] <- "n_tooluse"
 
 agoutigross <- left_join(agoutigross, tooluse_count, "sequence_id")
-# replace NAs with 0 for the capuchin count
+# replace NAs with 0 for the tool use
 agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
+
+### MERGE WITH FILE THAT HAS INFO ON ALL THE LOCATIONS
 
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
