@@ -3,6 +3,7 @@ require(dplyr)
 require(lubridate)
 require(stringr)
 require(ggplot2)
+require(DescTools)
 
 #### GENERAL CLEANING ####
 
@@ -287,16 +288,51 @@ sum(str_detect(latenight$behaviour, "Infant"))
 ## TIDAL
 
 # for each sequence get time to nearest low tide (need to match day and get low tide times then)
-agoutisequence$tidedif <- NA
+# two options, either get absolute difference (so always positive)
+# or before/after difference
+# Absolute
+agoutisequence$tidedifabs <- NA
 which(is.na(agoutisequence$time))
 
 for (i in 1:nrow(agoutisequence)) {
-  agoutisequence$tidedif[i] <- min(abs(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
+  agoutisequence$tidedifabs[i] <- min(abs(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
 }
 
-hist(agoutisequence$tidedif)  
+hist(agoutisequence$tidedifabs)  
+plot(agoutisequence$tidedifabs, agoutisequence$count)
+
+# Both positive and negative
+
+agoutisequence$tidedif <- NA
+
+for (i in 1:nrow(agoutisequence)) {
+  agoutisequence$tidedif[i] <- Closest((as.vector(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME,   units = "hours"))), 0)
+}
+
+# get an error but it does seem to work... 
+hist(agoutisequence$tidedif)
 plot(agoutisequence$tidedif, agoutisequence$count)
 
-# for each camera trap add get distance from coast
-str(agoutisequence2)
+# only sequences with capuchins
+hist(agoutisequence$tidedif[agoutisequence$capuchin == 1])
 
+# per location 
+# pdf("tide_analysis/tidediff_capuchin.pdf", width = 9, height = 11)
+# par(mfrow=c(4,3)) #sets number of rows and columns per page, could also change margins
+# par(cex = 0.5)
+
+for (l in 1:length(locations)) {
+hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$location_name == locations[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
+}
+
+# dev.off()
+
+# looking at tool using specifically
+hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$tooluse == TRUE])
+
+# below doesn't work because some locations don't have tool use and it tries to do those. FIX THIS. 
+for (l in 1:length(locations)) {
+  hist(agoutisequence$tidedif[agoutisequence$tooluse == TRUE & agoutisequence$location_name == locations[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
+}
+
+# for each camera trap add get distance from coast
