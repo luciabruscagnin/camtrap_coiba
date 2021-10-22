@@ -1,0 +1,334 @@
+<?xml version="1.0"?>
+<gpx version="1.1" creator="GDAL 3.2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogr="http://osgeo.org/gdal" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+<metadata><bounds minlat="7.227693982422350" minlon="-81.821969021111698" maxlat="7.638269271701570" maxlon="-81.677283039316507"/></metadata>                  
+<wpt lat="7.29063000530005" lon="-81.790947010740595">
+  <extensions>
+    <ogr:X>1</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-01-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.24066397175193" lon="-81.802393002435593">
+  <extensions>
+    <ogr:X>2</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-02-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.24066397175193" lon="-81.802393002435593">
+  <extensions>
+    <ogr:X>3</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-02-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.22851096652448" lon="-81.802730038762107">
+  <extensions>
+    <ogr:X>4</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-03-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.22851096652448" lon="-81.802730038762107">
+  <extensions>
+    <ogr:X>5</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-03-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.23094599321485" lon="-81.803363040089593">
+  <extensions>
+    <ogr:X>6</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-04-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.28969198651612" lon="-81.8054107390344">
+  <extensions>
+    <ogr:X>7</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-05-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.22769398242235" lon="-81.802376993000493">
+  <extensions>
+    <ogr:X>8</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-06-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.27079196833074" lon="-81.821163017302794">
+  <extensions>
+    <ogr:X>9</ogr:X>
+    <ogr:camera_id>CEBUS-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.27083337493241" lon="-81.821116665378199">
+  <extensions>
+    <ogr:X>10</ogr:X>
+    <ogr:camera_id>CEBUS-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.27172998711467" lon="-81.821969021111698">
+  <extensions>
+    <ogr:X>11</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-08-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.25748502649367" lon="-81.790791023522601">
+  <extensions>
+    <ogr:X>12</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-09-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.25748502649367" lon="-81.790791023522601">
+  <extensions>
+    <ogr:X>13</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-09-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.28956701233983" lon="-81.805759007111206">
+  <extensions>
+    <ogr:X>14</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-10-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.52779201604426" lon="-81.677283039316507">
+  <extensions>
+    <ogr:X>15</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-11-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.52982798032463" lon="-81.677800035104198">
+  <extensions>
+    <ogr:X>16</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-12-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.22871498204768" lon="-81.802599029615493">
+  <extensions>
+    <ogr:X>17</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-03-03</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.22786396741867" lon="-81.802299041300998">
+  <extensions>
+    <ogr:X>18</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-06-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.62609195895493" lon="-81.729468014091296">
+  <extensions>
+    <ogr:X>19</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-13-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.52959202975035" lon="-81.677946969866795">
+  <extensions>
+    <ogr:X>20</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-14-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26893696933985" lon="-81.819556960836096">
+  <extensions>
+    <ogr:X>21</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-15-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26989300921559" lon="-81.820388026535497">
+  <extensions>
+    <ogr:X>22</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-16-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26988" lon="-81.820493">
+  <extensions>
+    <ogr:X>23</ogr:X>
+    <ogr:camera_id>CEBUS-05</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26989300921559" lon="-81.820388026535497">
+  <extensions>
+    <ogr:X>24</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-16-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26828997023404" lon="-81.819408014416695">
+  <extensions>
+    <ogr:X>25</ogr:X>
+    <ogr:camera_id>CEBUS-08</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26827102713287" lon="-81.8194230180234">
+  <extensions>
+    <ogr:X>26</ogr:X>
+    <ogr:camera_id>CEBUS-09</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26542998105288" lon="-81.786246020346894">
+  <extensions>
+    <ogr:X>27</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-18-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.29039103724062" lon="-81.797462850809097">
+  <extensions>
+    <ogr:X>28</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-19-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.29067996144295" lon="-81.803449038416105">
+  <extensions>
+    <ogr:X>29</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-20-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.63826927170157" lon="-81.700011240318403">
+  <extensions>
+    <ogr:X>30</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-21-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.22871095873415" lon="-81.802599029615493">
+  <extensions>
+    <ogr:X>31</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-03-04</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.27079196833074" lon="-81.821163017302794">
+  <extensions>
+    <ogr:X>32</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-07-03</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26906202733517" lon="-81.819548998027997">
+  <extensions>
+    <ogr:X>33</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-15-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26873999461532" lon="-81.8199280276895">
+  <extensions>
+    <ogr:X>34</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-15-03</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26818" lon="-81.819474">
+  <extensions>
+    <ogr:X>35</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-17-03</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.24401698447764" lon="-81.800431972369594">
+  <extensions>
+    <ogr:X>36</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-22-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.28900198824704" lon="-81.812629988417001">
+  <extensions>
+    <ogr:X>37</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-23-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.29063000530005" lon="-81.790947010740595">
+  <extensions>
+    <ogr:X>38</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-01-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.27083337493241" lon="-81.821116665378199">
+  <extensions>
+    <ogr:X>39</ogr:X>
+    <ogr:camera_id>CEBUS-03</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.268963" lon="-81.819543">
+  <extensions>
+    <ogr:X>40</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-15-04</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26968698203564" lon="-81.820437982678399">
+  <extensions>
+    <ogr:X>41</ogr:X>
+    <ogr:camera_id>CEBUS-06</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.270903" lon="-81.820995">
+  <extensions>
+    <ogr:X>42</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-24-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.28969" lon="-81.805409">
+  <extensions>
+    <ogr:X>43</ogr:X>
+    <ogr:camera_id>SURVEY-CEBUS-05-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.270903" lon="-81.820995">
+  <extensions>
+    <ogr:X>44</ogr:X>
+    <ogr:camera_id>CEBUS-04</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.268823" lon="-81.819583">
+  <extensions>
+    <ogr:X>45</ogr:X>
+    <ogr:camera_id>CEBUS-07</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.286901" lon="-81.802552">
+  <extensions>
+    <ogr:X>46</ogr:X>
+    <ogr:camera_id>JIC-STREAM-CAMP-NO-T-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.286715" lon="-81.802422">
+  <extensions>
+    <ogr:X>47</ogr:X>
+    <ogr:camera_id>JIC-STREAM-CAMP-NO-T-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.26826" lon="-81.819218">
+  <extensions>
+    <ogr:X>49</ogr:X>
+    <ogr:camera_id>JIC-STREAM-DISC-T-1</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.268261" lon="-81.819033">
+  <extensions>
+    <ogr:X>50</ogr:X>
+    <ogr:camera_id>JIC-STREAM-DISC-T-2</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.268261" lon="-81.819033">
+  <extensions>
+    <ogr:X>51</ogr:X>
+    <ogr:camera_id>JIC-STREAM-DISC-T-3</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.268845" lon="-81.819879">
+  <extensions>
+    <ogr:X>52</ogr:X>
+    <ogr:camera_id>CEBUS-10</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.610059" lon="-81.786899">
+  <extensions>
+    <ogr:X>53</ogr:X>
+    <ogr:camera_id>SURVEY-RIO-ESC-00</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.607961" lon="-81.786085">
+  <extensions>
+    <ogr:X>54</ogr:X>
+    <ogr:camera_id>ESC-01</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.607387" lon="-81.786031">
+  <extensions>
+    <ogr:X>55</ogr:X>
+    <ogr:camera_id>ESC-02</ogr:camera_id>
+  </extensions>
+</wpt>
+<wpt lat="7.607146" lon="-81.784886">
+  <extensions>
+    <ogr:X>56</ogr:X>
+    <ogr:camera_id>ESC-03</ogr:camera_id>
+  </extensions>
+</wpt>
+</gpx>

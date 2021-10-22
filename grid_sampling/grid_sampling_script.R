@@ -66,3 +66,12 @@ crs(grid_centers_map3)
 # writeOGR(grid_centers_map3, dsn = "grid_sampling/JicaronTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
 
 # afterwards upload gpx tracks to Garmin basecamp to put on Garmin
+
+# write points of interest and camera locations to GPX
+str(pois_4_map_and_gps)
+
+writeOGR(pois_4_map_and_gps, dsn = "grid_sampling/pointsofinterest.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
+
+str(all_cams2)
+all_cams2 <- as_Spatial(all_cams)
+writeOGR(all_cams2, dsn = "grid_sampling/cam_locations.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
