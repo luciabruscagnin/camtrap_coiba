@@ -16,6 +16,7 @@ agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-202110131014
 depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
+## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW. 
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
 
 # match deployment IDS in keys to observations
