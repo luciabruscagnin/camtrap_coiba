@@ -63,6 +63,7 @@ multimedia$timeflag <- ifelse(multimedia$time == multimedia$time_file, 0, 1)
 ftable(multimedia$deployment_id, multimedia$timeflag)
 
 # the file time is always correct, so can just use that one for the one's that are flagged
+# NOT ALWAYS! In at least one deployment (CEBUS-09-R3 the filetime is one year off, I think.. Also R9 deployment)
 # covers both the entry mistakes and the ones that drifted 5 hours
 # create timestamp_correct 
 multimedia$timestamp_correct <- multimedia$timestamp
