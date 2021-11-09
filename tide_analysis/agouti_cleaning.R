@@ -5,8 +5,10 @@ require(stringr)
 require(ggplot2)
 require(DescTools)
 
-#### GENERAL CLEANING ####
+# check if working directory is set okay
+setwd("~/Git/camtrap_coiba")
 
+#### GENERAL CLEANING ####
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
 agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/observations.csv", header = TRUE)
 
@@ -14,6 +16,7 @@ agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-202110131014
 depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
+## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW. 
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
 
 # match deployment IDS in keys to observations
@@ -60,6 +63,7 @@ multimedia$timeflag <- ifelse(multimedia$time == multimedia$time_file, 0, 1)
 ftable(multimedia$deployment_id, multimedia$timeflag)
 
 # the file time is always correct, so can just use that one for the one's that are flagged
+# NOT ALWAYS! In at least one deployment (CEBUS-09-R3 the filetime is one year off, I think.. Also R9 deployment)
 # covers both the entry mistakes and the ones that drifted 5 hours
 # create timestamp_correct 
 multimedia$timestamp_correct <- multimedia$timestamp
@@ -75,13 +79,21 @@ endseq <- aggregate(x = list(seq_end = multimedia$timestamp_correct), by = list(
 
 multimedia <- left_join(multimedia, startseq, "sequence_id")
 multimedia <- left_join(multimedia, endseq, "sequence_id")
-multimedia$seq_length <-as.numeric(difftime(multimedia$seq_end,multimedia$seq_start,units="secs"))
+multimedia$seq_lengthstill <-as.numeric(difftime(multimedia$seq_end,multimedia$seq_start,units="secs"))
 
-### NOTE: the sequence length as calculated above is only accurate for the IMAGES. The videos we will need to extract the length of via exiftool from the metadata...
-# All videos have a sequence length of 0 now (so can easily exclude)
+#### Add temperature and video sequence length
+# first run script "exiftempseq_cleaning.R" in the exiftool_metadata folder
+## clean filename in multimedia agouti (take off the upload time, which is always 15 characters)
+multimedia$FileName <- substring(multimedia$file_name, 16)
+
+multimedia <- left_join(multimedia, exifstillsclean, "FileName")
+multimedia <- left_join(multimedia, exifvideosclean, "FileName")
+
+multimedia$temperature <- ifelse(is.na(multimedia$temperature.x), multimedia$temperature.y, multimedia$temperature.x)
+multimedia$seq_length <- ifelse((multimedia$file_mediatype == "video/mp4"), multimedia$seq_lengthv, multimedia$seq_lengthstill) 
 
 # left join does not work if the y dataframe (so multimedia2) has duplicated values in the column you're matching by (so sequence_id). Need to drop duplicates before the left_join
-multimedia2 <- multimedia[,c("sequence_id", "seq_start", "seq_end", "seq_length")]
+multimedia2 <- multimedia[,c("sequence_id", "seq_start", "seq_end", "seq_length", "temperature")]
 multimedia2 <- multimedia2[!duplicated(multimedia2$sequence_id),]
 agoutigross <- left_join(agoutigross, multimedia2, "sequence_id")
 
@@ -135,12 +147,18 @@ agoutisequence$tooluse <- agoutisequence$n_tooluse > 0
 length(unique(agoutisequence$sequence_id)) 
 
 ### EXPLORING DATA ####
+# below is just me attempting many things
+
+### NOTES
+# could make on sequence level variable that says how many males, how many females, how many adults, how many juveniles, how many unclassified (?)
+# can look at individuals that are IDed where they show up the most 
+
 
 #### ACTIVITY PER HOUR (many histograms)
 
-hist(hour(agoutisequence$seq_start[agoutisequence$capuchin == 1]))
-hist(hour(agoutisequence$seq_start[agoutisequence$scientific_name == "Homo sapiens"]))
-
+hist(hour(agoutisequence$seq_start[agoutisequence$capuchin == 1]), xlab = "Time of Day", ylab = "Number of Sequences", main = "Capuchin Detections Across All Locations")
+hist(hour(agoutisequence$seq_start[agoutisequence$scientific_name == "Homo sapiens"]), xlab = "Time of Day", ylab = "Number of Sequences", main = "Human Detections")
+ftable(agoutisequence$location_name[agoutisequence$scientific_name == "Homo sapiens"])
 ## Per location
 
 # loop over camera ID, density plot for each camera when capuchins are present
@@ -331,8 +349,10 @@ hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$locati
 hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$tooluse == TRUE])
 
 # below doesn't work because some locations don't have tool use and it tries to do those. FIX THIS. 
-for (l in 1:length(locations)) {
-  hist(agoutisequence$tidedif[agoutisequence$tooluse == TRUE & agoutisequence$location_name == locations[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
+locations_toolsites <- deployment_info$location_name[deployment_info$tool_site == 1]
+
+for (l in 1:length(locations_toolsites)) {
+  hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 && agoutisequence$location_name == locations_toolsites[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
 }
 
 # for each camera trap add get distance from coast

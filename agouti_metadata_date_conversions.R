@@ -32,3 +32,6 @@ d2 <- agouti_rename(d)
 
 d <- read.csv("exiftool_metadata/Cebus-08-R2_exif_metadata_clean_mp4.csv") 
 d2 <- agouti_rename(d)
+
+d <- read.csv("exiftool_metadata/Cebus-08-R4_exif_metadata_clean_mp4.csv") 
+d2 <- agouti_rename(d)
