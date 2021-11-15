@@ -2,12 +2,16 @@
 
 # first run agouti_cleaning script
 
-# use agoutisequence dataframe that's cleaned on the sequence level
-str(agoutisequence)
 
+### need to add days within the deployment length that were not observed as a 0 tool use day. Should be included in the model. 
+
+
+
+# use agoutisequence dataframe that's cleaned on the sequence level
 # filter dataset down to cameras that were deployed in the Jicaron tool using groups range
 agoutisequence_jt <- agoutisequence[(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
 
+## EXPOSURE
 # extract the day of the sequence and also the day of the deployment start and end
 # if day of sequence is in day of deployment start or end, then it's time for that. otherwise it's 24 hours
 # not too fast but works
@@ -23,151 +27,219 @@ agoutisequence_jt$exposure <- ifelse(agoutisequence_jt$seq_startday == agoutiseq
                                   ifelse(agoutisequence_jt$seq_startday == agoutisequence_jt$dep_endday,
                                          24 - agoutisequence_jt$dep_endtime, 24))
 
+## TOOL USE
 # if tool use in sequence, then sequence duration is tool use duration
 agoutisequence_jt$tooluseduration <- ifelse(agoutisequence_jt$tooluse == TRUE, agoutisequence_jt$seq_length, 0)
 ## need to pay attention here, because if seq_length is not available yet (due to exifdata not being pulled) then it will look the same as when there's no tool use. 
 
-#### GAM ####
-# useful resource here: https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
-
-# maybe make date an R Date class (which means it counts from jan 1970 so just have a numerical value) can plot with it
-agoutisequence_jt$seqday <- as.Date(agoutisequence_jt$seq_startday)
+## PREP
+# make date an R Date class (which means it counts from jan 1970 so just have a numerical value) can plot with it
 # add time variable for different years. So is the date as a numerical variable, divided by 1000 to look for trend or between-year variable
+agoutisequence_jt$seqday <- as.Date(agoutisequence_jt$seq_startday)
 agoutisequence_jt$time <- as.numeric(agoutisequence_jt$seqday)/1000
 # make temperature numerical
 agoutisequence_jt$temperature <- as.numeric(agoutisequence_jt$temperature)
 # make location a factor
 agoutisequence_jt$locationfactor <- as.factor(agoutisequence_jt$location_name)
-
-# just plots
-plot(tooluseduration ~ seqday, data = agoutisequence_jt)
-plot(tooluseduration ~ month, data = agoutisequence_jt)
+# make a numerical variable of the day of the year
+agoutisequence_jt$yrday <- yday(agoutisequence_jt$seq_startday)
 
 # aggregate per day, summing all the tool use durations
-# DO I NEED to make the data frame on this level? Or can do this with the day?
-# would also need to aggregate temperature per day etc if we already jump to this format. Haven't done that yet
+# NOTE: would also need to aggregate temperature per day etc if we already jump to this format. Haven't done that yet
 agoutiday <- aggregate(agoutisequence_jt$tooluseduration, by = list(seq_startday = agoutisequence_jt$seq_startday), FUN = sum)
 names(agoutiday)[names(agoutiday) == "x"] <- "toolusedurationday"
 agoutiday2 <- left_join(agoutiday, agoutisequence_jt, by = "seq_startday")
 agoutiday2 <- agoutiday2[!duplicated(agoutiday2$seq_startday),]
 
-# for now maybe exclude deployments after certain year because data is incomplete (so we have one from mid 2019 randomly, that one goes)
 # WHEN WE HAVE CODED REPRESENTATIVE SAMPLE, SELECT THAT HERE
 agoutiselect <- agoutiday2
-ftable(agoutiselect$location_name)
 
 ## exclude deployment start and end days for now. Discussed with Urs and he thought that if they are only small part of sample makes it easier to exclude them
 agoutiselect <- agoutiselect[agoutiselect$exposure == 24, ]
 # drop all the columns we don't need
 agoutiselect <- agoutiselect[,c("seq_startday", "toolusedurationday", "deployment_id", "location_name", "tags", "dep_start", "dep_end", "dep_length_hours", "month", 
-                               "season","island", "exposure", "time", "seqday", "locationfactor")]
+                               "season","island", "exposure", "time", "seqday", "yrday", "locationfactor")]
 agoutiselect <- droplevels.data.frame(agoutiselect)
 
+str(agoutiselect)
+
+#### DATA FOR ANALYSES
+# Agoutiselect is the dataframe we'd use for analyses of seasonality. 
+# Each row is one day of observation, which is included as a character (seq_startday), as an RDate format (seqday) and as a continuous variable in days since 1970 divided by 1000 (time) 
+# A variable for each month (month) and the day of the year between 1 and 365 (yrday), there is also a variable for dry or wet season (season)
+# Each camera location is represented as a character (location_name) and a factor (locationfactor), and also each island (island)
+# Each deployment has its own tag (tags) and deployment ID (deployment_id). The POSIXct start and end day of each deployment is also included, as well as its length in hours
+# the dependent variable of interest is the seconds of tool use per day (toolusedurationday)
+# Includes the amount of hours that camera could have been recording this day (exposure), for now is all 24 as we've excluded the pickup and deploy days.
+
+### ASSUMPTIONS
 # look at distribution of response variable
 require("fitdistrplus")
 descdist(agoutiselect$toolusedurationday)
 hist(agoutiselect$toolusedurationday)
-# gamma distribution? 
-# transform tooluseduration with log?
+## a poisson distribution makes most sense, likely zero-inflated
 
-### trying out (frequentist) gam models
-## I THINK WE NEED ZERO-INFLATED MODEL? AND/OR POISSON. LOOK INTO THIS
+### TOOL USE OVER TIME
+# just plots
+plot(toolusedurationday ~ seqday, data = agoutiselect)
+plot(toolusedurationday ~ month, data = agoutiselect)
+
+#### GAM ####
 require("mgcv")
 require("brms")
 
-## M1: very easy, just look at tooluseduration depending on month and between years (so time passing by per day)
-# now doing zero inflated poisson
-# with mgcv
-m1 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = ziP, data = agoutiselect, method = "REML") 
-# try with quasipoisson? not sure which family is best
-m1c <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = quasipoisson(), data = agoutiselect, method = "REML") 
-summary(m1c)
-plot(m1c, all.terms = TRUE, pages = 1)
-# set cc as you need a cyclic cubic spine, since there should be no discontinuity between january and december
-# summarize model and inspect output
-summary(m1)
-# plot model
-plot(m1, all.terms = TRUE, pages = 1)
+### MGCV
+# using mgcv package 
+# set bs = "cc" for month and day of the year as you need a cyclic cubic spine, since there should be no discontinuity between january and december
+
+## MODEL 1: Dependent: tool use duration per day, Independent: smooth of month & smooth of time (days since 1970). Over all cameras
+# based on this https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
+# allows for comparison of tool use duration between years (time variable) and within years on month level
+
+## POISSON
+m1_p <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = poisson, data = agoutiselect, method = "REML")
+summary(m1_p) # smooths are significant, explains 31% of deviance
+# visualize
+plot(m1_p, all.terms = TRUE, pages = 1)
 # can also plot only one effect, e.g. only the month. adding the intercept value and uncertainty
-plot(m1, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m1)[1])
+plot(m1_p, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m1_p)[1])
 
 # check assumptions
-gam.check(m1)
-m1$outer.info
-# if significant p-value, means that residuals are not randomly distributed, so are often not enough basis functions. In our case time seems to be linear
-# concurvity
-concurvity(m1, full = TRUE)
-concurvity(m1, full = FALSE)
-# see that variables time and month are very related, which makes sense, but isn't good I think. 
-layout(matrix(1:2, ncol =2))
-acf(resid(m1), lag.max = 36, main = "ACF") 
-pacf(resid(m1), lag.max = 36, main = "pACF")
-layout(1)
+gam.check(m1_p) # both are significant, so k needs to be higher?
+# concurvity (correlation between predictors)
+concurvity(m1_p, full = TRUE)
+concurvity(m1_p, full = FALSE)
+# autocorrelation
+# STILL NEED TO UNDERSTAND THIS
+acf(resid(m1_p), lag.max = 36, main = "ACF") 
+pacf(resid(m1_p), lag.max = 36, main = "pACF")
 
-## M1a: with just poisson not zero inflated
-m1a <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = poisson(), data = agoutiselect, method = "REML")
-summary(m1a)
-# plot model
-plot(m1a, all.terms = TRUE, pages = 1)
+# ZERO INFLATED POISSON
+m1_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = ziP, data = agoutiselect, method = "REML")
+summary(m1_zp) # smooths are significant, explains 100% of deviance (interesting)
+# visualize
+plot(m1_zp, all.terms = TRUE, pages = 1)
 # can also plot only one effect, e.g. only the month. adding the intercept value and uncertainty
-plot(m1a, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m1a)[1])
+plot(m1_zp, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m1_zp)[1])
 
 # check assumptions
-gam.check(m1a)
-m1a$outer.info
-# concurvity
-concurvity(m1, full = TRUE)
-concurvity(m1, full = FALSE)
-# see that variables time and month are very related, which makes sense, but isn't good I think. 
-layout(matrix(1:2, ncol =2))
-acf(resid(m1), lag.max = 36, main = "ACF") 
-pacf(resid(m1), lag.max = 36, main = "pACF")
-layout(1)
+gam.check(m1_zp) 
+# concurvity (correlation between predictors)
+concurvity(m1_zp, full = TRUE)
+concurvity(m1_zp, full = FALSE)
+# autocorrelation
+# STILL NEED TO UNDERSTAND THIS
+acf(resid(m1_zp), lag.max = 36, main = "ACF") 
+pacf(resid(m1_zp), lag.max = 36, main = "pACF")
 
-mk <- gam(toolusedurationday ~ s(time), family = ziP, data = agoutiselect, method = "REML")
-summary(mk)
+## MODEL 2: Dependent: tool use duration per day. Independent: smooth of day of the year. Over all cameras
+# based on Kat's script, only looking at one smooth, simplifies it slightly
 
-plot(mk, all.terms = TRUE, pages = 1)
-## including camera location below, is all not working. too little data? I don't fully get it..
-## M2: add in the location as a linear factor
-# I think time needs many splines now because we have so many holes in the data. Should be better when we have more data
-m2 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML") 
-summary(m2)
-plot(m2, all.terms = TRUE, pages = 1)
+# POISSON
+m2_p <- gam(toolusedurationday ~ s(yrday, bs = "cc"), family = poisson, data = agoutiselect, method = "REML")
+summary(m2_p) # smooth is significant, explains 16% of deviance
+# visualize
+plot(m2_p, all.terms = TRUE, pages = 1)
 
 # check assumptions
-gam.check(m2)
-# if significant p-value, means that residuals are not randomly distributed, so are often not enough basis functions. In our case time is significant (I think it need smore data, we have holes now)
-# concurvity
-concurvity(m2, full = TRUE)
-concurvity(m2, full = FALSE)
+gam.check(m2_p) 
+# autocorrelation
+# STILL NEED TO UNDERSTAND THIS
+acf(resid(m2_p), lag.max = 36, main = "ACF") 
+pacf(resid(m2_p), lag.max = 36, main = "pACF")
 
-## M3: include location as an intercept
-# this takes forever to run so probably isn't the right approach!!
-m3 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12, by = locationfactor) + s(time, by = locationfactor), family = ziP, 
-           data = agoutiselect, method = "REML")
-plot(m3, pages = 1)
-plot(m3, all.terms =TRUE, pages = 1)
+# ZERO INFLATED POISSON
+m2_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc"), family = ziP, data = agoutiselect, method = "REML")
+summary(m2_zp) # smooth is significant, explains 100% of deviance (?)
+# visualize
+plot(m2_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(m2_zp) # both are significant, so k needs to be higher?
+# autocorrelation
+# STILL NEED TO UNDERSTAND THIS
+acf(resid(m2_zp), lag.max = 36, main = "ACF") 
+pacf(resid(m2_zp), lag.max = 36, main = "pACF")
 
+#### INCLUDING CAMERA LOCATION
+## MODEL 3: expanding model 1 with inclusion of camera location as a random smooth
+# POISSON
+m3_p <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = poisson, method = "REML") 
+summary(m3_p) # explains 35% of deviance
+plot(m3_p, all.terms =  TRUE, pages = 1)
+gam.check(m3_p)
 
-m4 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12)  + s(time, by = locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML")
-summary(m4)
-plot(m4, pages = 1)
+# ZERO INFLATED POISSON
+m3_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML") 
+summary(m3_zp)
+plot(m3_zp, all.terms =  TRUE, pages = 1)
+gam.check(m3_zp)
+
+## MODEL 4: expanding model 2 with inclusion of camera location as random smooth
+# POISSON
+m4_p <- gam(toolusedurationday ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re"), data = agoutiselect, family = poisson, method = "REML")
+summary(m4_p) # explains 33% of deviance
+plot(m4_p, all.terms = TRUE, pages = 1)
+gam.check(m4_p)
+
+# ZERO INFLATED POISSON
+m4_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML")
+summary(m4_zp) 
+plot(m4_zp, all.terms = TRUE, pages = 1)
+gam.check(m4_zp)
+
+## MODEL 5: expanding model 1 including camera location as factor
+# NOTE: likely need more data here to be able to get these estimates per camera location. Maybe also limit dataset to locations we have enough data for
+# POISSON
+m5_p <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(month, bs = "cc", by = locationfactor) + s(time), data = agoutiselect, family = poisson, method = "REML")
+summary(m5_p)
+plot(m5_p, all.terms = TRUE)
+gam.check(m5_p)
+
+# ZERO INFLATED POISSON
+m5_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(month, bs = "cc", by = locationfactor) + s(time), data = agoutiselect, family = ziP, method = "REML")
+summary(m5_zp)
+plot(m5_zp, all.terms = TRUE)
+gam.check(m5_zp)
+
+## MODEL 6: expanding model 2 including camera location as factor
+# THIS ONE SEEMS PROMISING, ASK BRENDAN
+# POISSON
+m6_p <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 8) + s(yrday, bs = "cc", by = locationfactor), data = agoutiselect, family = poisson, method = "REML")
+summary(m6_p)
+plot(m6_p, all.terms = TRUE)
+gam.check(m6_p)
+
+# ZERO INFLATED POISSON
+m6_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 8) + s(yrday, bs = "cc", by = locationfactor), data = agoutiselect, family = ziP, method = "REML")
+summary(m6_zp)
+plot(m6_zp, all.terms = TRUE)
+gam.check(m6_zp)
+
+## MODEL 7: expanding model 2 but factor smooth
+# not sure about this as now you can't define yrday as a cyclic cubic 
+m7_zp <- gam(toolusedurationday ~ s(yrday, locationfactor, bs = "fs"), data = agoutiselect, family = ziP, method = "REML")
+summary(m7_zp)
+plot(m7_zp, all.terms = TRUE)
 
 ## BRMS
-# with brms which I do not understand at all
-# m1b <- brm(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99))
-summary(m1b)
-plot(conditional_smooths(m1b))
-plot(m1b)
-pp_check(m1b)
+# best models from above but then in brms
 
-# with brms and zero inflated poisson
-# m1ab <- brm(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99))
-summary(m1ab)
-plot(conditional_smooths(m1ab))
-plot(m1ab)
-pp_check(m1ab)
+## MODEL 2: Zero inflated, no camera location
+# bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+summary(bm2)
+plot(conditional_smooths(bm2))
+pp_check(bm2) # don't get this
+plot(bm2)
+
+## MODEL 3: Zero inflated, including camera location as random effect 
+# need to run for more iterations, bulk and tail ESS both low
+bm3 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + (1|locationfactor), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+summary(bm3)
+plot(conditional_smooths(bm3))
+pp_check(bm3)
+plot(bm3)
+
+## look into Kat's script and the autocorrelation 
 
 ## collection of useful resources so I don't accidentally lose them
 # https://fromthebottomoftheheap.net/2018/04/21/fitting-gams-with-brms/
