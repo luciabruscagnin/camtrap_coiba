@@ -4,52 +4,66 @@
 
 
 ### need to add days within the deployment length that were not observed as a 0 tool use day. Should be included in the model. 
+## BUT in theory each camera trap is triggered every day to take a timelapse photo
+## So including the timelapse sequences should be enough
+## find a way to check if these are in? Deployment days should match nrow when we're down to the day level
 
-
+## can use the package padr to pad the dataframe otherwise if you need to
+## but you'd somehow have to do this per deployment, is a bit unclear
+# below is some trial and error on this
+# brute force method
+#agoutisequence$seqday <- as.Date(agoutisequence$seq_startday)
+#alldays <- data.frame(seqday = seq(min(as.Date(agoutisequence$dep_startday)), max(as.Date(agoutisequence$dep_endday)), by = "days"))
+#new <- left_join(alldays, agoutisequence, by = "seqday")
+# now the dataframe contains all the days between the start of the first deployment and the end of the last deployment
+# create flag for days outside of the deployments
 
 # use agoutisequence dataframe that's cleaned on the sequence level
-# filter dataset down to cameras that were deployed in the Jicaron tool using groups range
-agoutisequence_jt <- agoutisequence[(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
+## PREP
+# create unique variable (like deployment ID) that is location name + tag
+agoutisequence$uniqueloctag <- paste(agoutisequence$location_name, agoutisequence$tag, sep = "-")
+# make date an R Date class (which means it counts from jan 1970 so just have a numerical value) can plot with it
+# add time variable for different years. So is the date as a numerical variable, divided by 1000 to look for trend or between-year variable
+agoutisequence$time <- as.numeric(as.Date(agoutisequence$seq_startday))
+# make temperature numerical
+agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
+# make location a factor
+agoutisequence$locationfactor <- as.factor(agoutisequence$location_name)
+# make a numerical variable of the day of the year
+agoutisequence$yrday <- yday(agoutisequence$seq_startday)
 
 ## EXPOSURE
 # extract the day of the sequence and also the day of the deployment start and end
 # if day of sequence is in day of deployment start or end, then it's time for that. otherwise it's 24 hours
 # not too fast but works
-agoutisequence_jt$dep_startday <- format(agoutisequence_jt$dep_start, "%Y-%m-%d")
-agoutisequence_jt$dep_endday <- format(agoutisequence_jt$dep_end, "%Y-%m-%d")
-agoutisequence_jt$seq_startday <- format(agoutisequence_jt$seq_start, "%Y-%m-%d")
-agoutisequence_jt$dep_starttime <- hour(agoutisequence_jt$dep_start)
-agoutisequence_jt$dep_endtime <- hour(agoutisequence_jt$dep_end)
+agoutisequence$dep_startday <- format(agoutisequence$dep_start, "%Y-%m-%d")
+agoutisequence$dep_endday <- format(agoutisequence$dep_end, "%Y-%m-%d")
+agoutisequence$seq_startday <- format(agoutisequence$seq_start, "%Y-%m-%d")
+agoutisequence$dep_starttime <- hour(agoutisequence$dep_start)
+agoutisequence$dep_endtime <- hour(agoutisequence$dep_end)
 
 # maybe too coarse, only on level of hours now 
-agoutisequence_jt$exposure <- ifelse(agoutisequence_jt$seq_startday == agoutisequence_jt$dep_startday, 
-                                  24-agoutisequence_jt$dep_starttime, 
-                                  ifelse(agoutisequence_jt$seq_startday == agoutisequence_jt$dep_endday,
-                                         24 - agoutisequence_jt$dep_endtime, 24))
+agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$dep_startday, 
+                                  24-agoutisequence$dep_starttime, 
+                                  ifelse(agoutisequence$seq_startday == agoutisequence$dep_endday,
+                                         24 - agoutisequence$dep_endtime, 24))
 
 ## TOOL USE
+# filter dataset down to cameras that were deployed in the Jicaron tool using groups range
+agoutisequence_jt <- agoutisequence[(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
+
 # if tool use in sequence, then sequence duration is tool use duration
 agoutisequence_jt$tooluseduration <- ifelse(agoutisequence_jt$tooluse == TRUE, agoutisequence_jt$seq_length, 0)
 ## need to pay attention here, because if seq_length is not available yet (due to exifdata not being pulled) then it will look the same as when there's no tool use. 
 
-## PREP
-# make date an R Date class (which means it counts from jan 1970 so just have a numerical value) can plot with it
-# add time variable for different years. So is the date as a numerical variable, divided by 1000 to look for trend or between-year variable
-agoutisequence_jt$seqday <- as.Date(agoutisequence_jt$seq_startday)
-agoutisequence_jt$time <- as.numeric(agoutisequence_jt$seqday)/1000
-# make temperature numerical
-agoutisequence_jt$temperature <- as.numeric(agoutisequence_jt$temperature)
-# make location a factor
-agoutisequence_jt$locationfactor <- as.factor(agoutisequence_jt$location_name)
-# make a numerical variable of the day of the year
-agoutisequence_jt$yrday <- yday(agoutisequence_jt$seq_startday)
-
-# aggregate per day, summing all the tool use durations
+# aggregate per day & deployment-location (uniqueloctag), summing all the tool use durations
 # NOTE: would also need to aggregate temperature per day etc if we already jump to this format. Haven't done that yet
-agoutiday <- aggregate(agoutisequence_jt$tooluseduration, by = list(seq_startday = agoutisequence_jt$seq_startday), FUN = sum)
+agoutiday <- aggregate(agoutisequence_jt$tooluseduration, by = list(seq_startday = agoutisequence_jt$seq_startday, uniqueloctag = agoutisequence_jt$uniqueloctag), FUN = sum)
 names(agoutiday)[names(agoutiday) == "x"] <- "toolusedurationday"
-agoutiday2 <- left_join(agoutiday, agoutisequence_jt, by = "seq_startday")
-agoutiday2 <- agoutiday2[!duplicated(agoutiday2$seq_startday),]
+agoutiday2 <- left_join(agoutiday, agoutisequence_jt, by = c("seq_startday", "uniqueloctag"))
+## need unique identifier for what we want to get down to per row, which is per day per location per deployment
+agoutiday2$identifier <- paste(agoutiday2$seq_startday, agoutiday2$uniqueloctag, sep = "-")
+agoutiday2 <- agoutiday2[!duplicated(agoutiday2$identifier),]
 
 # WHEN WE HAVE CODED REPRESENTATIVE SAMPLE, SELECT THAT HERE
 agoutiselect <- agoutiday2
@@ -58,14 +72,14 @@ agoutiselect <- agoutiday2
 agoutiselect <- agoutiselect[agoutiselect$exposure == 24, ]
 # drop all the columns we don't need
 agoutiselect <- agoutiselect[,c("seq_startday", "toolusedurationday", "deployment_id", "location_name", "tags", "dep_start", "dep_end", "dep_length_hours", "month", 
-                               "season","island", "exposure", "time", "seqday", "yrday", "locationfactor")]
+                               "season","island", "exposure", "time", "yrday", "locationfactor", "tool_anvil", "uniqueloctag")]
 agoutiselect <- droplevels.data.frame(agoutiselect)
 
 str(agoutiselect)
 
 #### DATA FOR ANALYSES
 # Agoutiselect is the dataframe we'd use for analyses of seasonality. 
-# Each row is one day of observation, which is included as a character (seq_startday), as an RDate format (seqday) and as a continuous variable in days since 1970 divided by 1000 (time) 
+# Each row is one day of observation, which is included as a character (seq_startday) and as a continuous variable in days since 1970 (time) 
 # A variable for each month (month) and the day of the year between 1 and 365 (yrday), there is also a variable for dry or wet season (season)
 # Each camera location is represented as a character (location_name) and a factor (locationfactor), and also each island (island)
 # Each deployment has its own tag (tags) and deployment ID (deployment_id). The POSIXct start and end day of each deployment is also included, as well as its length in hours
@@ -81,7 +95,7 @@ hist(agoutiselect$toolusedurationday)
 
 ### TOOL USE OVER TIME
 # just plots
-plot(toolusedurationday ~ seqday, data = agoutiselect)
+plot(toolusedurationday ~ time, data = agoutiselect)
 plot(toolusedurationday ~ month, data = agoutiselect)
 
 #### GAM ####
@@ -187,6 +201,33 @@ summary(m4_zp)
 plot(m4_zp, all.terms = TRUE, pages = 1)
 gam.check(m4_zp)
 
+locationcol <- c("#5081db",
+                         "#a0bf52",
+                         "#746dd8",
+                         "#c09f43",
+                         "#583687",
+                         "#4cc186",
+                         "#41aaeb",
+                         "#639a49",
+                         "#d177ca",
+                         "#33d4d1",
+                         "#932c6c",
+                         "#6789cf",
+                         "#d6587d",
+                         "#c47236",
+                         "#ba4c46")
+
+
+par(mar=c(5.1, 4.1, 4.1, 11.1), xpd=TRUE)
+plot(m4_zp, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m4_zp)[1], ylim = c(-3, log(max(agoutiselect$toolusedurationday))))
+points(agoutiselect$yrday, log(agoutiselect$toolusedurationday), col = locationcol[(as.numeric(agoutiselect$locationfactor) + 1)], pch = agoutiselect$tool_anvil + 1)
+legend("topright", inset=c(-0.45,0), legend = levels(agoutiselect$locationfactor), pch = 19, col = locationcol, cex = 0.9 )
+legend("bottomright", inset=c(-0.21,0), legend = c("No anvil", "Anvil"), pch = c(1,2), cex = 0.9 )
+dev.off()
+
+# try to plot that on real scale
+# outcome looks like log seconds per day
+
 ## MODEL 5: expanding model 1 including camera location as factor
 # NOTE: likely need more data here to be able to get these estimates per camera location. Maybe also limit dataset to locations we have enough data for
 # POISSON
@@ -215,6 +256,12 @@ summary(m6_zp)
 plot(m6_zp, all.terms = TRUE)
 gam.check(m6_zp)
 
+m6_zp$coefficients
+
+plot(m6_zp, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m6_zp)[1])
+## still try to plot this the same as m4_zp
+
+
 ## MODEL 7: expanding model 2 but factor smooth
 # not sure about this as now you can't define yrday as a cyclic cubic 
 m7_zp <- gam(toolusedurationday ~ s(yrday, locationfactor, bs = "fs"), data = agoutiselect, family = ziP, method = "REML")
@@ -225,7 +272,7 @@ plot(m7_zp, all.terms = TRUE)
 # best models from above but then in brms
 
 ## MODEL 2: Zero inflated, no camera location
-# bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
 summary(bm2)
 plot(conditional_smooths(bm2))
 pp_check(bm2) # don't get this
@@ -234,6 +281,7 @@ plot(bm2)
 ## MODEL 3: Zero inflated, including camera location as random effect 
 # need to run for more iterations, bulk and tail ESS both low
 bm3 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + (1|locationfactor), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+saveRDS(bm3, file = "bm3.rds")
 summary(bm3)
 plot(conditional_smooths(bm3))
 pp_check(bm3)
