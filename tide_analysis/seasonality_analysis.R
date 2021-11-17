@@ -19,19 +19,6 @@
 # create flag for days outside of the deployments
 
 # use agoutisequence dataframe that's cleaned on the sequence level
-## PREP
-# create unique variable (like deployment ID) that is location name + tag
-agoutisequence$uniqueloctag <- paste(agoutisequence$location_name, agoutisequence$tag, sep = "-")
-# make date an R Date class (which means it counts from jan 1970 so just have a numerical value) can plot with it
-# add time variable for different years. So is the date as a numerical variable, divided by 1000 to look for trend or between-year variable
-agoutisequence$time <- as.numeric(as.Date(agoutisequence$seq_startday))
-# make temperature numerical
-agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
-# make location a factor
-agoutisequence$locationfactor <- as.factor(agoutisequence$location_name)
-# make a numerical variable of the day of the year
-agoutisequence$yrday <- yday(agoutisequence$seq_startday)
-
 ## EXPOSURE
 # extract the day of the sequence and also the day of the deployment start and end
 # if day of sequence is in day of deployment start or end, then it's time for that. otherwise it's 24 hours
@@ -48,6 +35,22 @@ agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$
                                   ifelse(agoutisequence$seq_startday == agoutisequence$dep_endday,
                                          24 - agoutisequence$dep_endtime, 24))
 
+
+## PREP
+# create unique variable (like deployment ID) that is location name + tag
+agoutisequence$uniqueloctag <- paste(agoutisequence$location_name, agoutisequence$tag, sep = "-")
+# make date an R Date class (which means it counts from jan 1970 so just have a numerical value) can plot with it
+# add time variable for different years. So is the date as a numerical variable, divided by 1000 to look for trend or between-year variable
+agoutisequence$time <- as.numeric(as.Date(agoutisequence$seq_startday))
+# make temperature numerical
+agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
+# make location a factor
+agoutisequence$locationfactor <- as.factor(agoutisequence$location_name)
+# make a numerical variable of the day of the year
+agoutisequence$yrday <- yday(agoutisequence$seq_startday)
+# add seqday variable (RDate format)
+agoutisequence$seqday <- as.Date(agoutisequence$seq_startday)
+
 ## TOOL USE
 # filter dataset down to cameras that were deployed in the Jicaron tool using groups range
 agoutisequence_jt <- agoutisequence[(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
@@ -55,6 +58,7 @@ agoutisequence_jt <- agoutisequence[(agoutisequence$tool_site == 1 & agoutiseque
 # if tool use in sequence, then sequence duration is tool use duration
 agoutisequence_jt$tooluseduration <- ifelse(agoutisequence_jt$tooluse == TRUE, agoutisequence_jt$seq_length, 0)
 ## need to pay attention here, because if seq_length is not available yet (due to exifdata not being pulled) then it will look the same as when there's no tool use. 
+# also the timelapse shots at noon and midnight also have sequence length = 0
 
 # aggregate per day & deployment-location (uniqueloctag), summing all the tool use durations
 # NOTE: would also need to aggregate temperature per day etc if we already jump to this format. Haven't done that yet
@@ -72,11 +76,86 @@ agoutiselect <- agoutiday2
 agoutiselect <- agoutiselect[agoutiselect$exposure == 24, ]
 # drop all the columns we don't need
 agoutiselect <- agoutiselect[,c("seq_startday", "toolusedurationday", "deployment_id", "location_name", "tags", "dep_start", "dep_end", "dep_length_hours", "month", 
-                               "season","island", "exposure", "time", "yrday", "locationfactor", "tool_anvil", "uniqueloctag")]
+                               "season","island", "exposure", "time", "yrday", "locationfactor", "tool_anvil", "uniqueloctag", "autotimelapse")]
 agoutiselect <- droplevels.data.frame(agoutiselect)
 
-str(agoutiselect)
+sum(agoutiselect$autotimelapse)
 
+### Need to include days on which the cameras were deployed but not triggered, and not include days on which the cameras were not deployed 
+
+
+
+
+
+
+## check whether we are missing days (so deployment length in days should match nrow in the day dataframe)
+locations <- data.frame(uniqueloctag = unique(agoutisequence$uniqueloctag)) 
+locations <- left_join(locations, agoutisequence[,c("uniqueloctag", "dep_start", "dep_end")], by = "uniqueloctag")
+locations <- locations[!duplicated(locations$uniqueloctag),]
+# take time off
+locations$dep_startday <- as.Date(format(locations$dep_start, "%Y-%m-%d"))
+locations$dep_endday <- as.Date(format(locations$dep_end, "%Y-%m-%d"))
+locations$dep_days <- ceiling(difftime(locations$dep_end, locations$dep_start, units = c("days")))
+for (i in 1:nrow(locations)) {
+  locations$nrow[i] <- nrow(agoutiday2[agoutiday2$uniqueloctag == locations$uniqueloctag[i],])
+}
+str(locations)
+# we are missing days, so need to get these in
+
+## do this per deployment at a time
+# solving it for one deployment
+locations$uniqueloctag[1]
+# we pick CEBUS-01-R1
+# generate all the days that should be present within each deployment
+# first create dataframe for first one
+depldays <<- data.frame(uniqueloctag = locations$uniqueloctag[1], seqday = seq(locations$dep_startday[1], locations$dep_endday[1], by = "days"))
+# now iterate over all the other ones and append those to the dataframe
+for (i in 2:nrow(locations)) {
+  depldays2 = data.frame(uniqueloctag = locations$uniqueloctag[i], seqday = seq(locations$dep_startday[i], locations$dep_endday[i], by = "days"))
+  depldays <<- rbind(depldays, depldays2)
+} 
+
+new <- left_join(depldays, agoutiday2, by = c("uniqueloctag", "seqday"))
+
+
+# 
+
+
+# make vector including all the days that cameras were deployed
+my_vec <- seq(locations$dep_startday[1], locations$dep_endday[1], by = "days")
+for (i in 2:nrow(locations)) {
+  new_vec <- seq(locations$dep_startday[i], locations$dep_endday[i], by = "days")
+  my_vec <- c(my_vec, new_vec)
+}
+# remove duplicates
+my_vec <- my_vec[!duplicated(my_vec)]
+# can use this vector to add these days to the agoutisequence dataframe. 
+
+# need to have these days for each location
+# so need to add a blank day for each location that didn't have an observation that day
+depldays <- data.frame(seqday = sort(rep(my_vec, length(unique(agoutisequence$location_name)))))
+depldays$location_name <- rep(unique(agoutisequence$location_name), length(my_vec))
+
+
+str(agoutiday2)
+new <- left_join(depldays, agoutiday2, by = c("seqday", "location_name"))
+new$notrigger <- ifelse(new$sequence_id )
+
+## Sanity check
+# now have vector with all days including days that we didnt have cameras out
+## RIGHT NOW THIS IS ONLY ON ALL SCORED DEPLOYMENTS, SO OBVIOUSLY HAVE GAPS IN THERE
+# but just to check whether this likely worked
+allpossibledays <- seq(min(locations$dep_startday), max(locations$dep_endday), by = "days")
+# identify days on which we didn't have a camera out
+lostdays <- allpossibledays[!(allpossibledays %in% my_vec)]
+lostdays
+?seq
+sort(unique(agoutisequence$seq_startday[agoutisequence$uniqueloctag == "CEBUS-01-R1"]))
+sort(unique(agouticlean$seq_startday[agouticlean$location_name == "CEBUS-01" & agouticlean$tags == "R1"]))
+
+agouticlean$seq_startday <- format(agouticlean$seq_start, "%Y-%m-%d")
+agouticlean$seq_startday[agouticlean$location_name == "CEBUS-01"]
+str(agouticlean)
 #### DATA FOR ANALYSES
 # Agoutiselect is the dataframe we'd use for analyses of seasonality. 
 # Each row is one day of observation, which is included as a character (seq_startday) and as a continuous variable in days since 1970 (time) 
@@ -273,6 +352,7 @@ plot(m7_zp, all.terms = TRUE)
 
 ## MODEL 2: Zero inflated, no camera location
 bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+saveRDS(bm2, file = "bm2.rds")
 summary(bm2)
 plot(conditional_smooths(bm2))
 pp_check(bm2) # don't get this
