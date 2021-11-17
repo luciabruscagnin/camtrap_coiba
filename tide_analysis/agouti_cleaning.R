@@ -9,6 +9,16 @@ require(DescTools)
 setwd("~/Git/camtrap_coiba")
 
 #### GENERAL CLEANING ####
+### SOME NOTES ON UNDERSTANDING THE OUTPUT FROM AGOUTI:
+## This data is downloaded by pressing "export" on the agouti website
+## It gives the following things: all sequences in all deployments that are uploaded to agouti, coded or not
+## For coded sequences, if the sequence was coded as "blank" it is not included in this output
+## For not finished deployments, all the uncoded sequences are also included (so this also includes 'blank' sequences that haven't been marked as such yet)
+## Agouti also provides a multimedia file and deployment keys
+
+### TO DO's:
+## - Fix dates manually that are not correct ON IMAGE because now we overwrite the date with the image date
+
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
 agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/observations.csv", header = TRUE)
 
@@ -16,7 +26,7 @@ agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-202110131014
 depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
-## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW. 
+## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
 
 # match deployment IDS in keys to observations
@@ -145,6 +155,10 @@ agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","multimedia_
 agoutisequence <- agouticlean[!duplicated(agouticlean$sequence_id),]
 agoutisequence$tooluse <- agoutisequence$n_tooluse > 0
 length(unique(agoutisequence$sequence_id)) 
+
+# NOTE: this dataframe also contains not fully coded deployments, it seems as if it contains all the uncoded sequences (which will be blank?)
+# as far as I can tell there's no way to differentiate whether a deployment has been fully coded or not
+# for analyses need to only consider the fully coded deployments, or we inflate
 
 ### EXPLORING DATA ####
 # below is just me attempting many things
