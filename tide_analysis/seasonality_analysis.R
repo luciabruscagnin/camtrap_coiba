@@ -341,7 +341,7 @@ pairs(bm2)
 ## MODEL 3: Zero inflated, including camera location as random effect 
 # need to run for more iterations, bulk and tail ESS both low
 bm3 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + (1|locationfactor), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
-saveRDS(bm3, file = "bm3.rds")
+#saveRDS(bm3, file = "bm3.rds")
 summary(bm3)
 plot(conditional_smooths(bm3))
 pp_check(bm3)
