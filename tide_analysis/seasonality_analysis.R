@@ -9,7 +9,7 @@
 
 ## PREP
 # create unique variable (like deployment ID) that is location name + tag
-agoutisequence$uniqueloctag <- paste(agoutisequence$location_name, agoutisequence$tag, sep = "-")
+agoutisequence$uniqueloctag <- paste(agoutisequence$locationName, agoutisequence$tag, sep = "-")
 # make temperature numerical
 agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
 # add seqday variable (RDate format)
@@ -85,29 +85,29 @@ sum((depldays$seqday[depldays$uniqueloctag == locations$uniqueloctag[1]] %in% ag
 # WHEN WE HAVE CODED REPRESENTATIVE SAMPLE, SELECT THAT HERE
 # for now manually which ones have been fully coded
 codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-02-R1", "CEBUS-02-R4", "CEBUS-02-R5", "CEBUS-08-R2",
-                      "CEBUS-08-R3", "CEBUS-09-R2", "CEBUS-09-R4", "CEBUS-09-R5", "CEBUS-05-R5", "SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5",
+                      "CEBUS-08-R3", "CEBUS-09-R2", "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5", "CEBUS-05-R5", "SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5",
                       "SURVEY-CEBUS-17-03-R4" ,"SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5")
 agoutiselect <- agoutiday2[agoutiday2$uniqueloctag %in% codeddeployments,]
 
 ## for these deployments, add in the days that the camera was running but not triggered (and flag these)
 agoutiselect <- left_join(depldays[depldays$uniqueloctag %in% agoutiselect$uniqueloctag,], agoutiselect, by = c("uniqueloctag", "seqday"))
-agoutiselect$noanimal <- ifelse(is.na(agoutiselect$sequence_id), 1, 0)
+agoutiselect$noanimal <- ifelse(is.na(agoutiselect$sequenceID), 1, 0)
 
 ## make sure these rows have all the variables they need for analyses 
 # I think easiest way to fill up the NAs is by having a metadata frame to pull info from
-metadata <- agoutiselect[!duplicated(agoutiselect$uniqueloctag), c("uniqueloctag", "deployment_id", "location_name", "tags", "dep_start", "dep_end", "dep_length_hours",
+metadata <- agoutiselect[!duplicated(agoutiselect$uniqueloctag), c("uniqueloctag", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours",
                                                                      "island", "tool_anvil", "identifier")]
 
 for (i in 1:nrow(agoutiselect)) {
   if (agoutiselect$noanimal[i] == 1) {
-    agoutiselect$location_name[i] <- metadata$location_name[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
+    agoutiselect$locationName[i] <- metadata$locationName[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
     agoutiselect$tags[i] <- metadata$tags[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
     agoutiselect$dep_start[i] <- metadata$dep_start[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
     agoutiselect$dep_end[i] <- metadata$dep_end[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
     agoutiselect$dep_length_hours[i] <- metadata$dep_length_hours[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
     agoutiselect$island[i] <- metadata$island[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
     agoutiselect$tool_anvil[i] <- metadata$tool_anvil[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
-    agoutiselect$deployment_id[i] <- metadata$deployment_id[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
+    agoutiselect$deploymentID[i] <- metadata$deploymentID[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
   }
 }
 
@@ -126,12 +126,12 @@ agoutiselect$time <- as.numeric(agoutiselect$seqday)
 # make a numerical variable of the day of the year (so from 1-365 which day of the year it is)
 agoutiselect$yrday <- yday(agoutiselect$seqday)
 # make location a factor
-agoutiselect$locationfactor <- as.factor(agoutiselect$location_name)
+agoutiselect$locationfactor <- as.factor(agoutiselect$locationName)
 
 ## exclude deployment start and end days for now. Discussed with Urs and he thought that if they are only small part of sample makes it easier to exclude them
 agoutiselect <- agoutiselect[agoutiselect$exposure == 24, ]
 # drop all the columns we don't need
-agoutiselect <- agoutiselect[,c("seqday", "toolusedurationday", "deployment_id", "location_name", "tags", "dep_start", "dep_end", "dep_length_hours", "month", 
+agoutiselect <- agoutiselect[,c("seqday", "toolusedurationday", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours", "month", 
                                 "season","island", "exposure", "time", "yrday", "locationfactor", "tool_anvil", "uniqueloctag", "noanimal", "identifier")]
 agoutiselect <- droplevels.data.frame(agoutiselect)
 
@@ -249,7 +249,7 @@ gam.check(m3_zp)
 ## MODEL 4: expanding model 2 with inclusion of camera location as random smooth
 # POISSON
 m4_p <- gam(toolusedurationday ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re"), data = agoutiselect, family = poisson, method = "REML")
-summary(m4_p) # explains 33% of deviance
+summary(m4_p) # explains 36% of deviance
 plot(m4_p, all.terms = TRUE, pages = 1)
 gam.check(m4_p)
 
@@ -286,6 +286,16 @@ dev.off()
 # try to plot that on real scale
 # outcome looks like log seconds per day
 
+require(mgcViz)
+# https://mfasiolo.github.io/mgcViz/articles/mgcviz.html
+b <- getViz(m4_zp)
+o <- plot( sm(b, 1) )
+o + l_fitLine(colour = "red") + l_rug(mapping = aes(x=x, y=y), alpha = 0.8) +
+  l_ciLine(mul = 5, colour = "blue", linetype = 2) + 
+  l_points(shape = 19, size = 1, alpha = 0.1) + theme_classic()
+
+print(plot(b, allTerms = T), pages = 1)
+plot(b, allTerms = TRUE, select = 2) + geom_hline(yintercept = 0)
 ## MODEL 5: expanding model 1 including camera location as factor
 # NOTE: likely need more data here to be able to get these estimates per camera location. Maybe also limit dataset to locations we have enough data for
 # POISSON
@@ -318,7 +328,10 @@ m6_zp$coefficients
 
 plot(m6_zp, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m6_zp)[1])
 ## still try to plot this the same as m4_zp
-
+require(mgcViz)
+b <- getViz(m6_zp)
+print(plot(b, allTerms = T), pages = 1)
+plot(b, allTerms = TRUE, select = 4) + geom_hline(yintercept = 0)
 
 ## MODEL 7: expanding model 2 but factor smooth
 # not sure about this as now you can't define yrday as a cyclic cubic 
@@ -341,11 +354,36 @@ pairs(bm2)
 ## MODEL 3: Zero inflated, including camera location as random effect 
 # need to run for more iterations, bulk and tail ESS both low
 bm3 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + (1|locationfactor), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
-#saveRDS(bm3, file = "bm3.rds")
+# saveRDS(bm3, file = "bm3.rds")
 summary(bm3)
 plot(conditional_smooths(bm3))
-pp_check(bm3)
+pp_check(bm3, type = "hist") # don't know what's wrong here
+pp_check(bm3, type = "ecdf_overlay")
 plot(bm3)
+
+# compare bm3 to m4_zp (the mgcv version of fitting locationfactor as a random effect)
+gam.vcomp(m4_zp, rescale = FALSE)
+
+# use marginal smooths to extract the marginal effect of the spline
+msms <- marginal_smooths(bm3)
+plot(msms)
+plot(m4_zp)
+
+# extract group-level estimates
+bm3_camest <- as.data.frame(ranef(bm3))
+# need to do exp(estimate) to get to the actual rate
+bm3_camest$estimate <- exp(bm3_camest$locationfactor.Estimate.Intercept)
+bm3_camest$Q2.5 <- exp(bm3_camest$locationfactor.Q2.5.Intercept)
+bm3_camest$Q97.5 <- exp(bm3_camest$locationfactor.Q97.5.Intercept)
+bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
+
+## MODEL 4: camera as grouping factor rather than random effect
+bm4 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + s(yrday, by = locationfactor, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+
+
+
+??dotplot
+dotchart(ranef(bm3))
 
 ## look into Kat's script and the autocorrelation 
 

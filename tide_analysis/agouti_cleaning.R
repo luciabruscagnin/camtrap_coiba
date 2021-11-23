@@ -17,32 +17,33 @@ setwd("~/Git/camtrap_coiba")
 ## Agouti also provides a multimedia file and deployment keys
 
 ### TO DO's:
-## - Fix dates manually that are not correct ON IMAGE because now we overwrite the date with the image date
+## - Fix dates manually that are not correct ON IMAGE because now we overwrite the date with the image date (e.g. CEBUS-09-R3)
+## - check if the set-up/pick up sequences are in there and if they can be flagged. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
 
 # match deployment IDS in keys to observations
-agoutigross <- left_join(agoutigross, depl_keys, "deployment_id")
+agoutigross <- left_join(agoutigross, depl_keys, "deploymentID")
 
 # filter out deployments we're not using
 agoutigross <- agoutigross[agoutigross$flag == 0,]
 
 # create column per sequence if a capuchin was present 1/0 and if capuchins, how many in the sequence (a count)
-agoutigross$capuchin <- ifelse(agoutigross$scientific_name == "Cebus imitator", 1, 0)
+agoutigross$capuchin <- ifelse(agoutigross$scientificName == "Cebus imitator", 1, 0)
 
 agoutigross_cap <- agoutigross[agoutigross$capuchin == 1, ]
 cap_numbers <- agoutigross_cap %>% 
-  count(sequence_id)
+  count(sequenceID)
   
-agoutigross <- left_join(agoutigross, cap_numbers, "sequence_id")
+agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
 # replace NAs with 0 for the capuchin count
 agoutigross$n[is.na(agoutigross$n)] <- 0
 
@@ -53,14 +54,14 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20211013101430/multimedia.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
 multimedia$time <- as.POSIXct(multimedia$time, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
 
 # obtain correct timestamp from file name
-multimedia$time_file <- paste(sapply(str_split(multimedia$file_name, "__"), "[", 2), sapply(str_split(multimedia$file_name, "__"), "[", 3), " ")
+multimedia$time_file <- paste(sapply(str_split(multimedia$fileName, "__"), "[", 2), sapply(str_split(multimedia$fileName, "__"), "[", 3), " ")
 # mp4 and jpg strings are extracted differently
 multimedia$time_file[which(str_detect(multimedia$time_file, "mp4"))] <- substr(multimedia$time_file[which(str_detect(multimedia$time_file, "mp4"))], 1,
                                                                                nchar(multimedia$time_file[which(str_detect(multimedia$time_file, "mp4"))])-6)
@@ -70,49 +71,52 @@ multimedia$time_file <- as.POSIXct(multimedia$time_file, tz = "America/Panama", 
 
 # now flag those where the timestamp does not match the file time
 multimedia$timeflag <- ifelse(multimedia$time == multimedia$time_file, 0, 1)
-ftable(multimedia$deployment_id, multimedia$timeflag)
+ftable(multimedia$deploymentID, multimedia$timeflag)
 
 # the file time is always correct, so can just use that one for the one's that are flagged
-# NOT ALWAYS! In at least one deployment (CEBUS-09-R3 the filetime is one year off, I think.. Also R9 deployment)
 # covers both the entry mistakes and the ones that drifted 5 hours
 # create timestamp_correct 
 multimedia$timestamp_correct <- multimedia$timestamp
 multimedia$timestamp_correct[which(multimedia$timeflag == 1)] <- as.character(multimedia$time_file[which(multimedia$timeflag == 1)])
+
+# NOT ALWAYS! In at least one deployment (CEBUS-09-R3 the filetime is one year off, I think.. Also R9 deployment)
+# deployment key: 09bcd191-78ec-4ded-a438-cffaa14fa55a. Fix this
+multimedia$timestamp_correct[which(multimedia$deploymentID == "09bcd191-78ec-4ded-a438-cffaa14fa55a")] <- gsub("2017", "2018", multimedia$timestamp_correct[which(multimedia$deploymentID == "09bcd191-78ec-4ded-a438-cffaa14fa55a")]) 
 multimedia$timestamp_correct <- multimedia$timestamp_correct %>%
   as.character(.) %>%
   str_replace(., "T", " ") %>%
   as.POSIXct(., tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
 
 # create sequence_start, sequence_end and duration column (so this is per sequence)
-startseq <- aggregate(x = list(seq_start = multimedia$timestamp_correct), by = list(sequence_id = multimedia$sequence_id), FUN = min)
-endseq <- aggregate(x = list(seq_end = multimedia$timestamp_correct), by = list(sequence_id = multimedia$sequence_id), FUN = max)
+startseq <- aggregate(x = list(seq_start = multimedia$timestamp_correct), by = list(sequenceID = multimedia$sequenceID), FUN = min)
+endseq <- aggregate(x = list(seq_end = multimedia$timestamp_correct), by = list(sequenceID = multimedia$sequenceID), FUN = max)
 
-multimedia <- left_join(multimedia, startseq, "sequence_id")
-multimedia <- left_join(multimedia, endseq, "sequence_id")
+multimedia <- left_join(multimedia, startseq, "sequenceID")
+multimedia <- left_join(multimedia, endseq, "sequenceID")
 multimedia$seq_lengthstill <-as.numeric(difftime(multimedia$seq_end,multimedia$seq_start,units="secs"))
 
 #### Add temperature and video sequence length
 # first run script "exiftempseq_cleaning.R" in the exiftool_metadata folder
 ## clean filename in multimedia agouti (take off the upload time, which is always 15 characters)
-multimedia$FileName <- substring(multimedia$file_name, 16)
+multimedia$FileName <- substring(multimedia$fileName, 16)
 
 multimedia <- left_join(multimedia, exifstillsclean, "FileName")
 multimedia <- left_join(multimedia, exifvideosclean, "FileName")
 
 multimedia$temperature <- ifelse(is.na(multimedia$temperature.x), multimedia$temperature.y, multimedia$temperature.x)
-multimedia$seq_length <- ifelse((multimedia$file_mediatype == "video/mp4"), multimedia$seq_lengthv, multimedia$seq_lengthstill) 
+multimedia$seq_length <- ifelse((multimedia$fileMediatype == "video/mp4"), multimedia$seq_lengthv, multimedia$seq_lengthstill) 
 
-# left join does not work if the y dataframe (so multimedia2) has duplicated values in the column you're matching by (so sequence_id). Need to drop duplicates before the left_join
-multimedia2 <- multimedia[,c("sequence_id", "seq_start", "seq_end", "seq_length", "temperature")]
-multimedia2 <- multimedia2[!duplicated(multimedia2$sequence_id),]
-agoutigross <- left_join(agoutigross, multimedia2, "sequence_id")
+# left join does not work if the y dataframe (so multimedia2) has duplicated values in the column you're matching by (so sequenceID). Need to drop duplicates before the left_join
+multimedia2 <- multimedia[,c("sequenceID", "seq_start", "seq_end", "seq_length", "temperature")]
+multimedia2 <- multimedia2[!duplicated(multimedia2$sequenceID),]
+agoutigross <- left_join(agoutigross, multimedia2, "sequenceID")
 
 # add correct deployment start and end time (can still double check, now took the minimum and maximum sequence time within deployment id)
-startdep <- aggregate(x = list(dep_start = agoutigross$seq_start), by = list(deployment_id = agoutigross$deployment_id), FUN = min)
-enddep <- aggregate(x = list(dep_end = agoutigross$seq_start), by = list(deployment_id = agoutigross$deployment_id), FUN = max)
+startdep <- aggregate(x = list(dep_start = agoutigross$seq_start), by = list(deploymentID = agoutigross$deploymentID), FUN = min)
+enddep <- aggregate(x = list(dep_end = agoutigross$seq_start), by = list(deploymentID = agoutigross$deploymentID), FUN = max)
 
-agoutigross <- left_join(agoutigross, startdep, "deployment_id")
-agoutigross <- left_join(agoutigross, enddep, "deployment_id")
+agoutigross <- left_join(agoutigross, startdep, "deploymentID")
+agoutigross <- left_join(agoutigross, enddep, "deploymentID")
 # add deployment length in hours, this is an exposure
 agoutigross$dep_length_hours <-as.numeric(difftime(agoutigross$dep_end,agoutigross$dep_start,units="hours"))
 
@@ -126,39 +130,40 @@ agoutigross$season <- ifelse(agoutigross$month == 12 | agoutigross$month == 1 | 
 
 # pull island location and tool use/non tool use from coiba_camtrap_ids_gps.csv
 deployment_info <- read.csv("coiba_camtrap_ids_gps.csv")
-deployment_info$location_name <- deployment_info$camera_id
+deployment_info$locationName <- deployment_info$camera_id
 
 # drop columns we don't want to attach
 deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id", "number", "longitude", "latitude")]
 
-agoutigross <- left_join(agoutigross, deployment_info2, "location_name")
+agoutigross <- left_join(agoutigross, deployment_info2, "locationName")
 
 # whether tool-using occurred in the sequence or not
 agoutigross$tooluse <- str_detect(agoutigross$behaviour, "TAF") # now just takes all types of tool use, also unknown
 agoutigross_tools <- agoutigross[agoutigross$tooluse == TRUE,]
 tooluse_count <- agoutigross_tools %>% 
-  count(sequence_id)
+  count(sequenceID)
 colnames(tooluse_count)[2] <- "n_tooluse"
 
-agoutigross <- left_join(agoutigross, tooluse_count, "sequence_id")
+agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")
 # replace NAs with 0 for the tool use
 agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
 
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
-agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","multimedia_id", "start", "end", "camera_id", "camera_model", "bait_use", "feature_type",
-                                             "comments.y", "time")]
+agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
+                                            "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time")]
 
 ## FORMAT: ONE ROW PER SEQUENCE
 # drop duplicated sequences, necessary form for tidal analyses and data exploration
 # lose individual info etc so to analyze like that need to use agoutigross
-agoutisequence <- agouticlean[!duplicated(agouticlean$sequence_id),]
+agoutisequence <- agouticlean[!duplicated(agouticlean$sequenceID),]
 agoutisequence$tooluse <- agoutisequence$n_tooluse > 0
-length(unique(agoutisequence$sequence_id)) 
+length(unique(agoutisequence$sequenceID)) 
 
 # NOTE: this dataframe also contains not fully coded deployments, it seems as if it contains all the uncoded sequences (which will be blank?)
 # as far as I can tell there's no way to differentiate whether a deployment has been fully coded or not
 # for analyses need to only consider the fully coded deployments, or we inflate
+# can also filter ou the cameraSetup sequences (using that variable)
 
 ### EXPLORING DATA ####
 # below is just me attempting many things
@@ -176,7 +181,7 @@ hist(hour(agoutisequence$seq_start[agoutisequence$capuchin == 1]), xlab = "Time 
 # loop over camera ID, density plot for each camera when capuchins are present
 # use location name (where the camera is, can have separate deployments on that location)
 # number of sequences per location name
-aggregate(agoutisequence$sequence_id, by = list(location_name = agoutisequence$location_name), FUN = length)
+aggregate(agoutisequence$sequenceID, by = list(location_name = agoutisequence$location_name), FUN = length)
 
 # filter out when capuchins weren't present
 onlycap <- subset(agoutisequence, agoutisequence$capuchin == 1)
@@ -298,7 +303,7 @@ agouticlean$hour <- hour(agouticlean$seq_start)
 
 latenight <- subset(agouticlean, agouticlean$hour > 20 & agouticlean$capuchin == 1)
 # drop down to sequences level
-latenightsequence <- latenight[!duplicated(latenight$sequence_id),]
+latenightsequence <- latenight[!duplicated(latenight$sequenceID),]
 
 ftable(latenightsequence$hour)
 # are they using tools?
