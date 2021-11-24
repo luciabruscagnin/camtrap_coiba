@@ -556,6 +556,16 @@ plot(tm3.2_zp, all.terms = TRUE, pages = 1)
 # check assumptions
 gam.check(tm3.2_zp) 
 
+## check what happens if we use time to high tide instead of low
+# so 0 is high tide
+# no abs
+tm3.3_zp <- gam(n ~ s(tidedif2, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
+summary(tm3.3_zp) 
+# visualize
+plot(tm3.3_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm3.3_zp) 
+
 ## Model 4: add location as by factor (and not tool-use/non-tool-use then I guess?)
 # abs
 tm4_zp <- gam(n ~ s(tidedifabs, by = locationfactor), family = ziP, data = onlycap, method = "REML" )
@@ -573,4 +583,15 @@ plot(tm4.2_zp, all.terms = TRUE)
 # check assumptions
 gam.check(tm4.2_zp) 
 
+## BRMS
+require(brms)
+tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers) + (1|locationfactor), family = zero_inflated_poisson(), data = onlycap, chain = 4, core = 4, control = list(adapt_delta = 0.99))
+# saveRDS(tbm1, file = "tbm1.rds")
+summary(tbm1)
+plot(conditional_smooths(tbm1))
+pp_check(tbm1) # don't get this
+plot(tbm1)
+pairs(tbm1)
+
 # need to add distance from coast?
+

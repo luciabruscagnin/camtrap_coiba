@@ -198,6 +198,12 @@ for (i in 1:nrow(agoutisequence)) {
 hist(agoutisequence$tidedif)
 plot(agoutisequence$tidedif, agoutisequence$count)
 
+## time to high tide instead of low
+agoutisequence$tidedif2 <- NA
+for (i in 1:nrow(agoutisequence)) {
+  agoutisequence$tidedif2[i] <- Closest((as.vector(difftime(agoutisequence$seq_start[i], TidesHigh$TIDE_TIME,   units = "hours"))), 0)
+}
+
 ### EXPLORING DATA ####
 # below is just me attempting many things
 
