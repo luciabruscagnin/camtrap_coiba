@@ -30,7 +30,7 @@ agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$
                                   ifelse(agoutisequence$seq_startday == agoutisequence$dep_endday,
                                          24 - agoutisequence$dep_endtime, 24))
 
-## TOOL USE
+##### TOOL USE #####
 # filter dataset down to cameras that were deployed in the Jicaron tool using groups range
 agoutisequence_jt <- agoutisequence[(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
 
@@ -399,3 +399,178 @@ dotchart(ranef(bm3))
 # https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html#zero-inflated-models
 # https://stats.stackexchange.com/questions/403772/different-ways-of-modelling-interactions-between-continuous-and-categorical-pred
 # https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/family.mgcv.html
+
+
+##### ACTIVITY DURING DAY #####
+# start using the cleaned agoutisequence
+str(agoutisequence)
+
+
+# need to filter out deployments that are not fully coded
+# have a lot of unclassified sequences in --> these seem to largely be the 00:00:00 automated timecapture moments, that weren't coded
+# so have two variables for this, whether a sequence is a timelapse sequence (1 yes, 0 no) and whether it is uncoded (1 yes, 0 no)
+# want to exclude deployments that have uncoded sequences
+# can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
+cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
+codeddeployments_total <- as.character(cd$Var1[cd$Freq == 0])
+
+# subset only fully coded deployments
+agoutisequence_c <- agoutisequence[agoutisequence$uniqueloctag %in% codeddeployments_total,]
+# need to add in the days that camera wasn't triggered (?) Consider if this is necessary and if so do it with the code from above. For now can leave it 
+
+agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
+agoutisequence_c$toolusers <- as.factor(agoutisequence_c$tool_site)
+agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
+
+
+## GAMs
+# factor by = tool_site 0/1 (tool using group yes or no)
+require("mgcv")
+
+require("fitdistrplus")
+descdist(agoutisequence_c$n)
+hist(agoutisequence_c$n)
+## a poisson distribution makes most sense, likely zero-inflated
+
+### TOOL USE OVER TIME
+# just plots
+plot(n ~ hour, data = agoutisequence_c)
+
+## Model 1: number of capuchins depending on hour of day, everything together
+am1_zp <- gam(n ~ s(hour, bs = "cc", k = 15), family = ziP, data = agoutisequence_c, method = "REML")
+summary(am1_zp) 
+# visualize
+plot(am1_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(am1_zp) 
+
+## Model 2: number of capuchins depending on hour of day, by tool use/vs non tool users
+am2_zp <- gam(n ~ s(hour, bs = "cc", by = toolusers), family = ziP, data = agoutisequence_c, method = "REML")
+summary(am2_zp) 
+# visualize
+plot(am2_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(am2_zp) 
+
+
+## Model 3: including location as random effect
+am3_zp <- gam(n ~ s(hour, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = agoutisequence_c, method = "REML" )
+summary(am3_zp) 
+# visualize
+plot(am3_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(am3_zp) 
+
+
+locationcol <- c("#5081db",
+                 "#a0bf52",
+                 "#746dd8",
+                 "#c09f43",
+                 "#583687",
+                 "#4cc186",
+                 "#41aaeb",
+                 "#639a49",
+                 "#d177ca",
+                 "#33d4d1",
+                 "#932c6c",
+                 "#6789cf",
+                 "#d6587d",
+                 "#c47236",
+                 "#ba4c46")
+
+# change this plot, try to figure it out. Only plot tool user points in one graph and non tool users in other. 
+# FIGURE OUT SCALES?
+par(mar=c(5.1, 4.1, 4.1, 11.1), xpd=TRUE)
+plot(am3_zp, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(am3_zp)[1], ylim = c(0, log(max(agoutisequence_c$n))))
+points(agoutisequence_c$hour, log(agoutisequence_c$n), col = locationcol[(as.numeric(agoutisequence_c$locationfactor) + 1)], pch = agoutisequence_c$tool_site + 1)
+legend("topright", inset=c(-0.35,0), legend = levels(agoutisequence_c$locationfactor), pch = 19, col = locationcol, cex = 0.9 )
+legend("bottomright", inset=c(-0.25,0), legend = c("Non-tool-users", "Tool-users"), pch = c(1,2),cex = 0.9 )
+dev.off()
+
+## Model 4: add temperature
+am4_zp <- gam(n ~ s(hour, bs = "cc", by = toolusers) + s(locationfactor, bs = "re") + s(temperature), family = ziP, data = agoutisequence_c, method = "REML" )
+summary(am4_zp) 
+# visualize
+plot(am4_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(am4_zp) 
+
+##### TIDAL #####
+## only taking into account sequences with capuchins?
+onlycap <- agoutisequence_c[agoutisequence_c$capuchin == 1,]
+str(onlycap)
+
+descdist(onlycap$n)
+hist(onlycap$n)
+
+as.matrix(ftable(onlycap$locationfactor, onlycap$toolusers))
+
+## Model 1: n of capuchins per tide difference (abs or not)
+# abs
+tm1_zp <- gam(n ~ s(tidedifabs), family = ziP, data = onlycap, method = "REML" )
+summary(tm1_zp) 
+# visualize
+plot(tm1_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm1_zp) 
+
+# no abs
+tm1.2_zp <- gam(n ~ s(tidedif, bs = "cc"), family = ziP, data = onlycap, method = "REML" )
+summary(tm1.2_zp) 
+# visualize
+plot(tm1.2_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm1.2_zp) 
+
+## Model 2: split by tool use vs non tool users
+# abs
+tm2_zp <- gam(n ~ s(tidedifabs, by = toolusers), family = ziP, data = onlycap, method = "REML" )
+summary(tm2_zp) 
+# visualize
+plot(tm2_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm2_zp) 
+
+# no abs
+tm2.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers), family = ziP, data = onlycap, method = "REML" )
+summary(tm2.2_zp) 
+# visualize
+plot(tm2.2_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm2.2_zp) 
+
+## Model 3: add location of camera as random effect
+# abs
+tm3_zp <- gam(n ~ s(tidedifabs, by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
+summary(tm3_zp) 
+# visualize
+plot(tm3_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm3_zp) 
+
+# no abs
+tm3.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
+summary(tm3.2_zp) 
+# visualize
+plot(tm3.2_zp, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm3.2_zp) 
+
+## Model 4: add location as by factor (and not tool-use/non-tool-use then I guess?)
+# abs
+tm4_zp <- gam(n ~ s(tidedifabs, by = locationfactor), family = ziP, data = onlycap, method = "REML" )
+summary(tm4_zp) 
+# visualize
+plot(tm4_zp, all.terms = TRUE)
+# check assumptions
+gam.check(tm4_zp) 
+
+# no abs
+tm4.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = locationfactor), family = ziP, data = onlycap, method = "REML" )
+summary(tm4.2_zp) 
+# visualize
+plot(tm4.2_zp, all.terms = TRUE)
+# check assumptions
+gam.check(tm4.2_zp) 
+
+# need to add distance from coast?

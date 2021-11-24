@@ -148,10 +148,16 @@ agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")
 # replace NAs with 0 for the tool use
 agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
 
+# create column to flag the timelapse triggers at 12:00:00 and 00:00:00
+agoutigross$timelapse <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$classificationTimestamp == "" & str_detect(agoutigross$seq_start, "00:00") == "TRUE", 1, 0)
+# flag the uncoded sequences in here
+agoutigross$uncoded <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$cameraSetup == "False" & agoutigross$classificationTimestamp == "" & agoutigross$timelapse == 0, 1, 0)
+
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
 agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
                                             "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time")]
+
 
 ## FORMAT: ONE ROW PER SEQUENCE
 # drop duplicated sequences, necessary form for tidal analyses and data exploration
@@ -164,6 +170,33 @@ length(unique(agoutisequence$sequenceID))
 # as far as I can tell there's no way to differentiate whether a deployment has been fully coded or not
 # for analyses need to only consider the fully coded deployments, or we inflate
 # can also filter ou the cameraSetup sequences (using that variable)
+
+## TIDAL
+# for each sequence get time to nearest low tide (need to match day and get low tide times then)
+# two options, either get absolute difference (so always positive)
+# or before/after difference
+# Absolute
+agoutisequence$tidedifabs <- NA
+which(is.na(agoutisequence$time))
+
+for (i in 1:nrow(agoutisequence)) {
+  agoutisequence$tidedifabs[i] <- min(abs(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
+}
+
+hist(agoutisequence$tidedifabs)  
+plot(agoutisequence$tidedifabs, agoutisequence$count)
+
+# Both positive and negative
+
+agoutisequence$tidedif <- NA
+
+for (i in 1:nrow(agoutisequence)) {
+  agoutisequence$tidedif[i] <- Closest((as.vector(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME,   units = "hours"))), 0)
+}
+
+# get an error but it does seem to work... 
+hist(agoutisequence$tidedif)
+plot(agoutisequence$tidedif, agoutisequence$count)
 
 ### EXPLORING DATA ####
 # below is just me attempting many things
@@ -320,31 +353,7 @@ sum(str_detect(latenight$behaviour, "Infant"))
 
 ## TIDAL
 
-# for each sequence get time to nearest low tide (need to match day and get low tide times then)
-# two options, either get absolute difference (so always positive)
-# or before/after difference
-# Absolute
-agoutisequence$tidedifabs <- NA
-which(is.na(agoutisequence$time))
 
-for (i in 1:nrow(agoutisequence)) {
-  agoutisequence$tidedifabs[i] <- min(abs(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
-}
-
-hist(agoutisequence$tidedifabs)  
-plot(agoutisequence$tidedifabs, agoutisequence$count)
-
-# Both positive and negative
-
-agoutisequence$tidedif <- NA
-
-for (i in 1:nrow(agoutisequence)) {
-  agoutisequence$tidedif[i] <- Closest((as.vector(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME,   units = "hours"))), 0)
-}
-
-# get an error but it does seem to work... 
-hist(agoutisequence$tidedif)
-plot(agoutisequence$tidedif, agoutisequence$count)
 
 # only sequences with capuchins
 hist(agoutisequence$tidedif[agoutisequence$capuchin == 1])
