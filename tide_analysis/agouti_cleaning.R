@@ -137,9 +137,24 @@ deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id"
 
 agoutigross <- left_join(agoutigross, deployment_info2, "locationName")
 
+# what tool users are processing
+agoutigross$item <- ifelse(str_detect(agoutigross$behaviour, "Almendra"), "almendra", 
+                           ifelse(str_detect(agoutigross$behaviour, "Coconut"), "coconut", 
+                                  ifelse(str_detect(agoutigross$behaviour, "Embedded"), "insect",
+                                         ifelse(str_detect(agoutigross$behaviour, "Halloween"), "hwcrab",
+                                                ifelse(str_detect(agoutigross$behaviour, "Hermit"), "hecrab",
+                                                       ifelse(str_detect(agoutigross$behaviour, "Snail"), "snail",
+                                                              ifelse(str_detect(agoutigross$behaviour, "Palm"), "palm",
+                                                                     ifelse(str_detect(agoutigross$behaviour, "Other"), "other", 
+                                                                            ifelse(str_detect(agoutigross$behaviour, "Unknown"), "unknown", "NA")))))))))                                        
+
+
+ftable(agoutigross$item)  
+
 # whether tool-using occurred in the sequence or not
 agoutigross$tooluse <- str_detect(agoutigross$behaviour, "TAF") # now just takes all types of tool use, also unknown
 agoutigross_tools <- agoutigross[agoutigross$tooluse == TRUE,]
+# amount of individuals using tools per sequence
 tooluse_count <- agoutigross_tools %>% 
   count(sequenceID)
 colnames(tooluse_count)[2] <- "n_tooluse"
@@ -147,6 +162,15 @@ colnames(tooluse_count)[2] <- "n_tooluse"
 agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")
 # replace NAs with 0 for the tool use
 agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
+
+## get sequence-level variable of what is mostly being processed in that sequence
+items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$item)))
+items$seq_item <- colnames(items)[max.col(items,ties.method="first")]  
+# now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
+items$sequenceID <- rownames(items)
+items <- items[,c("sequenceID", "seq_item")]
+
+agoutigross <- left_join(agoutigross, items, "sequenceID")
 
 # create column to flag the timelapse triggers at 12:00:00 and 00:00:00
 agoutigross$timelapse <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$classificationTimestamp == "" & str_detect(agoutigross$seq_start, "00:00") == "TRUE", 1, 0)
