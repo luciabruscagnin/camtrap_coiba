@@ -20,6 +20,8 @@ setwd("~/Git/camtrap_coiba")
 ## - Fix dates manually that are not correct ON IMAGE because now we overwrite the date with the image date (e.g. CEBUS-09-R3)
 ## - check if the set-up/pick up sequences are in there and if they can be flagged. 
 ## - for known juvenile individuals, need to code which year/deployment they shift to (sub)adult
+## - for affiliative interactions, how do we know who is grooming (or being friendly) with whom if we've coded more than 2 individuals as grooming?
+
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
 agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/observations.csv", header = TRUE)
