@@ -151,7 +151,6 @@ agoutigross$item <- ifelse(str_detect(agoutigross$behaviour, "Almendra"), "almen
                                                                      ifelse(str_detect(agoutigross$behaviour, "Other"), "other", 
                                                                             ifelse(str_detect(agoutigross$behaviour, "Unknown"), "unknown", "NA")))))))))                                        
 
-
 ftable(agoutigross$item)  
 
 # whether tool-using occurred in the sequence or not
@@ -165,6 +164,8 @@ colnames(tooluse_count)[2] <- "n_tooluse"
 agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")
 # replace NAs with 0 for the tool use
 agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
+# make sure only the tool use sequences have items (don't want to get the normal foraging items)
+agoutigross$item[agoutigross$tooluse == "FALSE"] <- NA
 
 ## get sequence-level variable of what is mostly being processed in that sequence
 items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$item)))
