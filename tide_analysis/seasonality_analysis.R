@@ -433,6 +433,10 @@ hist(agoutisequence_c$n)
 ## a poisson distribution makes most sense, likely zero-inflated
 
 ### TOOL USE OVER TIME
+
+## FOR EVERYTHING ON THE SEQUENCE LEVEL: need to add offset of sequence length!!! 
+####
+
 # just plots
 plot(n ~ hour, data = agoutisequence_c)
 

@@ -19,6 +19,7 @@ setwd("~/Git/camtrap_coiba")
 ### TO DO's:
 ## - Fix dates manually that are not correct ON IMAGE because now we overwrite the date with the image date (e.g. CEBUS-09-R3)
 ## - check if the set-up/pick up sequences are in there and if they can be flagged. 
+## - for known juvenile individuals, need to code which year/deployment they shift to (sub)adult
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
 agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/observations.csv", header = TRUE)
@@ -244,14 +245,14 @@ hist(hour(agoutisequence$seq_start[agoutisequence$capuchin == 1]), xlab = "Time 
 # loop over camera ID, density plot for each camera when capuchins are present
 # use location name (where the camera is, can have separate deployments on that location)
 # number of sequences per location name
-aggregate(agoutisequence$sequenceID, by = list(location_name = agoutisequence$location_name), FUN = length)
+aggregate(agoutisequence$sequenceID, by = list(locationName = agoutisequence$locationName), FUN = length)
 
 # filter out when capuchins weren't present
 onlycap <- subset(agoutisequence, agoutisequence$capuchin == 1)
 onlycap$hour <- hour(onlycap$seq_start)
 
-locations <- unique(onlycap$location_name)
-table(agoutisequence$location_name, agoutisequence$capuchin ) # nr of sequences per location with and without capuchins
+locations <- unique(onlycap$locationName)
+table(agoutisequence$locationName, agoutisequence$capuchin ) # nr of sequences per location with and without capuchins
 
 # to get pdf of output
 # pdf("tide_analysis/camera_traps_density.pdf", width = 9, height = 11)
@@ -259,7 +260,7 @@ table(agoutisequence$location_name, agoutisequence$capuchin ) # nr of sequences 
 # par(cex = 0.5)
 
 for (l in 1:length(locations)) {
-  hist(onlycap$hour[onlycap$location_name == locations[l]], main = locations[l], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+  hist(onlycap$hour[onlycap$locationName == locations[l]], main = locations[l], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
 }
 
 # dev.off()
@@ -275,13 +276,13 @@ season <- c("Dry", "Wet")
 
 for (l in 1:length(locations)) {
   for (s in 1:length(season)) {
-  hist(onlycap$hour[onlycap$location_name == locations[l] & onlycap$season == season[s]], main = paste(locations[l], season[s]), breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
+  hist(onlycap$hour[onlycap$locationName == locations[l] & onlycap$season == season[s]], main = paste(locations[l], season[s]), breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
   }
 } 
 
 # dev.off()
 
-table(onlycap$location_name, onlycap$season) # see how many observations of capuchins per season
+table(onlycap$locationName, onlycap$season) # see how many observations of capuchins per season
 # also still need to look into how many deployment days per season 
 
 ## Mean number of capuchins per sequence
@@ -294,7 +295,7 @@ table(onlycap$location_name, onlycap$season) # see how many observations of capu
 # par(cex = 0.5)
 
 for (l in 1:length(locations)) {
-  dora_l <- subset(onlycap, onlycap$location_name == locations[l])
+  dora_l <- subset(onlycap, onlycap$locationName == locations[l])
   print(ggplot(dora_l) + geom_bar(aes(x = hour, y = n), stat = "summary", fun = "mean") + xlab("Time of Day") + ylab("Average Number of Capuchins per Sequence") + xlim(0, 24) + labs(title = locations[l]))
 }
 
@@ -322,7 +323,7 @@ ftable(onlycap$n_tooluse)
 plot(onlycap$n_tooluse, onlycap$n)
 
 # how many locations in the tool using range show tool use and how much (of the sequences with capuchins in them)?
-ftable(onlycap$location_name[onlycap$tool_site == 1], onlycap$tooluse[onlycap$tool_site == 1])
+ftable(onlycap$locationName[onlycap$tool_site == 1], onlycap$tooluse[onlycap$tool_site == 1])
 ftable(onlycap$tool_site)
 
 ftable(onlycap$island)
@@ -374,7 +375,7 @@ ftable(latenightsequence$tooluse)
 # is this the tool using pop or the non toolusers
 ftable(latenightsequence$tool_site)
 # which sites?
-ftable(latenightsequence$location_name)
+ftable(latenightsequence$locationName)
 
 # how many capuchins are spotted?
 ftable(latenightsequence$n)
@@ -394,7 +395,7 @@ hist(agoutisequence$tidedif[agoutisequence$capuchin == 1])
 # par(cex = 0.5)
 
 for (l in 1:length(locations)) {
-hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$location_name == locations[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
+hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$locationName == locations[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
 }
 
 # dev.off()
@@ -403,10 +404,10 @@ hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$locati
 hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$tooluse == TRUE])
 
 # below doesn't work because some locations don't have tool use and it tries to do those. FIX THIS. 
-locations_toolsites <- deployment_info$location_name[deployment_info$tool_site == 1]
+locations_toolsites <- deployment_info$locationName[deployment_info$tool_site == 1]
 
 for (l in 1:length(locations_toolsites)) {
-  hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 && agoutisequence$location_name == locations_toolsites[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
+  hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 && agoutisequence$locationName == locations_toolsites[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
 }
 
 # for each camera trap add get distance from coast
