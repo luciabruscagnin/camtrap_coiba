@@ -378,12 +378,9 @@ bm3_camest$Q97.5 <- exp(bm3_camest$locationfactor.Q97.5.Intercept)
 bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
 
 ## MODEL 4: camera as grouping factor rather than random effect
-bm4 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + s(yrday, by = locationfactor, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+bm4 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + s(yrday, by = locationfactor, bs = "cc"), family = zero_inflated_poisson(),
+           data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
 
-
-
-??dotplot
-dotchart(ranef(bm3))
 
 ## look into Kat's script and the autocorrelation 
 
@@ -448,6 +445,9 @@ plot(am1_zp, all.terms = TRUE, pages = 1)
 # check assumptions
 gam.check(am1_zp) 
 
+## sequence length as outcome
+
+
 ## Model 2: number of capuchins depending on hour of day, by tool use/vs non tool users
 am2_zp <- gam(n ~ s(hour, bs = "cc", by = toolusers), family = ziP, data = agoutisequence_c, method = "REML")
 summary(am2_zp) 
@@ -464,7 +464,7 @@ summary(am3_zp)
 plot(am3_zp, all.terms = TRUE, pages = 1)
 # check assumptions
 gam.check(am3_zp) 
-
+str(am3_zp)
 
 locationcol <- c("#5081db",
                  "#a0bf52",
