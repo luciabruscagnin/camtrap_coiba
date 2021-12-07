@@ -170,8 +170,9 @@ require("brms")
 ## MODEL 1: Dependent: tool use duration per day, Independent: smooth of month & smooth of time (days since 1970). Over all cameras ####
 # based on this https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
 # allows for comparison of tool use duration between years (time variable) and within years on month level
-m1_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = ziP, data = agoutiselect, method = "REML")
-summary(m1_zp) # smooths are significant, explains 100% of deviance (interesting)
+# set knots to 0.5 and 12.5 as January and December should match at end of January and beginning of December, but can still be different
+m1_zp <- gam(toolusedurationday ~ s(month, bs = "cc") + s(time), family = ziP, data = agoutiselect, method = "REML", knots = list(month = c(0.5,12.5)))
+summary(m1_zp) # smooths are significant, explain nearly all of variation in dataset
 # visualize
 plot(m1_zp, all.terms = TRUE, pages = 1)
 # can also plot only one effect, e.g. only the month. adding the intercept value and uncertainty
@@ -189,7 +190,7 @@ pacf(resid(m1_zp), lag.max = 36, main = "pACF")
 
 ## MODEL 2: Dependent: tool use duration per day. Independent: smooth of day of the year. Over all cameras ####
 # based on Kat's script, only looking at one smooth, simplifies it slightly
-m2_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc"), family = ziP, data = agoutiselect, method = "REML")
+m2_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc"), family = ziP, data = agoutiselect, method = "REML", knots = list(yrday = c(0.5,366.5)))
 summary(m2_zp) # smooth is significant, explains 100% of deviance (?)
 # visualize
 plot(m2_zp, all.terms = TRUE, pages = 1)
@@ -202,13 +203,13 @@ pacf(resid(m2_zp), lag.max = 36, main = "pACF")
 
 #### INCLUDING CAMERA LOCATION
 ## MODEL 3: expanding model 1 with inclusion of camera location as a random smooth ####
-m3_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML") 
+m3_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, knots = list(month = c(0.5,12.5)), method = "REML") 
 summary(m3_zp)
 plot(m3_zp, all.terms =  TRUE, pages = 1)
 gam.check(m3_zp)
 
 ## MODEL 4: expanding model 2 with inclusion of camera location as random smooth
-m4_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 15) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML")
+m4_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 15) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML", knots = list(yrday = c(0.5,366.5)))
 summary(m4_zp) 
 plot(m4_zp, all.terms = TRUE, pages = 1)
 # when checking assumptions can also simulate data to get confidence interval around Q-Q plot
@@ -234,8 +235,8 @@ locationcol <- c("#5081db",
 par(mar=c(5.1, 4.1, 4.1, 11.1), xpd=TRUE)
 plot(m4_zp, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m4_zp)[1], ylim = c(-3, log(max(agoutiselect$toolusedurationday))))
 points(agoutiselect$yrday, log(agoutiselect$toolusedurationday), col = locationcol[(as.numeric(agoutiselect$locationfactor) + 1)], pch = agoutiselect$tool_anvil + 1)
-legend("topright", inset=c(-0.50,0), legend = levels(agoutiselect$locationfactor), pch = 19, col = locationcol, cex = 0.9 )
-legend("bottomright", inset=c(-0.25,0), legend = c("No anvil", "Anvil"), pch = c(1,2),cex = 0.9 )
+legend("topright", inset=c(-0.3,0), legend = levels(agoutiselect$locationfactor), pch = 19, col = locationcol, cex = 0.9, xpd = TRUE )
+legend("bottomright", inset=c(-0.15,0), legend = c("No anvil", "Anvil"), pch = c(1,2),cex = 0.9, xpd = TRUE )
 dev.off()
 
 # try to plot that on real scale
@@ -254,7 +255,7 @@ plot(b, allTerms = TRUE, select = 2) + geom_hline(yintercept = 0)
 
 ## MODEL 5: expanding model 1 including camera location as factor
 # NOTE: likely need more data here to be able to get these estimates per camera location. Maybe also limit dataset to locations we have enough data for
-m5_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(month, bs = "cc", by = locationfactor) + s(time), data = agoutiselect, family = ziP, method = "REML")
+m5_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(month, bs = "cc", by = locationfactor) + s(time), data = agoutiselect, family = ziP, method = "REML", knots = list(month = c(0.5,12.5)))
 summary(m5_zp)
 plot(m5_zp, all.terms = TRUE)
 gam.check(m5_zp)
@@ -262,12 +263,13 @@ gam.check(m5_zp)
 ## MODEL 6: expanding model 2 including camera location as factor
 # still include yrday on its own without by factor?
 # need to include factor as parametric effect. 
-m6_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc", by = locationfactor) + locationfactor + s(month, bs = "cc", k = 12, by = locationfactor), data = agoutiselect, family = ziP, method = "REML")
+m6_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc", by = locationfactor) + locationfactor, data = agoutiselect, family = ziP, method = "REML", knots = list(yrday = c(0.5,366.5)))
 summary(m6_zp)
 plot(m6_zp, all.terms = TRUE)
 gam.check(m6_zp)
 
 m6_zp$coefficients
+saveRDS(m6_zp, file = "m6_zp.rds")
 
 # need to write loop to make graph for each location (so select gets higher numbers)
 plot(m6_zp, select = 2)
@@ -316,8 +318,6 @@ plot(bm3)
 gam.vcomp(m4_zp, rescale = FALSE)
 
 # use marginal smooths to extract the marginal effect of the spline
-msms <- marginal_smooths(bm3)
-plot(msms)
 plot(m4_zp)
 
 # extract group-level estimates
@@ -362,10 +362,14 @@ cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
 codeddeployments_total <- as.character(cd$Var1[cd$Freq == 0])
 
 # subset only fully coded deployments
-agoutisequence_c <- agoutisequence[agoutisequence$uniqueloctag %in% codeddeployments_total,]
+# for now LIMITED TO JICARON! Need to include Coiba later if we have enough data
+agoutisequence_c <- agoutisequence[(agoutisequence$uniqueloctag %in% codeddeployments_total & agoutisequence$island == "Jicaron"),]
 agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
+agoutisequence_c$toolusers <- as.factor(agoutisequence_c$tool_site)
+agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
 
-# need to add in the hours that the camera wasn't triggered as 0s
+
+#  ## SKIP THIS? need to add in the hours that the camera wasn't triggered as 0s  #####
 # first make overview of deployments we have in this dataframe and their start and end days
 # NOTE: CAN LIKELY DO THIS EASIER BY GENERATING THIS ENTIRE THING ONCE AND THEN FILTERING? 
 locations2 <- data.frame(uniqueloctag = unique(agoutisequence_c$uniqueloctag)) 
@@ -375,7 +379,7 @@ locations2 <- locations2[!duplicated(locations2$uniqueloctag),]
 locations2$dep_startday <- as.Date(format(locations2$dep_start, "%Y-%m-%d"))
 locations2$dep_endday <- as.Date(format(locations2$dep_end, "%Y-%m-%d"))
 
-# generate all the days that should be present within each deployment
+###  generate all the days that should be present within each deployment
 # first create dataframe for first one
 depldays3 <<- data.frame(uniqueloctag = locations2$uniqueloctag[1], seqday = seq(locations2$dep_startday[1], locations2$dep_endday[1], by = "days"))
 # now iterate over all the other ones and append those to the dataframe
@@ -411,33 +415,62 @@ for (i in 1:nrow(metadata2)) {
 
 agoutiselect2$n[agoutiselect2$noanimal == 1] <- 0
 agoutiselect2$capuchin[agoutiselect2$noanimal == 1] <- 0
+# not sure if we should change seq_length to 0
+agoutiselect2$seq_length[agoutiselect2$noanimal == 1] <- 0
+
+### select #####
+
+# DON'T RUN THE FOLLOWING LINE IF YOU ADDED IN THE HOURS THAT CAMERAS WERENT TRIGGERED
+agoutiselect2 <- agoutisequence_c
 
 # exclude deployment pick up and setup days
 agoutiselect2$picksetup <- ifelse(agoutiselect2$seqday == date(agoutiselect2$dep_start) | agoutiselect2$seqday == date(agoutiselect2$dep_end), 1, 0)
 
 agoutiselect2 <- agoutiselect2[agoutiselect2$picksetup == 0, c("uniqueloctag", "seqday", "hour", "deploymentID", "locationName", "tags", "capuchin", 
                                   "n", "seq_start", "seq_end", "seq_length", "temperature", "dep_start", "dep_end", "dep_length_hours",
-                                  "island", "tool_anvil", "tool_site", "exposure","noanimal")]
-
-agoutiselect2$toolusers <- as.factor(agoutiselect2$tool_site)
-agoutiselect2$locationfactor <- as.factor(agoutiselect2$locationName)
+                                  "island", "tool_anvil", "tool_site", "exposure", "toolusers", "locationfactor")] # add "noanimal if you added 0's)
 
 ### This dataframe still has several sequences per hour, for hours where the camera wasn't triggered it just has a 0 for capuchin count
+str(agoutiselect2)
+## create variable for nr of capuchins per hour
+agoutiselect2$n_hour <- (agoutiselect2$n/agoutiselect2$seq_length) * 3600
+agoutiselect2$dayhour <- paste(agoutiselect2$seqday, agoutiselect2$hour, sep = " ")
+agoutidayhour <- aggregate(agoutiselect2$n, by = list(dayhour = agoutiselect2$dayhour, uniqueloctag = agoutiselect2$uniqueloctag), FUN = mean)
+aggregate(agoutiselect2$seq_length, by = list(dayhour = agoutiselect2$dayhour, uniqueloctag = agoutiselect2$uniqueloctag), FUN = sum)
+## CHECK IF THIS WORKS AND IF IT'S NECESSARY
+# maybe instead calculate number of capuchins per minute/hour whatever (per sequence using sequencelength offset)
+# and then make average of that per day-hour 
+# still figure this out, need to do some math (to also incorporate all the minutes/seconds there were no capuchins? unclear)
+# or add all sequence lengths and all capuchins per hour and then divide capuchins by total seq length? Think about independence etc and what this means
 
 ## GAMs
 descdist(agoutiselect2$n)
 hist(agoutiselect2$n)
 ## a poisson distribution makes most sense, likely zero-inflated
+## hour of day is not cyclic spline, as we have no observations at midnight and early in morning (explained in bottom of the heap youtube)
+# use fREML for faster processing
 
 ### TOOL USE OVER TIME
 ## FOR EVERYTHING ON THE SEQUENCE LEVEL: need to add offset of sequence length!!! 
 ####
 
 # just plots
-plot(n ~ hour, data = agoutiselect2)
+plot(n ~ hour, data = agoutiselect2[agoutiselect2$toolusers == 1,], main = "Tool users")
+plot(n ~ hour, data = agoutiselect2[agoutiselect2$toolusers == 0,], main = "Non-tool users")
+
+# colors for two histograms in one
+c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
+c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
+
+### Tool users vs non tool users
+histtool <- hist(agoutiselect2$hour[agoutiselect2$tool_site == 1 & agoutiselect2$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+histnotool <- hist(agoutiselect2$hour[agoutiselect2$tool_site == 0 & agoutiselect2$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+
+plot(histnotool, col = c2, freq = FALSE, main = "Tool users (blue) vs non-tool users (red)", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins", ylim = c(0, 0.3))
+plot(histtool, col = c1, freq = FALSE, add = TRUE)
 
 ## Model 1: number of capuchins depending on hour of day, everything together
-am1_zp <- gam(n ~ s(hour, bs = "cc", k = 24), family = ziP, data = agoutiselect2, method = "REML")
+am1_zp <- bam(n ~ s(hour), family = ziP, data = agoutiselect2, method = "fREML", nthreads = c(4,1))
 summary(am1_zp) 
 # visualize
 plot(am1_zp, all.terms = TRUE, pages = 1)
@@ -448,7 +481,7 @@ ggplot(data.frame(Fitted = fitted(am1_zp),
        aes(Fitted, Resid)) + geom_point()
 
 ## sequence length as outcome
-am1.2_zp <- gam(seq_length ~ s(hour, bs = "cc", k = 8), fmaily = ziP, data = agoutiselect2, method = "REML")
+am1.2_zp <- gam(seq_length ~ s(hour,, k = 8), fmaily = ziP, data = agoutiselect2, method = "fREML",nthreads = c(4,1))
 summary(am1.2_zp) 
 # visualize
 plot(am1.2_zp, all.terms = TRUE, pages = 1)
@@ -456,7 +489,7 @@ plot(am1.2_zp, all.terms = TRUE, pages = 1)
 gam.check(am1.2_zp) 
 
 ## presence/absence as outcome
-am1_b <- gam(capuchin ~ s(hour, bs = "cc"), data = agoutiselect2, family = binomial, method = "REML")
+am1_b <- gam(capuchin ~ s(hour), data = agoutiselect2, family = binomial, method = "REML")
 summary(am1_b)
 plot(am1_b)
 str(agoutiselect2)
@@ -465,7 +498,7 @@ ggplot(data.frame(Fitted = fitted(am1_b),
        aes(Fitted, Resid)) + geom_point()
 
 ## Model 2: number of capuchins depending on hour of day, by tool use/vs non tool users
-am2_zp <- gam(n ~ s(hour, bs = "cc", by = toolusers, k = 18) + toolusers, family = ziP, data = agoutiselect2, method = "REML")
+am2_zp <- gam(n ~ s(hour, by = toolusers) + toolusers, family = ziP, data = agoutiselect2, method = "REML")
 summary(am2_zp) 
 # visualize
 plot(am2_zp, all.terms = TRUE, pages = 1)
@@ -486,8 +519,9 @@ plot(am2.2_zp, all.terms = TRUE, pages = 1)
 gam.check(am2.2_zp) 
 
 ## Model 3: including location as random effect
-am3_zp <- gam(n ~ s(hour, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = agoutiselect2, method = "REML" )
+am3_zp <- gam(n ~ s(hour, by = toolusers) +  toolusers + s(locationfactor, bs = "re"), family = ziP, data = agoutiselect2, method = "fREML")
 summary(am3_zp) 
+# saveRDS(am3_zp, file = "am3_zp.rds")
 # visualize
 plot(am3_zp, all.terms = TRUE, pages = 1)
 # check assumptions
@@ -520,13 +554,17 @@ legend("bottomright", inset=c(-0.25,0), legend = c("Non-tool-users", "Tool-users
 dev.off()
 
 ## sequence length instead of number of capuchins
-am3.2_zp <- gam(seq_length ~ s(hour, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = ziP, data = agoutiselect2, method = "REML" )
+am3.2_zp <- gam(seq_length ~ s(hour, by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = ziP, data = agoutiselect2, method = "REML" )
 summary(am3.2_zp) 
 # visualize
 plot(am3.2_zp, all.terms = TRUE, pages = 1)
 # check assumptions
 gam.check(am3.2_zp, rep = 500) 
 
+## binary
+am3_b <- gam(capuchin ~ s(hour, by = toolusers) + toolusers + s(locationfactor, bs = "re"), data = agoutiselect2, family = binomial, method = "REML")
+summary(am3_b)
+plot(am3_b, all.terms = TRUE, pages = 1)
 
 ## Model 4: add temperature
 am4_zp <- gam(n ~ s(hour, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re") + s(temperature), family = ziP, data = agoutiselect2, method = "REML" )
@@ -539,7 +577,6 @@ gam.check(am4_zp)
 ##### TIDAL #####
 ## only taking into account sequences with capuchins?
 onlycap <- agoutisequence_c[agoutisequence_c$capuchin == 1,]
-str(onlycap)
 
 descdist(onlycap$n)
 hist(onlycap$n)
@@ -565,7 +602,7 @@ gam.check(tm1.2_zp)
 
 ## Model 2: split by tool use vs non tool users
 # abs
-tm2_zp <- gam(n ~ s(tidedifabs, by = toolusers), family = ziP, data = onlycap, method = "REML" )
+tm2_zp <- gam(n ~ s(tidedifabs, by = toolusers) + toolusers, family = ziP, data = onlycap, method = "REML" )
 summary(tm2_zp) 
 # visualize
 plot(tm2_zp, all.terms = TRUE, pages = 1)
@@ -573,7 +610,7 @@ plot(tm2_zp, all.terms = TRUE, pages = 1)
 gam.check(tm2_zp) 
 
 # no abs
-tm2.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers), family = ziP, data = onlycap, method = "REML" )
+tm2.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers, family = ziP, data = onlycap, method = "REML" )
 summary(tm2.2_zp) 
 # visualize
 plot(tm2.2_zp, all.terms = TRUE, pages = 1)
@@ -582,7 +619,7 @@ gam.check(tm2.2_zp)
 
 ## Model 3: add location of camera as random effect
 # abs
-tm3_zp <- gam(n ~ s(tidedifabs, by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
+tm3_zp <- gam(n ~ s(tidedifabs, by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
 summary(tm3_zp) 
 # visualize
 plot(tm3_zp, all.terms = TRUE, pages = 1)
@@ -590,7 +627,7 @@ plot(tm3_zp, all.terms = TRUE, pages = 1)
 gam.check(tm3_zp) 
 
 # no abs
-tm3.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
+tm3.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
 summary(tm3.2_zp) 
 # visualize
 plot(tm3.2_zp, all.terms = TRUE, pages = 1)
@@ -626,7 +663,7 @@ gam.check(tm4.2_zp)
 
 ## BRMS
 require(brms)
-tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers) + (1|locationfactor), family = zero_inflated_poisson(), data = onlycap, chain = 4, core = 4, control = list(adapt_delta = 0.99))
+tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + (1|locationfactor), family = zero_inflated_poisson(), data = onlycap, chain = 4, core = 4, control = list(adapt_delta = 0.99))
 # saveRDS(tbm1, file = "tbm1.rds")
 summary(tbm1)
 plot(conditional_smooths(tbm1))
@@ -636,3 +673,5 @@ pairs(tbm1)
 
 # need to add distance from coast?
 
+
+## save dataframes we need for analysis as rds
