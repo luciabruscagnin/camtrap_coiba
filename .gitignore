@@ -11,3 +11,5 @@ multimedia.csv
 /cebaco_island_tide_charts/pdfs
 
 *.rds
+
+exiftool_metadata/temperature_sequencelength.csv
