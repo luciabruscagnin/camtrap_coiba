@@ -347,6 +347,19 @@ bm4 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + s(yrday, by = locationfact
 # https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html#zero-inflated-models
 # https://stats.stackexchange.com/questions/403772/different-ways-of-modelling-interactions-between-continuous-and-categorical-pred
 # https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/family.mgcv.html
+# https://link.springer.com/content/pdf/10.1198/jabes.2009.08038.pdf
+# https://cran.r-project.org/web/packages/tidymv/vignettes/predict-gam.html
+# https://www.rensvandeschoot.com/tutorials/brms-started/
+# https://stats.stackexchange.com/questions/413559/plotting-summed-effects-of-factor-levels-in-interactions-in-a-gamm-model
+# https://stackoverflow.com/questions/42848570/mgcv-plotting-factor-by-smooths
+# https://besjournals.onlinelibrary.wiley.com/doi/10.1111/j.2041-210X.2010.00017.x
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7593165/
+# https://lionstats.wordpress.com/2018/09/03/93/
+# https://stats.stackexchange.com/questions/136037/modelling-count-data-where-offset-variable-is-0-for-some-observations
+# https://stackoverflow.com/questions/50491178/using-offset-in-gam-zero-inflated-poisson-zip-model 
+# https://peerj.com/articles/6876/ 
+# https://fromthebottomoftheheap.net/2017/10/10/difference-splines-i/
+# 
 
 
 ##### ACTIVITY DURING DAY #####
