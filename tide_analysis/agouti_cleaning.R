@@ -23,10 +23,10 @@ setwd("~/Git/camtrap_coiba")
 #   then see if you have activity at several camera traps within the same hour (hour might be too large of a timescale). Need spatial depth for this. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20220125100326/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20220125100326/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
@@ -56,7 +56,7 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20211123090920/media.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20220125100326/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -131,6 +131,7 @@ agoutigross$season <- ifelse(agoutigross$month == 12 | agoutigross$month == 1 | 
                          agoutigross$month == 4, "Dry", "Wet") 
 
 # pull island location and tool use/non tool use from coiba_camtrap_ids_gps.csv
+setwd("~/Git/camtrap_coiba")
 deployment_info <- read.csv("coiba_camtrap_ids_gps.csv")
 deployment_info$locationName <- deployment_info$camera_id
 
@@ -199,6 +200,8 @@ length(unique(agoutisequence$sequenceID))
 # can also filter ou the cameraSetup sequences (using that variable)
 
 ## TIDAL
+# Run tide_cleaning.R script first!!
+
 # for each sequence get time to nearest low tide (need to match day and get low tide times then)
 # two options, either get absolute difference (so always positive)
 # or before/after difference
