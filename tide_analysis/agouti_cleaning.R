@@ -23,10 +23,10 @@ setwd("~/Git/camtrap_coiba")
 #   then see if you have activity at several camera traps within the same hour (hour might be too large of a timescale). Need spatial depth for this. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20220125100326/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20220309122443/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20220125100326/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20220309122443/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
@@ -56,7 +56,7 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20220125100326/media.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20220309122443/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -197,7 +197,7 @@ length(unique(agoutisequence$sequenceID))
 # NOTE: this dataframe also contains not fully coded deployments, it seems as if it contains all the uncoded sequences (which will be blank?)
 # as far as I can tell there's no way to differentiate whether a deployment has been fully coded or not
 # for analyses need to only consider the fully coded deployments, or we inflate
-# can also filter ou the cameraSetup sequences (using that variable)
+# can also filter out the cameraSetup sequences (using that variable)
 
 ## TIDAL
 # Run tide_cleaning.R script first!!

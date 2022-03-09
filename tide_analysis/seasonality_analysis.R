@@ -32,7 +32,7 @@ agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$
 
 ##### TOOL USE #####
 # filter dataset down to cameras that were deployed in the Jicaron tool using groups range
-agoutisequence_jt <- agoutisequence[(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
+agoutisequence_jt <- agoutisequence[which(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
 
 # if tool use in sequence, then sequence duration is tool use duration
 agoutisequence_jt$tooluseduration <- ifelse(agoutisequence_jt$tooluse == TRUE, agoutisequence_jt$seq_length, 0)
@@ -82,12 +82,13 @@ for (i in 2:nrow(locations)) {
 sum((depldays$seqday[depldays$uniqueloctag == locations$uniqueloctag[1]] %in% agoutiday2$seqday[agoutiday2$uniqueloctag == locations$uniqueloctag[1]])==FALSE)
 
 ## I would add this only at the stage of the "agoutiselect" dataframe, as you only want to do this for deployments that have fully been coded
-# WHEN WE HAVE CODED REPRESENTATIVE SAMPLE, SELECT THAT HERE
+# WHEN WE HAVE CODED REPRESENTATIVE SAMPLE, SELECT THAT HERE (EXCLUDING CEBUS-03 BECAUSE IT'S ON SAME ANVIL AS CEBUS-02)
+# also leaving off the survey ones for now ("SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5",
+# "SURVEY-CEBUS-17-03-R4" ,"SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5") 
 # for now manually which ones have been fully coded
-codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-02-R1", "CEBUS-02-R4", "CEBUS-02-R5", "CEBUS-03-R4", "CEBUS-03-R5", 
+codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5",
                       "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-06-R4", "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", "CEBUS-09-R2", 
-                      "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5", "SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5",
-                      "SURVEY-CEBUS-17-03-R4" ,"SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5")
+                      "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
 agoutiselect <- agoutiday2[agoutiday2$uniqueloctag %in% codeddeployments,]
 
 ## for these deployments, add in the days that the camera was running but not triggered (and flag these)
