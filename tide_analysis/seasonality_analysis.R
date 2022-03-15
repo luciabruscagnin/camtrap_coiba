@@ -84,11 +84,11 @@ sum((depldays$seqday[depldays$uniqueloctag == locations$uniqueloctag[1]] %in% ag
 ## I would add this only at the stage of the "agoutiselect" dataframe, as you only want to do this for deployments that have fully been coded
 # WHEN WE HAVE CODED REPRESENTATIVE SAMPLE, SELECT THAT HERE (EXCLUDING CEBUS-03 BECAUSE IT'S ON SAME ANVIL AS CEBUS-02)
 # also leaving off the survey ones for now ("SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5",
-# "SURVEY-CEBUS-17-03-R4" ,"SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5") 
+# "SURVEY-CEBUS-17-03-R4") 
 # for now manually which ones have been fully coded
 codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5",
                       "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-06-R4", "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", "CEBUS-09-R2", 
-                      "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
+                      "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5", "SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5")
 agoutiselect <- agoutiday2[agoutiday2$uniqueloctag %in% codeddeployments,]
 
 ## for these deployments, add in the days that the camera was running but not triggered (and flag these)
@@ -308,8 +308,9 @@ pairs(bm2)
 
 ## MODEL 3: Zero inflated, including camera location as random effect 
 # need to run for more iterations, bulk and tail ESS both low
-bm3 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + (1|locationfactor), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
+bm3 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + (1|locationfactor), family = zero_inflated_poisson(), data = agoutiselect, iter = 1000, chain = 4, core = 4, control = list(adapt_delta = 0.9, max_treedepth = 15))
 # saveRDS(bm3, file = "bm3.rds")
+# bm3 <- readRDS("bm3.rds")
 summary(bm3)
 plot(conditional_smooths(bm3))
 pp_check(bm3, type = "hist") # don't know what's wrong here
