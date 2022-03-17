@@ -1,10 +1,11 @@
 ## Seasonality of tool use analysis
 ## MPI-AB; Z Goldsborough
 
-## STEP 1: Run "agouti_cleaning.R" script and its dependencies
+## STEP 1: Run "agouti_cleaning.R" script and its dependencies (1. "exiftempseq_cleaning.R" 2. "tide_cleaning.R")
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
-# for the seasonality analysis, only want to look at the Jicaron tool users and aggregate to the day level
+# for the seasonality analysis, we consider a subset of the data at repeat locations across seasons. 
+# Aggregate to the day level per camera
 # potentially for activity patterns on the day can work with same script but on all cameras
 
 ## PREP
@@ -16,6 +17,8 @@ agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
 agoutisequence$seqday <- as.Date(format(agoutisequence$seq_start, "%Y-%m-%d"))
 
 ## EXPOSURE
+# how long the camera was running on a day
+## NOTE: in later deployments (R10 on) to conserve batteries we have cameras on a schedule to be off at night, but before run for 24 hours
 # extract the day of the sequence and also the day of the deployment start and end
 # if day of sequence is in day of deployment start or end, then it's time for that. otherwise it's 24 hours
 agoutisequence$dep_startday <- format(agoutisequence$dep_start, "%Y-%m-%d")
@@ -37,6 +40,7 @@ agoutisequence_jt <- agoutisequence[which(agoutisequence$tool_site == 1 & agouti
 # if tool use in sequence, then sequence duration is tool use duration
 agoutisequence_jt$tooluseduration <- ifelse(agoutisequence_jt$tooluse == TRUE, agoutisequence_jt$seq_length, 0)
 ## need to pay attention here, because if seq_length is not available yet (due to exifdata not being pulled) then it will look the same as when there's no tool use. 
+# currently everything up to and including R5 has seq_length available
 
 # aggregate per day & deployment-location (uniqueloctag), summing all the tool use durations
 # NOTE: would also need to aggregate temperature per day etc if we already jump to this format. Haven't done that yet
@@ -82,12 +86,13 @@ for (i in 2:nrow(locations)) {
 sum((depldays$seqday[depldays$uniqueloctag == locations$uniqueloctag[1]] %in% agoutiday2$seqday[agoutiday2$uniqueloctag == locations$uniqueloctag[1]])==FALSE)
 
 ## I would add this only at the stage of the "agoutiselect" dataframe, as you only want to do this for deployments that have fully been coded
-# WHEN WE HAVE CODED REPRESENTATIVE SAMPLE, SELECT THAT HERE (EXCLUDING CEBUS-03 BECAUSE IT'S ON SAME ANVIL AS CEBUS-02)
-# also leaving off the survey ones for now ("SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5",
-# "SURVEY-CEBUS-17-03-R4") 
-# for now manually which ones have been fully coded
+# REPRESENTATIVE SAMPLE SELECTION
+# exclude CEBUS-03 (as CEBUS-02 and CEBUS-03 are on the same anvil)
+# exclude one-off surveys ("SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5", # "SURVEY-CEBUS-17-03-R4") 
+# SURVEY-CEBUS-24-01 is basically CEBUS-04 anvil
+# manually identify deployments that have been fully coded
 codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5",
-                      "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-06-R4", "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", "CEBUS-09-R2", 
+                      "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-06-R4", "CEBUS-06-R5", "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", "CEBUS-09-R2", 
                       "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5", "SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5")
 agoutiselect <- agoutiday2[agoutiday2$uniqueloctag %in% codeddeployments,]
 
@@ -116,7 +121,6 @@ for (i in 1:nrow(agoutiselect)) {
 agoutiselect$toolusedurationday <- ifelse(agoutiselect$noanimal == 1, 0, agoutiselect$toolusedurationday)
 agoutiselect$toolusedurationday[agoutiselect$noanimal == 1] <- 0
 # for now just set exposure on these days to 24, assuming they dont occur on pick up or deployment days
-# NOTE: need to check if they could occur on this day (I don't think so?)
 agoutiselect$exposure[agoutiselect$noanimal == 1] <- 24
 # add month and season
 agoutiselect$month[agoutiselect$noanimal == 1] <- month(agoutiselect$seqday[agoutiselect$noanimal == 1])
@@ -129,19 +133,21 @@ agoutiselect$time <- as.numeric(agoutiselect$seqday)
 agoutiselect$yrday <- yday(agoutiselect$seqday)
 # make location a factor
 agoutiselect$locationfactor <- as.factor(agoutiselect$locationName)
+# add the year
+agoutiselect$year <- year(agoutiselect$seqday)
 
-## exclude deployment start and end days for now. Discussed with Urs and he thought that if they are only small part of sample makes it easier to exclude them
+## exclude deployment start and end days as our presence and setting up/picking up cameras may have affected the animals' behavior
 agoutiselect <- agoutiselect[agoutiselect$exposure == 24, ]
 # drop all the columns we don't need
 agoutiselect <- agoutiselect[,c("seqday", "toolusedurationday", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours", "month", 
-                                "season","island", "exposure", "time", "yrday", "locationfactor", "tool_anvil", "uniqueloctag", "noanimal", "identifier")]
+                                "season","island", "exposure", "time", "yrday", "year", "locationfactor", "tool_anvil", "uniqueloctag", "noanimal", "identifier")]
 agoutiselect <- droplevels.data.frame(agoutiselect)
 
 #### DATA FOR ANALYSES
-# Agoutiselect is the dataframe we'd use for analyses of seasonality. 
+# Agoutiselect is the data frame we'd use for analyses of seasonality. 
 # Each row is one day of observation, which is included as an RDate (seqday) and as a continuous variable in days since 1970 (time) 
-# A variable for each month (month) and the day of the year between 1 and 365 (yrday), there is also a variable for dry or wet season (season)
-# Each camera location is represented as a character (location_name) and a factor (locationfactor), and also each island (island)
+# A variable for each month (month) and the day of the year between 1 and 365 (yrday), there is also a variable for dry or wet season (season) and for the year (year)
+# Each camera location is represented as a character (location_name) and a factor (locationfactor), and also each island (island) (if we'd want to include Coiba)
 # Each deployment has its own tag (tags) and deployment ID (deployment_id). The POSIXct start and end day of each deployment is also included, as well as its length in hours
 # the dependent variable of interest is the seconds of tool use per day (toolusedurationday)
 # Includes the amount of hours that camera could have been recording this day (exposure), for now is all 24 as we've excluded the pickup and deploy days.
@@ -151,7 +157,7 @@ agoutiselect <- droplevels.data.frame(agoutiselect)
 require("fitdistrplus")
 descdist(agoutiselect$toolusedurationday)
 hist(agoutiselect$toolusedurationday)
-## a poisson distribution makes most sense, likely zero-inflated
+## a poisson distribution makes most sense, zero-inflated
 
 ### TOOL USE OVER TIME
 # just plots
@@ -162,9 +168,12 @@ plot(toolusedurationday ~ month, data = agoutiselect)
 require("mgcv")
 require("brms")
 
-### MGCV
+##### MGCV ####
+# STILL NEED TO SORT THIS OUT AND CLEAN IT UP
+
 # using mgcv package 
 # set bs = "cc" for month and day of the year as you need a cyclic cubic spine, since there should be no discontinuity between january and december
+# potentially set knots at 0.5 & 12.5 or at 0.5 and 366.5? 
 ## must include 'by' factor in model as well as they are centred!
 # can use 'select = TRUE' to penalize on the null space (look up what that is)
 
@@ -173,7 +182,7 @@ require("brms")
 # based on this https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
 # allows for comparison of tool use duration between years (time variable) and within years on month level
 # set knots to 0.5 and 12.5 as January and December should match at end of January and beginning of December, but can still be different
-m1_zp <- gam(toolusedurationday ~ s(month, bs = "cc") + s(time), family = ziP, data = agoutiselect, method = "REML", knots = list(month = c(0.5,12.5)))
+m1_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = ziP, data = agoutiselect)
 summary(m1_zp) # smooths are significant, explain nearly all of variation in dataset
 # visualize
 plot(m1_zp, all.terms = TRUE, pages = 1)
@@ -205,10 +214,40 @@ pacf(resid(m2_zp), lag.max = 36, main = "pACF")
 
 #### INCLUDING CAMERA LOCATION
 ## MODEL 3: expanding model 1 with inclusion of camera location as a random smooth ####
-m3_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, knots = list(month = c(0.5,12.5)), method = "REML") 
+m3_zp <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP) 
 summary(m3_zp)
 plot(m3_zp, all.terms =  TRUE, pages = 1)
 gam.check(m3_zp)
+?gam
+layout(matrix(1:2, ncol = 2))
+acf(resid(m3_zp), lag.max = 36, main = "ACF")
+pacf(resid(m3_zp), lag.max = 36, main = "pACF")
+layout(1)
+
+# try model with autocorrelation (AR) structure
+m3_1 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML", 
+             correlation = corARMA(form = ~ 1|year, p = 1)) 
+
+m3_2 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML", 
+          correlation = corARMA(form = ~ 1|year, p = 2))
+
+m3_3 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML", 
+          correlation = corARMA(form = ~ 1|year, p = 3))
+
+
+
+anova(m3_zp$df.residual, m3_1$df.residual, m3_2$df.residual, m3_3$df.residual)
+
+m3_3$lme
+
+summary(m3)
+plot(m3, all.terms =  TRUE, pages = 1)
+gam.check(m3)
+
+layout(matrix(1:2, ncol = 2))
+acf(resid(m3_zp), lag.max = 36, main = "ACF")
+pacf(resid(m3_zp), lag.max = 36, main = "pACF")
+layout(1)
 
 ## MODEL 4: expanding model 2 with inclusion of camera location as random smooth
 m4_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 15) + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML", knots = list(yrday = c(0.5,366.5)))
@@ -294,17 +333,23 @@ m7_zp <- gam(toolusedurationday ~ s(yrday, locationfactor, bs = "fs"), data = ag
 summary(m7_zp)
 plot(m7_zp, all.terms = TRUE)
 
-## BRMS
+
+#### BRMS ####
 # best models from above but then in brms
 
-## MODEL 2: Zero inflated, no camera location
-bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
-# saveRDS(bm2, file = "bm2.rds")
-summary(bm2)
-plot(conditional_smooths(bm2))
-pp_check(bm2) # don't get this
-plot(bm2)
-pairs(bm2)
+## MODEL 1: Zero inflated, no camera location
+bm <- brm(toolusedurationday ~ s(yrday, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.9, max_treedepth = 15))
+# saveRDS(bm, file = "bm.rds")
+summary(bm)
+plot(conditional_smooths(bm))
+pp_check(bm) # don't get this
+plot(bm)
+pairs(bm)
+
+## MODEL 2: camera as grouping factor rather than random effect
+bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + s(yrday, by = locationfactor, bs = "cc"), family = zero_inflated_poisson(),
+           data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.90, max_treedepth = 15))
+
 
 ## MODEL 3: Zero inflated, including camera location as random effect 
 # need to run for more iterations, bulk and tail ESS both low
@@ -331,9 +376,6 @@ bm3_camest$Q2.5 <- exp(bm3_camest$locationfactor.Q2.5.Intercept)
 bm3_camest$Q97.5 <- exp(bm3_camest$locationfactor.Q97.5.Intercept)
 bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
 
-## MODEL 4: camera as grouping factor rather than random effect
-bm4 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + s(yrday, by = locationfactor, bs = "cc"), family = zero_inflated_poisson(),
-           data = agoutiselect, chain = 4, core = 4, control = list(adapt_delta = 0.99, max_treedepth = 15))
 
 
 ## look into Kat's script and the autocorrelation 
