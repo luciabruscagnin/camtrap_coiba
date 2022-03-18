@@ -173,7 +173,8 @@ library(tidymv)
 
 ##### MGCV ####
 # Things that are important to do now:
-# - Understand why the Q-Q plots are not good at all (need different family than zero inflated poisson (gamma???)? Need to transform response variable?)
+# - Understand why the Q-Q plots are not good at all (need different family than zero inflated poisson (gamma???)? Need to transform response variable?). 
+#   Would need to go to gamlss or brms to use ZINB, which might also not be right family
 # - Understand the AR autocorrelation structure and how to deal with that (see the from the bottom of the heap web pages)
 # - Really read and comprehend the Hierarchical GAMs paper and how what I'm doing fits into that
 # - How to deal with missing data in a time series and what the model is currently doing
@@ -213,7 +214,7 @@ pacf(resid(m1), lag.max = 36, main = "pACF")
 # includes locationfactor as both a random intercept and a random slope
 # I think this is model I from the peerJ paper by Simpson et al about hierarchical GAMs
 # so different levels of wiggliness for each smooth and no global smooth
-m2 <- gam(toolusedurationday ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(locationfactor, yrday, bs = "re"), data = agoutiselect,
+m2 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 20) + s(locationfactor, bs = "re") + s(locationfactor, yrday, bs = "re"), data = agoutiselect,
           family = ziP, method = "REML", knots = list(yrday = c(0, 365)))
 summary(m2)
 
