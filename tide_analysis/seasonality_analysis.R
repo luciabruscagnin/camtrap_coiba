@@ -170,6 +170,8 @@ library(brms)
 library(gratia)
 library(tidyr)
 library(tidymv)
+library(ggplot2)
+library(dplyr)
 
 ##### MGCV ####
 # Things that are important to do now:
@@ -212,7 +214,7 @@ pacf(resid(m1), lag.max = 36, main = "pACF")
 #### INCLUDING CAMERA LOCATION
 ### MODEL 2: using day of the year rather than month (more detail) and no smooth for time or between year difference (as we only have 2 years)
 # includes locationfactor as both a random intercept and a random slope
-# I think this is model I from the peerJ paper by Simpson et al about hierarchical GAMs
+# I think this is model I from the peerJ paper by Simpson et al about hierarchical GAMs. This is based on blogpost bottom of the heap about random effects in mgcv with mice data. 
 # so different levels of wiggliness for each smooth and no global smooth
 m2 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 20) + s(locationfactor, bs = "re") + s(locationfactor, yrday, bs = "re"), data = agoutiselect,
           family = ziP, method = "REML", knots = list(yrday = c(0, 365)))
@@ -248,13 +250,13 @@ AIC(m2, m2_2) # model with both random intercept and random slope has preference
 
 gam.check(m2) # still don't understand assumption checking
 
-## trying to run model GI from hierarchical GAM paper
+## MODEL 3: trying to run model GI from hierarchical GAM paper
 ## setting the k of the group level effect way above the k of the global effect can help encode in the model that the location smooths can be quite wiggly but we want a more smooth global estimate
 # this seems to work AS LONG AS THERE IS NO MISSING DATA. In the missing data it is going absolutely crazy and estimating very high things. Need to do something about this
 # so need to tweak this and figure this out but it seems to be the right direction?? 
 
 m3 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 7) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 14), data = agoutiselect, 
-          knots = list(yrday=c(0,365)), family = ziP, method = "REML", drop.unused.levels = FALSE)
+          knots = list(yrday=c(0,365)), family = ziP, method = "REML", select = TRUE)
 summary(m3)
 
 plot(m3, all.terms = TRUE, pages = 1)
@@ -275,8 +277,60 @@ ggplot(m3_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = loc
 
 plot_smooths(m3, series = yrday, transform = exp)
 
+## Model checking
+gam.check(m3)
+
+## need to set k much higher, and also set k of group level effects higher than k of global smooth (to avoid smooth becoming very flat)
+m3.2 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), data = agoutiselect, 
+            knots = list(yrday=c(0,365)), family = ziP, method = "REML", select= TRUE)
+
+gam.check(m3.2)
+summary(m3.2)
+plot(m3.2, all.terms = TRUE, pages = 1)
+
+m3.2_pred <- bind_cols(new_data,
+                       as.data.frame(predict(m3.2, newdata = new_data, se.fit = TRUE)))
+
+ggplot(m3.2_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+
+
+#### MODEL 4: Model GS from hierarchical GAM paper
+## allowing for variation between cameras but only a shared penalty
+m4 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 35) + s(yrday, locationfactor, bs = "re"), data = agoutiselect, 
+            knots = list(yrday=c(0,365)), family = ziP, method = "REML", select= TRUE)
+
+summary(m4)
+plot(m4, all.terms = TRUE, pages = 1)
+
+gam.check(m4)
+
+
+m4_pred <- bind_cols(new_data,
+                       as.data.frame(predict(m4, newdata = new_data, se.fit = TRUE)))
+
+ggplot(m4_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+
+# need very high k to pass gam-check but now seems definitely overfitted.... 
+# also only allows variation of intercept, not of shape of curve
+
+
 
 ### from here on down still needs to be checked
+
+
+
+
+
+
+
+
+
 
 ## MODEL 6: expanding model 2 including camera location as factor
 # still include yrday on its own without by factor?
@@ -337,8 +391,8 @@ plot(bm)
 pairs(bm)
 
 ## MODEL 2: camera as grouping factor rather than random effect
-bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc"), family = zero_inflated_poisson(),
-           data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.90, max_treedepth = 15))
+bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
+           family = zero_inflated_poisson(), method = "REML", data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.90, max_treedepth = 15))
 
 ## MODEL 3: Zero inflated, including camera location as random effect 
 # need to run for more iterations, bulk and tail ESS both low
