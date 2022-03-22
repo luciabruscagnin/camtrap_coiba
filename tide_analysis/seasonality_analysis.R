@@ -319,8 +319,33 @@ ggplot(m4_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = loc
 # need very high k to pass gam-check but now seems definitely overfitted.... 
 # also only allows variation of intercept, not of shape of curve
 
+#### MODEL 5: Model GI with ziplss family
+# allows for 1/0 and poisson component to be modeled separately
+# for now give them the same covariates 
+# still predicting crazy things in the "false 0"/missing data space. 
+m5 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15), 
+          ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")),  data = agoutiselect, 
+            knots = list(yrday=c(0,365)), family = ziplss(), method = "REML", select= TRUE)
 
+summary(m5)
+plot(m5, all.terms = TRUE, pages = 1)
 
+gam.check(m5)
+draw(m5)
+
+m5_pred <- bind_cols(new_data,
+                     as.data.frame(predict(m5, newdata = new_data, type = "link")))
+# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
+# V2 is predicted value of zero-inflation component and is on log-log scale
+# need to transform them back and multiply together to get actual predicted values
+ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
+m5_pred$fit <- exp(m5_pred$V1)*ilink(m5_pred$V2)
+
+ggplot(m5_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+head(m5_pred)
 ### from here on down still needs to be checked
 
 
@@ -394,7 +419,14 @@ pairs(bm)
 bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
            family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.90, max_treedepth = 15))
 
-saveRDS(bm2, file = "bm2.rds")
+# saveRDS(bm2, file = "bm2.rds")
+# bm2 <- readRDS("bm2.rds")
+
+summary(bm2)
+plot(bm2)
+plot(conditional_smooths(bm2))
+
+plot_smooths(model = bm2,transform = exp, series = yrday, comparison = locationfactor) + theme(legend.position = "top") 
 
 
 ## MODEL 3: Zero inflated, including camera location as random effect 
@@ -451,7 +483,9 @@ bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
 ## Missing Data & GAMs
 # https://rdrr.io/cran/mgcv/man/missing.data.html
 # https://stats.stackexchange.com/questions/12712/how-to-handle-gaps-in-a-time-series-when-doing-gamm
-# 
+
+## Zero inflated (ziplss)
+# https://gatesdupontvignettes.com/2019/05/29/Auto-Nested-Mod.html
 
 ## BRMS
 # https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html#zero-inflated-models
