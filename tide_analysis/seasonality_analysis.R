@@ -392,7 +392,10 @@ pairs(bm)
 
 ## MODEL 2: camera as grouping factor rather than random effect
 bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-           family = zero_inflated_poisson(), method = "REML", data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.90, max_treedepth = 15))
+           family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.90, max_treedepth = 15))
+
+saveRDS(bm2, file = "bm2.rds")
+
 
 ## MODEL 3: Zero inflated, including camera location as random effect 
 # need to run for more iterations, bulk and tail ESS both low
