@@ -3,6 +3,12 @@
 
 ## STEP 1: Run "agouti_cleaning.R" script and its dependencies (1. "exiftempseq_cleaning.R" 2. "tide_cleaning.R")
 
+require(tidyr)
+require(brms)
+require(mgcv)
+require(ggplot2)
+require(gratia)
+
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
 ##### ACTIVITY DURING DAY #####
 # start using the cleaned agoutisequence
@@ -125,7 +131,7 @@ plot(histnotool, col = c2, freq = FALSE, main = "Tool users (blue) vs non-tool u
 plot(histtool, col = c1, freq = FALSE, add = TRUE)
 
 ## Model 1: number of capuchins depending on hour of day, everything together
-am1_zp <- bam(n ~ s(hour), family = ziP, data = agoutiselect2, method = "fREML", nthreads = c(4,1))
+am1_zp <- gam(list(n ~ s(hour, bs = "cc", k = 24), ~ s(hour, bs = "cc", k = 24)), family = ziplss(), data = agoutiselect2, method = "fREML", nthreads = c(4,1), knots = list(hour = c(0,24)))
 summary(am1_zp) 
 # visualize
 plot(am1_zp, all.terms = TRUE, pages = 1)
@@ -153,10 +159,12 @@ ggplot(data.frame(Fitted = fitted(am1_b),
        aes(Fitted, Resid)) + geom_point()
 
 ## Model 2: number of capuchins depending on hour of day, by tool use/vs non tool users
-am2_zp <- gam(n ~ s(hour, by = toolusers) + toolusers, family = ziP, data = agoutiselect2, method = "REML")
+am2_zp <- gam(list(n ~ s(hour, bs = "cc", by = toolusers, k = 24) + toolusers, ~ s(hour, bs = "cc", by = toolusers, k = 24) + toolusers),
+              family = ziplss(), knots = list(hour = c(0,24)), data = agoutiselect2, method = "REML")
 summary(am2_zp) 
 # visualize
 plot(am2_zp, all.terms = TRUE, pages = 1)
+draw(am2_zp)
 # check assumptions
 gam.check(am2_zp) # k too low? need to find k that works
 

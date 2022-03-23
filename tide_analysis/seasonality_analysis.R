@@ -190,6 +190,7 @@ library(dplyr)
 # potentially set knots at 0.5 & 12.5 or at 0.5 and 366.5 as January and December should match at end of January and beginning of December, but can still be different
 ## must include 'by' factor in model as well as they are centered!
 # can use 'select = TRUE' to penalize on the null space (look up what that is)
+# Use ziplss, two step zero-inflated poisson. Gives estimate of 0/1 and poisson component. 
 
 ## MODEL 1: Dependent: tool use duration per day, Independent: smooth of month & smooth of time (days since 1970). Over all cameras ####
 # based on this https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
@@ -350,11 +351,61 @@ head(m5_pred)
 
 
 
+m5.2 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15)
+                 + s(month, bs = "cc", k = 12) + s(month, by = locationfactor, bs = "cc", k = 12),
+               ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")  + s(month, bs = "cc", k = 12) +
+              s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
+          knots = list(yrday=c(0,365), month = c(0,12)), family = ziplss(), method = "REML", select= TRUE)
+
+# saveRDS(m5.2, "m5.2.rds")
+
+summary(m5.2)
+plot(m5.2, all.terms = TRUE, pages = 1)
+
+gam.check(m5)
+draw(m5.2)
+
+new_data2 <- tidyr::expand(agoutiselect, nesting(locationfactor), yrday = unique(yrday), month = unique(month))
+
+m5.2_pred <- bind_cols(new_data2,
+                     as.data.frame(predict(m5.2, newdata = new_data2, type = "link")))
+# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
+# V2 is predicted value of zero-inflation component and is on log-log scale
+# need to transform them back and multiply together to get actual predicted values
+ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
+m5.2_pred$fit <- exp(m5.2_pred$V1)*ilink(m5.2_pred$V2)
+
+ggplot(m5.2_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
 
 
+## try month 
+## If we go to month do we need to aggregate the dataframe to a month level?
+## might not need zero-inflated either then. Can check distribution?
+m5.3 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k =12), 
+               ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
+          knots = list(month=c(0,12)), family = ziplss(), method = "REML", select= TRUE)
 
+draw(m5.3)
 
+new_data3 <- tidyr::expand(agoutiselect, nesting(locationfactor), month = unique(month))
 
+m5.3_pred <- bind_cols(new_data3,
+                       as.data.frame(predict(m5.3, newdata = new_data3, type = "link")))
+# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
+# V2 is predicted value of zero-inflation component and is on log-log scale
+# need to transform them back and multiply together to get actual predicted values
+ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
+m5.3_pred$fit <- exp(m5.3_pred$V1)*ilink(m5.3_pred$V2)
+
+ggplot(m5.3_pred, aes(x = month, y = fit, group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+
+## try week
 
 
 ## MODEL 6: expanding model 2 including camera location as factor
