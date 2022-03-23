@@ -175,10 +175,7 @@ library(dplyr)
 
 ##### MGCV ####
 # Things that are important to do now:
-# - Understand why the Q-Q plots are not good at all (need different family than zero inflated poisson (gamma???)? Need to transform response variable?). 
-#   Would need to go to gamlss or brms to use ZINB, which might also not be right family
 # - Understand the AR autocorrelation structure and how to deal with that (see the from the bottom of the heap web pages)
-# - Really read and comprehend the Hierarchical GAMs paper and how what I'm doing fits into that
 # - How to deal with missing data in a time series and what the model is currently doing
 # - compare models using AIC (?)
 # - what to do with and how to interpret the k-check indicating it wants more k (if this is the case)
@@ -187,7 +184,7 @@ library(dplyr)
 # using mgcv package 
 # some notes:
 # set bs = "cc" for month and day of the year as you need a cyclic cubic spine, since there should be no discontinuity between january and december
-# potentially set knots at 0.5 & 12.5 or at 0.5 and 366.5 as January and December should match at end of January and beginning of December, but can still be different
+# set knots at 0 & 12 or at 0 and 366 as January and December should match at end of January and beginning of December, but can still be different
 ## must include 'by' factor in model as well as they are centered!
 # can use 'select = TRUE' to penalize on the null space (look up what that is)
 # Use ziplss, two step zero-inflated poisson. Gives estimate of 0/1 and poisson component. 
@@ -195,12 +192,20 @@ library(dplyr)
 ## MODEL 1: Dependent: tool use duration per day, Independent: smooth of month & smooth of time (days since 1970). Over all cameras ####
 # based on this https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
 # allows for comparison of tool use duration between years (time variable) and within years on month level
-m1 <- gam(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), family = ziP, data = agoutiselect, method = "REML", knots = list(month = c(0.5,12.5)))
+m1 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), ~s(month, bs = "cc", k = 12) + s(time)), family = ziplss(),
+          data = agoutiselect, method = "REML", knots = list(month = c(0,12)))
 summary(m1) # smooths are significant, explain nearly all of variation in dataset
 # visualize
 plot(m1, all.terms = TRUE, pages = 1)
 # can also plot only one effect, e.g. only the month. adding the intercept value and uncertainty
 plot(m1, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m1)[1])
+
+draw(m1)
+
+# all in one plot using the tidymv package
+# dont know how to get this working with ziplss
+plot_smooths(model = m1, series = yrday, comparison = locationfactor) + theme(legend.position = "top")
+
 
 # check assumptions
 gam.check(m1) 
@@ -213,152 +218,135 @@ acf(resid(m1), lag.max = 36, main = "ACF")
 pacf(resid(m1), lag.max = 36, main = "pACF")
 
 #### INCLUDING CAMERA LOCATION
-### MODEL 2: using day of the year rather than month (more detail) and no smooth for time or between year difference (as we only have 2 years)
-# includes locationfactor as both a random intercept and a random slope
-# I think this is model I from the peerJ paper by Simpson et al about hierarchical GAMs. This is based on blogpost bottom of the heap about random effects in mgcv with mice data. 
-# so different levels of wiggliness for each smooth and no global smooth
-m2 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 20) + s(locationfactor, bs = "re") + s(locationfactor, yrday, bs = "re"), data = agoutiselect,
-          family = ziP, method = "REML", knots = list(yrday = c(0, 365)))
-summary(m2)
-
-## Plotting of overall effects
-plot(m2, all.terms = TRUE, pages = 1)
-
-# plot the smooth of each camera, two ways
-# add transform = exp everywhere to get the data on the real scale (seconds of tool use per day)
-# way 1: all in one plot using the tidymv package
-plot_smooths(model = m2, transform = exp, series = yrday, comparison = locationfactor) + theme(legend.position = "top")
-
-# way 2: predict from the model for each yrday - locationfactor combination and then use ggplot
-new_data <- tidyr::expand(agoutiselect, nesting(locationfactor), yrday = unique(yrday))
-m1_pred <- bind_cols(new_data,
-                     as.data.frame(predict(m2, newdata = new_data, se.fit = TRUE)))
-
-# same plot as with tidymv package
-ggplot(m1_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
-  geom_line() 
-
-# estimates split per location with each its own scale of axes and overlay of real datapoints
-ggplot(m1_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-
-## Model checking
-# to check whether model with random intercept and random slope or with random intercept alone is preferred
-m2_2 <- gam(toolusedurationday ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re"), data = agoutiselect, family = ziP, method = "REML", knots = list(yrday = c(0,365)))
-AIC(m2, m2_2) # model with both random intercept and random slope has preference
-
-gam.check(m2) # still don't understand assumption checking
-
-## MODEL 3: trying to run model GI from hierarchical GAM paper
+#### MODEL 2: Model GI with ziplss family.
+# Using day of the year rather than month, no smooth for time or between years difference (as we only have <1.5 years)
+# allows for 1/0 and poisson component to be modeled separately
+# for now give them the same covariates 
 ## setting the k of the group level effect way above the k of the global effect can help encode in the model that the location smooths can be quite wiggly but we want a more smooth global estimate
 # this seems to work AS LONG AS THERE IS NO MISSING DATA. In the missing data it is going absolutely crazy and estimating very high things. Need to do something about this
 # so need to tweak this and figure this out but it seems to be the right direction?? 
-
-m3 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 7) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 14), data = agoutiselect, 
-          knots = list(yrday=c(0,365)), family = ziP, method = "REML", select = TRUE)
-summary(m3)
-
-plot(m3, all.terms = TRUE, pages = 1)
-
-# way 2: predict from the model for each yrday - locationfactor combination and then use ggplot
-m3_pred <- bind_cols(new_data,
-                     as.data.frame(predict(m3, newdata = new_data, se.fit = TRUE)))
-
-# same plot as with tidymv package
-ggplot(m3_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
-  geom_line() 
-
-# estimates split per location with each its own scale of axes and overlay of real datapoints
-ggplot(m3_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-
-plot_smooths(m3, series = yrday, transform = exp)
-
-## Model checking
-gam.check(m3)
-
-## need to set k much higher, and also set k of group level effects higher than k of global smooth (to avoid smooth becoming very flat)
-m3.2 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), data = agoutiselect, 
-            knots = list(yrday=c(0,365)), family = ziP, method = "REML", select= TRUE)
-
-gam.check(m3.2)
-summary(m3.2)
-plot(m3.2, all.terms = TRUE, pages = 1)
-
-m3.2_pred <- bind_cols(new_data,
-                       as.data.frame(predict(m3.2, newdata = new_data, se.fit = TRUE)))
-
-ggplot(m3.2_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-
-
-#### MODEL 4: Model GS from hierarchical GAM paper
-## allowing for variation between cameras but only a shared penalty
-m4 <- gam(toolusedurationday ~ s(yrday, bs = "cc", k = 35) + s(yrday, locationfactor, bs = "re"), data = agoutiselect, 
-            knots = list(yrday=c(0,365)), family = ziP, method = "REML", select= TRUE)
-
-summary(m4)
-plot(m4, all.terms = TRUE, pages = 1)
-
-gam.check(m4)
-
-
-m4_pred <- bind_cols(new_data,
-                       as.data.frame(predict(m4, newdata = new_data, se.fit = TRUE)))
-
-ggplot(m4_pred, aes(x = yrday, y = exp(fit), group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-
-# need very high k to pass gam-check but now seems definitely overfitted.... 
-# also only allows variation of intercept, not of shape of curve
-
-#### MODEL 5: Model GI with ziplss family
-# allows for 1/0 and poisson component to be modeled separately
-# for now give them the same covariates 
 # still predicting crazy things in the "false 0"/missing data space. 
-m5 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15), 
-          ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")),  data = agoutiselect, 
-            knots = list(yrday=c(0,365)), family = ziplss(), method = "REML", select= TRUE)
 
-summary(m5)
-plot(m5, all.terms = TRUE, pages = 1)
+m2 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15), 
+               ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")),  data = agoutiselect, 
+          knots = list(yrday=c(0,365)), family = ziplss(), method = "REML", select= TRUE)
 
-gam.check(m5)
-draw(m5)
+summary(m2)
+draw(m2)
 
-m5_pred <- bind_cols(new_data,
-                     as.data.frame(predict(m5, newdata = new_data, type = "link")))
+gam.check(m2)
+
+# plot the smooth of each camera by predicting data
+new_data <- tidyr::expand(agoutiselect, nesting(locationfactor), yrday = unique(yrday))
+
+m2_pred <- bind_cols(new_data,
+                     as.data.frame(predict(m2, newdata = new_data, type = "link")))
 # V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
 # V2 is predicted value of zero-inflation component and is on log-log scale
 # need to transform them back and multiply together to get actual predicted values
 ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
-m5_pred$fit <- exp(m5_pred$V1)*ilink(m5_pred$V2)
+m2_pred$fit <- exp(m2_pred$V1)*ilink(m2_pred$V2)
 
-ggplot(m5_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
+# estimates split per location with each its own scale of axes and overlay of real datapoints
+ggplot(m2_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
   geom_line() +
   geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
   facet_wrap(~ locationfactor, scales = "free")
-head(m5_pred)
+head(m2_pred)
+
+#### MODEL 3: Model GS from hierarchical GAM paper
+## allowing for variation between cameras but only a shared penalty
+m3 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 15) + s(yrday, locationfactor, bs = "re"), 
+               ~  s(yrday, bs = "cc", k = 15) + s(yrday, locationfactor, bs = "re")), data = agoutiselect, 
+            knots = list(yrday=c(0,365)), family = ziplss(), method = "REML", select= TRUE)
+
+summary(m3)
+plot(m3, all.terms = TRUE, pages = 1)
+draw(m3)
+
+gam.check(m3)
+
+m3_pred <- bind_cols(new_data,
+                     as.data.frame(predict(m3, newdata = new_data, type = "link")))
+# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
+# V2 is predicted value of zero-inflation component and is on log-log scale
+# need to transform them back and multiply together to get actual predicted values
+m3_pred$fit <- exp(m3_pred$V1)*ilink(m3_pred$V2)
+
+# estimates split per location with each its own scale of axes and overlay of real datapoints
+ggplot(m3_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+
+# also only allows variation of intercept, not of shape of curve
+
+#### MODEL 4: Model GI but with month only instead of yrday
+## If we go to month do we need to aggregate the dataframe to a month level?
+## might not need zero-inflated either then. Can check distribution?
+m4 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k =12), 
+               ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
+          knots = list(month=c(0,12)), family = ziplss(), method = "REML", select= TRUE)
+
+draw(m4)
+
+new_data3 <- tidyr::expand(agoutiselect, nesting(locationfactor), month = unique(month))
+
+m4_pred <- bind_cols(new_data3,
+                       as.data.frame(predict(m4, newdata = new_data3, type = "link")))
+# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
+# V2 is predicted value of zero-inflation component and is on log-log scale
+# need to transform them back and multiply together to get actual predicted values
+m4_pred$fit <- exp(m4_pred$V1)*ilink(m4_pred$V2)
+
+ggplot(m4_pred, aes(x = month, y = fit, group = locationfactor, color = locationfactor)) + geom_line()
+ggplot(m4_pred, aes(x = month, y = fit)) + geom_smooth()
+
+
+ggplot(m4_pred, aes(x = month, y = fit, group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+
+## try week instead of month
+agoutiselect$week <- as.numeric(format(as.Date(agoutiselect$seqday), "%W"))
+
+m4.2 <- gam(list(toolusedurationday ~ s(week, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(week, by = locationfactor, bs = "cc", k =15), 
+               ~ s(week, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(week, by = locationfactor, bs = "cc", k = 15)),  data = agoutiselect, 
+          knots = list(week = c(0,52)), family = ziplss(), method = "REML", select= TRUE)
+
+draw(m4.2)
+gam.check(m4.2)
+
+new_data4 <- tidyr::expand(agoutiselect, nesting(locationfactor), week = unique(week))
+
+m4.2_pred <- bind_cols(new_data4,
+                     as.data.frame(predict(m4.2, newdata = new_data4, type = "link")))
+m4.2_pred$fit <- exp(m4.2_pred$V1)*ilink(m4.2_pred$V2)
+
+ggplot(m4.2_pred, aes(x = week, y = fit, group = locationfactor, color = locationfactor)) + geom_line()
+ggplot(m4.2_pred, aes(x = week, y = fit)) + geom_smooth()
+
+
+ggplot(m4.2_pred, aes(x = week, y = fit, group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+
+## going crazy in the missing data space again
+
+
 ### from here on down still needs to be checked
 
-
-
+### Trying to add month
 m5.2 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15)
                  + s(month, bs = "cc", k = 12) + s(month, by = locationfactor, bs = "cc", k = 12),
-               ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")  + s(month, bs = "cc", k = 12) +
-              s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
-          knots = list(yrday=c(0,365), month = c(0,12)), family = ziplss(), method = "REML", select= TRUE)
+                 ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")  + s(month, bs = "cc", k = 12) +
+                   s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
+            knots = list(yrday=c(0,365), month = c(0,12)), family = ziplss(), method = "REML", select= TRUE)
 
 # saveRDS(m5.2, "m5.2.rds")
-
+# m5.2 <- readRDS("m5.2.rds")
 summary(m5.2)
 plot(m5.2, all.terms = TRUE, pages = 1)
 
@@ -368,7 +356,7 @@ draw(m5.2)
 new_data2 <- tidyr::expand(agoutiselect, nesting(locationfactor), yrday = unique(yrday), month = unique(month))
 
 m5.2_pred <- bind_cols(new_data2,
-                     as.data.frame(predict(m5.2, newdata = new_data2, type = "link")))
+                       as.data.frame(predict(m5.2, newdata = new_data2, type = "link")))
 # V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
 # V2 is predicted value of zero-inflation component and is on log-log scale
 # need to transform them back and multiply together to get actual predicted values
@@ -381,80 +369,7 @@ ggplot(m5.2_pred, aes(x = yrday, y = fit, group = locationfactor, color = locati
   facet_wrap(~ locationfactor, scales = "free")
 
 
-## try month 
-## If we go to month do we need to aggregate the dataframe to a month level?
-## might not need zero-inflated either then. Can check distribution?
-m5.3 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k =12), 
-               ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
-          knots = list(month=c(0,12)), family = ziplss(), method = "REML", select= TRUE)
-
-draw(m5.3)
-
-new_data3 <- tidyr::expand(agoutiselect, nesting(locationfactor), month = unique(month))
-
-m5.3_pred <- bind_cols(new_data3,
-                       as.data.frame(predict(m5.3, newdata = new_data3, type = "link")))
-# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
-# V2 is predicted value of zero-inflation component and is on log-log scale
-# need to transform them back and multiply together to get actual predicted values
-ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
-m5.3_pred$fit <- exp(m5.3_pred$V1)*ilink(m5.3_pred$V2)
-
-ggplot(m5.3_pred, aes(x = month, y = fit, group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-
-## try week
-
-
-## MODEL 6: expanding model 2 including camera location as factor
-# still include yrday on its own without by factor?
-# need to include factor as parametric effect. 
-m6_zp <- gam(toolusedurationday ~ s(yrday, bs = "cc", by = locationfactor) + locationfactor, data = agoutiselect, family = ziP, method = "REML")
-summary(m6_zp)
-plot(m6_zp, all.terms = TRUE, trans=exp)
-gam.check(m6_zp)
-
-m6_zp$coefficients
-# saveRDS(m6_zp, file = "m6_zp.rds")
-
-
-plot_smooths(model = m6_zp,transform = exp, series = yrday, comparison = locationfactor) + theme(legend.position = "top") 
-
-# for now, drop survey-24 and cebus-06 (miss too much data?)
-
-longdeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5",
-                      "CEBUS-05-R3", "CEBUS-05-R5",  "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", "CEBUS-09-R2", 
-                      "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
-agoutiselect2 <- droplevels.data.frame(agoutiselect[agoutiselect$uniqueloctag %in% longdeployments,])
-
-m6_2 <- gam(toolusedurationday ~ s(yrday, bs = "cc", by = locationfactor) + locationfactor, data = agoutiselect2, family = ziP, method = "REML")
-plot_smooths(model = m6_2,transform = exp, series = yrday, comparison = locationfactor) + theme(legend.position = "top") 
-
-# need to write loop to make graph for each location (so select gets higher numbers)
-plot(m6_zp, select = 2)
-points(agoutiselect$yrday[agoutiselect$locationfactor == "CEBUS-02"], log(agoutiselect$toolusedurationday[agoutiselect$locationfactor == "CEBUS-02"]))
-
-plot(m6_zp, select = 3)
-points(agoutiselect$yrday[agoutiselect$locationfactor == "CEBUS-05"], log(agoutiselect$toolusedurationday[agoutiselect$locationfactor == "CEBUS-05"]))
-codeddeployments
-
-## still try to plot this the same as m4_zp
-require(mgcViz)
-b <- getViz(m6_zp)
-print(plot(b, allTerms = T), pages = 1)
-plot(b, allTerms = TRUE, select = 4) + geom_hline(yintercept = 0)
-
-## MODEL 7: expanding model 2 but factor smooth
-# is closer to idea of random effect
-# not sure about this as now you can't define yrday as a cyclic cubic 
-m7_zp <- gam(toolusedurationday ~ s(yrday, locationfactor, bs = "fs"), data = agoutiselect, family = ziP, method = "REML")
-summary(m7_zp)
-plot(m7_zp, all.terms = TRUE)
-
-
-#### BRMS ####
+##### BRMS ####
 # best models from above but then in brms
 
 ## MODEL 1: Zero inflated, no camera location
@@ -537,6 +452,9 @@ bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
 
 ## Zero inflated (ziplss)
 # https://gatesdupontvignettes.com/2019/05/29/Auto-Nested-Mod.html
+# https://fromthebottomoftheheap.net/2017/05/04/compare-mgcv-with-glmmtmb/
+# https://stats.stackexchange.com/questions/560656/residuals-of-gam-models-not-improving-with-poisson-or-ziplss-but-better-with-ne
+
 
 ## BRMS
 # https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html#zero-inflated-models
@@ -563,6 +481,8 @@ bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
 # https://www.sciencedirect.com/science/article/pii/S0160412019309341
 # https://www.frontiersin.org/articles/10.3389/fevo.2018.00149/full
 # https://peerj.com/articles/6876/?td=tw
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8698177/
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8648868/#MOESM1
 
 
 ## old code to be chucked (likely)
