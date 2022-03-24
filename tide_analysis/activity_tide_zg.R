@@ -20,7 +20,7 @@ str(agoutisequence)
 # want to exclude deployments that have uncoded sequences
 # can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
 cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
-codeddeployments_total <- as.character(cd$Var1[cd$Freq == 0])
+codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5])
 
 # subset only fully coded deployments
 # for now LIMITED TO JICARON! Need to include Coiba later if we have enough data
@@ -238,47 +238,54 @@ plot(am4_zp, all.terms = TRUE, pages = 1)
 gam.check(am4_zp) 
 
 ##### TIDAL #####
+
+## Need to add in the not observed zero days. Maybe this is better to do for all deployments in the agouti cleaning script?? think about where this makes sense
+
+#  could do rootogram to see which family is best (gamma? negative binomial? poisson?)
+rootogram(tm3.2)
+
 ## only taking into account sequences with capuchins?
 onlycap <- agoutisequence_c[agoutisequence_c$capuchin == 1,]
 
-descdist(onlycap$n)
 hist(onlycap$n)
 
 as.matrix(ftable(onlycap$locationfactor, onlycap$toolusers))
 
 ## Model 1: n of capuchins per tide difference (abs or not)
 # abs
-tm1_zp <- gam(n ~ s(tidedifabs), family = ziP, data = onlycap, method = "REML" )
-summary(tm1_zp) 
+tm1 <- gam(n ~ s(tidedifabs), family = Gamma(link = "log"), data = onlycap, method = "REML" )
+summary(tm1) 
 # visualize
-plot(tm1_zp, all.terms = TRUE, pages = 1)
+plot(tm1, all.terms = TRUE, pages = 1)
 # check assumptions
-gam.check(tm1_zp) 
+gam.check(tm1) 
 
 # no abs
-tm1.2_zp <- gam(n ~ s(tidedif, bs = "cc"), family = ziP, data = onlycap, method = "REML" )
-summary(tm1.2_zp) 
+tm1.2 <- gam(n ~ s(tidedif, bs = "cc"), family = Gamma(link="log"), data = onlycap, method = "REML", knots = list(tidedif = c(-6,6)) )
+summary(tm1.2) 
 # visualize
-plot(tm1.2_zp, all.terms = TRUE, pages = 1)
+plot(tm1.2, all.terms = TRUE, pages = 1)
+draw(tm1.2)
 # check assumptions
-gam.check(tm1.2_zp) 
+gam.check(tm1.2) 
 
 ## Model 2: split by tool use vs non tool users
 # abs
-tm2_zp <- gam(n ~ s(tidedifabs, by = toolusers) + toolusers, family = ziP, data = onlycap, method = "REML" )
-summary(tm2_zp) 
+tm2 <- gam(n ~ s(tidedifabs, by = toolusers) + toolusers, family = ziP, data = onlycap, method = "REML" )
+summary(tm2) 
 # visualize
-plot(tm2_zp, all.terms = TRUE, pages = 1)
+plot(tm2, all.terms = TRUE, pages = 1)
 # check assumptions
-gam.check(tm2_zp) 
+gam.check(tm2) 
 
 # no abs
-tm2.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers, family = ziP, data = onlycap, method = "REML" )
-summary(tm2.2_zp) 
+tm2.2 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers, family = nb, data = onlycap, method = "REML",  knots = list(tidedif = c(-6,6)))
+summary(tm2.2) 
 # visualize
-plot(tm2.2_zp, all.terms = TRUE, pages = 1)
+plot(tm2.2, all.terms = TRUE, pages = 1)
+draw(tm2.2)
 # check assumptions
-gam.check(tm2.2_zp) 
+gam.check(tm2.2) 
 
 ## Model 3: add location of camera as random effect
 # abs
@@ -290,12 +297,15 @@ plot(tm3_zp, all.terms = TRUE, pages = 1)
 gam.check(tm3_zp) 
 
 # no abs
-tm3.2_zp <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
-summary(tm3.2_zp) 
+tm3.2 <- gam(list(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), ~
+               s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re")), 
+             family = ziplss(), data = agoutisequence_c, method = "REML", knots = list(tidedif = c(-6,6)))
+summary(tm3.2) 
 # visualize
-plot(tm3.2_zp, all.terms = TRUE, pages = 1)
+plot(tm3.2, all.terms = TRUE, pages = 1)
+draw(tm3.2)
 # check assumptions
-gam.check(tm3.2_zp) 
+gam.check(tm3.2) 
 
 ## check what happens if we use time to high tide instead of low
 # so 0 is high tide
