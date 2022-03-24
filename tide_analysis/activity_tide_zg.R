@@ -240,6 +240,9 @@ gam.check(am4_zp)
 ##### TIDAL #####
 
 ## Need to add in the not observed zero days. Maybe this is better to do for all deployments in the agouti cleaning script?? think about where this makes sense
+# this is harder here cause it's not on the day level but on the sequence level and per hour to low tide
+# so can't as easily add in the True 0's or differentiate them from the false ones. 
+# is it necessary??? Think about this.
 
 #  could do rootogram to see which family is best (gamma? negative binomial? poisson?)
 rootogram(tm3.2)
