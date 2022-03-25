@@ -4,6 +4,7 @@ require(lubridate)
 require(stringr)
 require(ggplot2)
 require(DescTools)
+require(magrittr)
 
 # check if working directory is set okay
 setwd("~/Git/camtrap_coiba")
@@ -42,8 +43,8 @@ agoutigross <- agoutigross[agoutigross$flag == 0,]
 agoutigross$capuchin <- ifelse(agoutigross$scientificName == "Cebus imitator", 1, 0)
 
 agoutigross_cap <- agoutigross[agoutigross$capuchin == 1, ]
-cap_numbers <- agoutigross_cap %>% 
-  count(sequenceID)
+cap_numbers <- count(agoutigross_cap, vars = "sequenceID")
+names(cap_numbers)[names(cap_numbers) == "freq"] <- "n"
   
 agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
 # replace NAs with 0 for the capuchin count
@@ -157,8 +158,7 @@ ftable(agoutigross$item)
 agoutigross$tooluse <- str_detect(agoutigross$behaviour, "TAF") # now just takes all types of tool use, also unknown
 agoutigross_tools <- agoutigross[agoutigross$tooluse == TRUE,]
 # amount of individuals using tools per sequence
-tooluse_count <- agoutigross_tools %>% 
-  count(sequenceID)
+tooluse_count <- count(agoutigross_tools, vars = "sequenceID")
 colnames(tooluse_count)[2] <- "n_tooluse"
 
 agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")
@@ -169,6 +169,9 @@ agoutigross$item[agoutigross$tooluse == "FALSE"] <- NA
 
 ## get sequence-level variable of what is mostly being processed in that sequence
 items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$item)))
+# set unknown tool use to 1 for all rows, so that when there are two things being processed (e.g. one unknown, one almendra) you keep the almendra
+# this is crude solution but works
+items$unknown <- 1
 items$seq_item <- colnames(items)[max.col(items,ties.method="first")]  
 # now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
 items$sequenceID <- rownames(items)
@@ -213,7 +216,7 @@ for (i in 1:nrow(agoutisequence)) {
   agoutisequence$tidedifabs[i] <- min(abs(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
 }
 
-hist(agoutisequence$tidedifabs)  
+hist(agoutisequence$tidedifabs)  # going wrong now because we haven't scraped all tide data 
 plot(agoutisequence$tidedifabs, agoutisequence$count)
 
 # Both positive and negative

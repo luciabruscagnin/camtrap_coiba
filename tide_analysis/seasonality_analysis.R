@@ -156,10 +156,16 @@ agoutiselect <- droplevels.data.frame(agoutiselect)
 # look at distribution of response variable
 require("fitdistrplus")
 descdist(agoutiselect$toolusedurationday)
-hist(agoutiselect$toolusedurationday)
-## a poisson distribution makes most sense, zero-inflated
+testdist1 <- fitdist(agoutiselect$toolusedurationday, "gamma", method = "mme")
+plot(testdist1)
 
-### TOOL USE OVER TIME
+# only values over 0
+testdist2 <- fitdist(agoutiselect$toolusedurationday[agoutiselect$toolusedurationday > 0], "gamma", method = "mme")
+plot(testdist2)
+# so hurdle gamma would be good fit
+hist(agoutiselect$toolusedurationday[agoutiselect$toolusedurationday>0])
+
+### SEASONALITY OF TOOL USE
 # just plots
 plot(toolusedurationday ~ seqday, data = agoutiselect)
 plot(toolusedurationday ~ month, data = agoutiselect)
@@ -226,7 +232,6 @@ pacf(resid(m1), lag.max = 36, main = "pACF")
 # this seems to work AS LONG AS THERE IS NO MISSING DATA. In the missing data it is going absolutely crazy and estimating very high things. Need to do something about this
 # so need to tweak this and figure this out but it seems to be the right direction?? 
 # still predicting crazy things in the "false 0"/missing data space. 
-
 m2 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15), 
                ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")),  data = agoutiselect, 
           knots = list(yrday=c(0,365)), family = ziplss(), method = "REML", select= TRUE)
@@ -338,22 +343,15 @@ ggplot(m4.2_pred, aes(x = week, y = fit, group = locationfactor, color = locatio
 
 ### from here on down still needs to be checked
 
-### Trying to add month
-m5.2 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15)
-                 + s(month, bs = "cc", k = 12) + s(month, by = locationfactor, bs = "cc", k = 12),
-                 ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")  + s(month, bs = "cc", k = 12) +
-                   s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
-            knots = list(yrday=c(0,365), month = c(0,12)), family = ziplss(), method = "REML", select= TRUE)
+### Add month as interaction effect
+m5.2 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 8) + s(yrday, bs = "cc", k = 8) + ti(month, yrday, bs ="cc") + s(locationfactor, bs = "re") +
+                   ti(month, yrday, by = locationfactor, bs = c("cc", "cc") ) +  s(yrday, by = locationfactor, bs = "cc", k =8) +  s(month, by = locationfactor, bs = "cc", k = 8),
+                 ~ s(month, bs = "cc", k = 8) + s(yrday, bs = "cc", k = 8) + ti(month, yrday, bs = c("cc", "cc")) + s(locationfactor, bs = "re") +
+                   ti(month, yrday, by = locationfactor, bs = "cc", k =8) +  s(yrday, by = locationfactor, bs = "cc", k =8) +  s(month, by = locationfactor, bs = "cc", k = 8)),  data = agoutiselect, 
+            knots = list(yrday=c(0,365), month = c(0,8)), family = ziplss(), method = "REML", select= TRUE)
 
-# saveRDS(m5.2, "m5.2.rds")
+# saveRDS(m5.2, file = "m5.2.rds")
 # m5.2 <- readRDS("m5.2.rds")
-summary(m5.2)
-plot(m5.2, all.terms = TRUE, pages = 1)
-
-gam.check(m5)
-draw(m5.2)
-
-new_data2 <- tidyr::expand(agoutiselect, nesting(locationfactor), yrday = unique(yrday), month = unique(month))
 
 m5.2_pred <- bind_cols(new_data2,
                        as.data.frame(predict(m5.2, newdata = new_data2, type = "link")))
@@ -363,11 +361,16 @@ m5.2_pred <- bind_cols(new_data2,
 ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
 m5.2_pred$fit <- exp(m5.2_pred$V1)*ilink(m5.2_pred$V2)
 
-ggplot(m5.2_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
+ggplot(m5.2_pred, aes(x = month, y = fit, group = locationfactor, color = locationfactor)) +
   geom_line() +
   geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
   facet_wrap(~ locationfactor, scales = "free")
 
+summary(m5.2)
+draw(m5.2)
+
+vis.gam(m5.2) # visualize interaction effect
+# read up on vis.gam and gratia to visualize interaction effects (also mgcv vis)
 
 ##### BRMS ####
 # best models from above but then in brms
@@ -381,10 +384,12 @@ pp_check(bm) # don't get this
 plot(bm)
 pairs(bm)
 
-## MODEL 2: camera as grouping factor rather than random effect
-bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-           family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.90, max_treedepth = 15))
-
+## MODEL 2: Model GI from mgcv. 
+# likely still needs autocorrelation
+# also needs month?
+# priors
+bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
+           family = hurdle_gamma(), data = agoutiselect, chain = 2, core = 4, iter = 3000, control = list(adapt_delta = 0.99, max_treedepth = 10))
 # saveRDS(bm2, file = "bm2.rds")
 # bm2 <- readRDS("bm2.rds")
 
@@ -484,42 +489,39 @@ bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8698177/
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8648868/#MOESM1
 
+########## TOOL USE ANALYSIS ON SEQUENCE LEVEL ######
+# use agoutisequence dataset that only contains tool use sequences at Jicaron tool site
+agoutiselect_seq <- subset(agoutisequence_jt, agoutisequence_jt$tooluse == TRUE & agoutisequence_jt$tags != "R6") # for now exclude everything past R5
+agoutiselect_seq <- agoutiselect_seq[,c("seqday", "tooluseduration", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours", "month",
+                                "season","island", "exposure", "tool_anvil", "uniqueloctag", "seq_item", "n_tooluse", "n", "seq_start")]
+agoutiselect_seq <- droplevels.data.frame(agoutiselect_seq)
+unique(agoutiselect_seq$uniqueloctag)
 
-## old code to be chucked (likely)
-locationcol <- c("#5081db",
-                 "#a0bf52",
-                 "#746dd8",
-                 "#c09f43",
-                 "#583687",
-                 "#4cc186",
-                 "#41aaeb",
-                 "#639a49",
-                 "#d177ca",
-                 "#33d4d1",
-                 "#932c6c",
-                 "#6789cf",
-                 "#d6587d",
-                 "#c47236",
-                 "#ba4c46")
+# make locationfactor and yrday variable 
+agoutiselect_seq$locationfactor <- as.factor(agoutiselect_seq$locationName)
+agoutiselect_seq$yrday <- yday(agoutiselect_seq$seqday)
+agoutiselect_seq$hour <- hour(agoutiselect_seq$seq_start)
 
 
-par(mar=c(5.1, 4.1, 4.1, 11.1), xpd=TRUE)
-plot(m2, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m4_zp)[1], ylim = c(-3, log(max(agoutiselect$toolusedurationday))))
-points(agoutiselect$yrday, log(agoutiselect$toolusedurationday), col = locationcol[(as.numeric(agoutiselect$locationfactor) + 1)])
-legend("topright", inset=c(-0.57,0), legend = levels(agoutiselect$locationfactor), pch = 19, col = locationcol, cex = 0.9, xpd = TRUE )
-dev.off()
-
-# try to plot that on real scale
-# outcome looks like log seconds per day
+hist(agoutiselect_seq$hour)
+ftable(agoutiselect_seq$seq_item)
 
 
-require(mgcViz)
-# https://mfasiolo.github.io/mgcViz/articles/mgcviz.html
-b <- getViz(m2)
-o <- plot( sm(b, 1) )
-o + l_fitLine(colour = "red") + l_rug(mapping = aes(x=x, y=y), alpha = 0.8) +
-  l_ciLine(mul = 5, colour = "blue", linetype = 2) + 
-  l_points(shape = 19, size = 1, alpha = 0.1) + theme_classic()
+#### TOOL USE ITEMS ####
+# for looking at tool use item, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
+# so then would have almendra, coconut, invertebrate, palm, other. 
+ftable(agoutiselect_seq$seq_item, agoutiselect_seq$locationName)
 
-print(plot(b, allTerms = T), pages = 1)
-plot(b, allTerms = TRUE, select = 2) + geom_hline(yintercept = 0)
+
+#### TOOL USE AND TIME OF DAY & LOCATIONS #####
+plot(agoutiselect_seq$hour, agoutiselect_seq$tooluseduration)
+
+
+#### HOW MANY INDIVIDUALS USE TOOLS #####
+plot(agoutiselect_seq$n_tooluse, agoutiselect_seq$n)
+ftable(agoutiselect_seq$hour, agoutiselect_seq$n_tooluse)
+# feel like proportion of tool using events iwth more than 1 tool users are rarer in morning/evening. How to model this?
+
+
+
+
