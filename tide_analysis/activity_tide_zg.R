@@ -105,7 +105,13 @@ aggregate(agoutiselect2$seq_length, by = list(dayhour = agoutiselect2$dayhour, u
 # or add all sequence lengths and all capuchins per hour and then divide capuchins by total seq length? Think about independence etc and what this means
 
 ## GAMs
-descdist(agoutiselect2$n)
+testdist1 <- fitdist(agoutiselect$toolusedurationday, "gamma", method = "mme")
+plot(testdist1)
+
+# only values over 0
+testdist2 <- fitdist(agoutiselect$toolusedurationday[agoutiselect$toolusedurationday > 0], "gamma", method = "mme")
+plot(testdist2)
+
 hist(agoutiselect2$n)
 ## a poisson distribution makes most sense, likely zero-inflated
 ## hour of day is not cyclic spline, as we have no observations at midnight and early in morning (explained in bottom of the heap youtube)
@@ -247,10 +253,24 @@ gam.check(am4_zp)
 #  could do rootogram to see which family is best (gamma? negative binomial? poisson?)
 rootogram(tm3.2)
 
+
+
 ## only taking into account sequences with capuchins?
 onlycap <- agoutisequence_c[agoutisequence_c$capuchin == 1,]
+onlycap <- onlycap[rowSums(is.na(onlycap)) != ncol(onlycap), ]
+
+descdist(onlycap$n)
 
 hist(onlycap$n)
+td1 <- fitdist(onlycap$n, "lnorm", method = "mle")
+plot(td1)
+
+descdist(agoutisequence_c$n[rowSums(is.na(agoutisequence_c)) !=ncol(agoutisequence_c)])
+hist(agoutisequence_c$n[agoutisequence_c$n > 0])
+
+td1 <- fitdist(agoutisequence_c$n, "lnorm", method = "mle")
+plot(td1)
+
 
 as.matrix(ftable(onlycap$locationfactor, onlycap$toolusers))
 

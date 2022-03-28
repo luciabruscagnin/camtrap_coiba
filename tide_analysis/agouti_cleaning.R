@@ -43,9 +43,9 @@ agoutigross <- agoutigross[agoutigross$flag == 0,]
 agoutigross$capuchin <- ifelse(agoutigross$scientificName == "Cebus imitator", 1, 0)
 
 agoutigross_cap <- agoutigross[agoutigross$capuchin == 1, ]
-cap_numbers <- count(agoutigross_cap, vars = "sequenceID")
-names(cap_numbers)[names(cap_numbers) == "freq"] <- "n"
-  
+cap_numbers <- agoutigross_cap %>%
+  count(sequenceID)
+
 agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
 # replace NAs with 0 for the capuchin count
 agoutigross$n[is.na(agoutigross$n)] <- 0
@@ -158,7 +158,8 @@ ftable(agoutigross$item)
 agoutigross$tooluse <- str_detect(agoutigross$behaviour, "TAF") # now just takes all types of tool use, also unknown
 agoutigross_tools <- agoutigross[agoutigross$tooluse == TRUE,]
 # amount of individuals using tools per sequence
-tooluse_count <- count(agoutigross_tools, vars = "sequenceID")
+tooluse_count <- agoutigross_tools %>%
+  count(sequenceID)
 colnames(tooluse_count)[2] <- "n_tooluse"
 
 agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")

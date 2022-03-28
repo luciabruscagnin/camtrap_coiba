@@ -182,10 +182,8 @@ library(dplyr)
 ##### MGCV ####
 # Things that are important to do now:
 # - Understand the AR autocorrelation structure and how to deal with that (see the from the bottom of the heap web pages)
-# - How to deal with missing data in a time series and what the model is currently doing
 # - compare models using AIC (?)
 # - what to do with and how to interpret the k-check indicating it wants more k (if this is the case)
-# - can get posterior probabilities like brms with https://www.rdocumentation.org/packages/mgcv/versions/1.8-34/topics/ginla 
 
 # using mgcv package 
 # some notes:
@@ -195,36 +193,7 @@ library(dplyr)
 # can use 'select = TRUE' to penalize on the null space (look up what that is)
 # Use ziplss, two step zero-inflated poisson. Gives estimate of 0/1 and poisson component. 
 
-## MODEL 1: Dependent: tool use duration per day, Independent: smooth of month & smooth of time (days since 1970). Over all cameras ####
-# based on this https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
-# allows for comparison of tool use duration between years (time variable) and within years on month level
-m1 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(time), ~s(month, bs = "cc", k = 12) + s(time)), family = ziplss(),
-          data = agoutiselect, method = "REML", knots = list(month = c(0,12)))
-summary(m1) # smooths are significant, explain nearly all of variation in dataset
-# visualize
-plot(m1, all.terms = TRUE, pages = 1)
-# can also plot only one effect, e.g. only the month. adding the intercept value and uncertainty
-plot(m1, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(m1)[1])
-
-draw(m1)
-
-# all in one plot using the tidymv package
-# dont know how to get this working with ziplss
-plot_smooths(model = m1, series = yrday, comparison = locationfactor) + theme(legend.position = "top")
-
-
-# check assumptions
-gam.check(m1) 
-# concurvity (correlation between predictors)
-concurvity(m1, full = TRUE)
-concurvity(m1, full = FALSE)
-# autocorrelation
-# STILL NEED TO UNDERSTAND THIS
-acf(resid(m1), lag.max = 36, main = "ACF") 
-pacf(resid(m1), lag.max = 36, main = "pACF")
-
-#### INCLUDING CAMERA LOCATION
-#### MODEL 2: Model GI with ziplss family.
+#### MODEL 1: Model GI with ziplss family.
 # Using day of the year rather than month, no smooth for time or between years difference (as we only have <1.5 years)
 # allows for 1/0 and poisson component to be modeled separately
 # for now give them the same covariates 
@@ -259,89 +228,18 @@ ggplot(m2_pred, aes(x = yrday, y = fit, group = locationfactor, color = location
   facet_wrap(~ locationfactor, scales = "free")
 head(m2_pred)
 
-#### MODEL 3: Model GS from hierarchical GAM paper
-## allowing for variation between cameras but only a shared penalty
-m3 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 15) + s(yrday, locationfactor, bs = "re"), 
-               ~  s(yrday, bs = "cc", k = 15) + s(yrday, locationfactor, bs = "re")), data = agoutiselect, 
-            knots = list(yrday=c(0,365)), family = ziplss(), method = "REML", select= TRUE)
-
-summary(m3)
-plot(m3, all.terms = TRUE, pages = 1)
-draw(m3)
-
-gam.check(m3)
-
-m3_pred <- bind_cols(new_data,
-                     as.data.frame(predict(m3, newdata = new_data, type = "link")))
-# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
-# V2 is predicted value of zero-inflation component and is on log-log scale
-# need to transform them back and multiply together to get actual predicted values
-m3_pred$fit <- exp(m3_pred$V1)*ilink(m3_pred$V2)
-
-# estimates split per location with each its own scale of axes and overlay of real datapoints
-ggplot(m3_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-
-# also only allows variation of intercept, not of shape of curve
-
-#### MODEL 4: Model GI but with month only instead of yrday
-## If we go to month do we need to aggregate the dataframe to a month level?
-## might not need zero-inflated either then. Can check distribution?
-m4 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k =12), 
-               ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(month, by = locationfactor, bs = "cc", k = 12)),  data = agoutiselect, 
-          knots = list(month=c(0,12)), family = ziplss(), method = "REML", select= TRUE)
-
-draw(m4)
-
-new_data3 <- tidyr::expand(agoutiselect, nesting(locationfactor), month = unique(month))
-
-m4_pred <- bind_cols(new_data3,
-                       as.data.frame(predict(m4, newdata = new_data3, type = "link")))
-# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
-# V2 is predicted value of zero-inflation component and is on log-log scale
-# need to transform them back and multiply together to get actual predicted values
-m4_pred$fit <- exp(m4_pred$V1)*ilink(m4_pred$V2)
-
-ggplot(m4_pred, aes(x = month, y = fit, group = locationfactor, color = locationfactor)) + geom_line()
-ggplot(m4_pred, aes(x = month, y = fit)) + geom_smooth()
+# check assumptions
+# concurvity (correlation between predictors)
+concurvity(m2, full = TRUE)
+concurvity(m2, full = FALSE)
+# autocorrelation
+# STILL NEED TO UNDERSTAND THIS
+acf(resid(m2), lag.max = 36, main = "ACF") 
+pacf(resid(m2), lag.max = 36, main = "pACF")
 
 
-ggplot(m4_pred, aes(x = month, y = fit, group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
 
-## try week instead of month
-agoutiselect$week <- as.numeric(format(as.Date(agoutiselect$seqday), "%W"))
-
-m4.2 <- gam(list(toolusedurationday ~ s(week, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(week, by = locationfactor, bs = "cc", k =15), 
-               ~ s(week, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(week, by = locationfactor, bs = "cc", k = 15)),  data = agoutiselect, 
-          knots = list(week = c(0,52)), family = ziplss(), method = "REML", select= TRUE)
-
-draw(m4.2)
-gam.check(m4.2)
-
-new_data4 <- tidyr::expand(agoutiselect, nesting(locationfactor), week = unique(week))
-
-m4.2_pred <- bind_cols(new_data4,
-                     as.data.frame(predict(m4.2, newdata = new_data4, type = "link")))
-m4.2_pred$fit <- exp(m4.2_pred$V1)*ilink(m4.2_pred$V2)
-
-ggplot(m4.2_pred, aes(x = week, y = fit, group = locationfactor, color = locationfactor)) + geom_line()
-ggplot(m4.2_pred, aes(x = week, y = fit)) + geom_smooth()
-
-
-ggplot(m4.2_pred, aes(x = week, y = fit, group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-
-## going crazy in the missing data space again
-
-
-### from here on down still needs to be checked
+### Try out with Shauhin, load saved rds!
 
 ### Add month as interaction effect
 m5.2 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 8) + s(yrday, bs = "cc", k = 8) + ti(month, yrday, bs ="cc") + s(locationfactor, bs = "re") +
@@ -373,57 +271,56 @@ vis.gam(m5.2) # visualize interaction effect
 # read up on vis.gam and gratia to visualize interaction effects (also mgcv vis)
 
 ##### BRMS ####
-# best models from above but then in brms
+# need to go to brms to be able to use the hurdle_gamma family (which we need)
 
-## MODEL 1: Zero inflated, no camera location
-bm <- brm(toolusedurationday ~ s(yrday, bs = "cc"), family = zero_inflated_poisson(), data = agoutiselect, chain = 4, core = 4, iter = 1000, control = list(adapt_delta = 0.9, max_treedepth = 15))
-# saveRDS(bm, file = "bm.rds")
-summary(bm)
-plot(conditional_smooths(bm))
-pp_check(bm) # don't get this
-plot(bm)
-pairs(bm)
-
-## MODEL 2: Model GI from mgcv. 
-# likely still needs autocorrelation
+## MODEL 2: Model GI 
+# can add spatial location instead s(yrday) it will be t2(yrday, locationspace x, locationspace y, bs = c("cc", "ds", "ds")) + (yrday|locationfactor(nonspatial)). Location in UTM 
+# likely still need to deal with autocorrelation
+# in bottom of the heap blog say: "the samples needed thinning to deal with some strong autocorrelation in the Markov chains — thin = 10," Do this?
 # also needs month?
 # priors
 bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-           family = hurdle_gamma(), data = agoutiselect, chain = 2, core = 4, iter = 3000, control = list(adapt_delta = 0.99, max_treedepth = 10))
-# saveRDS(bm2, file = "bm2.rds")
-# bm2 <- readRDS("bm2.rds")
+           family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 10000, control = list(adapt_delta = 0.99, max_treedepth = 10))
+# saveRDS(bm2, file = "bm2_full.rds")
+# bm2 <- readRDS("bm2_full.rds")
 
 summary(bm2)
 plot(bm2)
 plot(conditional_smooths(bm2))
+plot(conditional_effects(bm2))
 
-plot_smooths(model = bm2,transform = exp, series = yrday, comparison = locationfactor) + theme(legend.position = "top") 
+# if you want to zoom in past crazy outliers (which I dont have now)
+testplot <- plot(conditional_effects(bm2), plot = FALSE)[[3]]
+testplot + coord_cartesian(ylim = c(0,300))
+
+#  check for autocorrelation
+
+# plot
+season_bm <- plot(conditional_effects(bm2), plot = FALSE)[[1]]
+season_bm + labs(y = "Total tool use duration per day (seconds)", x = "Day of the year") + theme_bw()
+
+location_bm <- plot(conditional_effects(bm2), plot = FALSE)[[2]]
+location_bm + labs(y = "Total tool use duration per day (seconds)", x = "Camera location") + theme_bw()
+
+seasonsplit_bm <- plot(conditional_effects(bm2), plot = FALSE)[[3]]
+# all in one plot
+seasonsplit_bm + labs(y = "Total tool use duration per day(seconds)", x = "Camera location")
+
+# with real points plotted on it and separate plots
+seasonsplit_bm + facet_wrap("locationfactor", scales = "free") + 
+  geom_point(data = agoutiselect, aes(x = yrday, y = toolusedurationday, color = locationfactor, group = locationfactor), alpha = 0.3, inherit.aes = FALSE) +
+  labs(y = "Total tool use duration per day (seconds)", x = "Day of the year")
+
+# set scales to the same
+seasonsplit_bm + facet_wrap("locationfactor") + 
+  geom_point(data = agoutiselect, aes(x = yrday, y = toolusedurationday, color = locationfactor, group = locationfactor), alpha = 0.3, inherit.aes = FALSE) +
+  labs(y = "Total tool use duration per day (seconds)", x = "Day of the year")
+
+# without real points but separate plots
+seasonsplit_bm + facet_wrap("locationfactor") +
+  labs(y = "Total tool use duration per day (seconds)", x = "Day of the year")
 
 
-## MODEL 3: Zero inflated, including camera location as random effect 
-# need to run for more iterations, bulk and tail ESS both low
-bm3 <- brm(toolusedurationday ~ s(yrday, bs = "cc") + (1|locationfactor), family = zero_inflated_poisson(), data = agoutiselect, iter = 1000, chain = 4, core = 4, control = list(adapt_delta = 0.9, max_treedepth = 15))
-# saveRDS(bm3, file = "bm3.rds")
-# bm3 <- readRDS("bm3.rds")
-summary(bm3)
-plot(conditional_smooths(bm3))
-pp_check(bm3, type = "hist") # don't know what's wrong here
-pp_check(bm3, type = "ecdf_overlay")
-plot(bm3)
-
-# compare bm3 to m4_zp (the mgcv version of fitting locationfactor as a random effect)
-gam.vcomp(m4_zp, rescale = FALSE)
-
-# use marginal smooths to extract the marginal effect of the spline
-plot(m4_zp)
-
-# extract group-level estimates
-bm3_camest <- as.data.frame(ranef(bm3))
-# need to do exp(estimate) to get to the actual rate
-bm3_camest$estimate <- exp(bm3_camest$locationfactor.Estimate.Intercept)
-bm3_camest$Q2.5 <- exp(bm3_camest$locationfactor.Q2.5.Intercept)
-bm3_camest$Q97.5 <- exp(bm3_camest$locationfactor.Q97.5.Intercept)
-bm3_camest$est_error <- exp(bm3_camest$locationfactor.Est.Error.Intercept)
 
 ## look into Kat's script and the autocorrelation 
 
