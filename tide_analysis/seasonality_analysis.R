@@ -280,14 +280,15 @@ vis.gam(m5.2) # visualize interaction effect
 # also needs month?
 # priors
 bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-           family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 10000, control = list(adapt_delta = 0.99, max_treedepth = 10))
+           family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 10000, control = list(adapt_delta = 0.99, max_treedepth = 12))
 # saveRDS(bm2, file = "bm2_full.rds")
 # bm2 <- readRDS("bm2_full.rds")
 
 summary(bm2)
 plot(bm2)
 plot(conditional_smooths(bm2))
-plot(conditional_effects(bm2))
+plot(conditional_effects(bm2, spaghetti =  TRUE))
+pp_check(bm2, type = "ecdf_overlay")
 
 # if you want to zoom in past crazy outliers (which I dont have now)
 testplot <- plot(conditional_effects(bm2), plot = FALSE)[[3]]
@@ -321,6 +322,53 @@ seasonsplit_bm + facet_wrap("locationfactor") +
   labs(y = "Total tool use duration per day (seconds)", x = "Day of the year")
 
 
+get_prior(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
+          family = hurdle_gamma(), data = agoutiselect)
+
+## prior predictive simulation
+# see default prior in brms and what things we can set priors for
+get_prior(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
+          family = hurdle_gamma(), data = agoutiselect)
+
+# simulate student t distribution
+library(rethinking)
+?rethinking::rstudent
+x <- rstudent( n=1e5, nu = 10, mu = 0, sigma = 1 )
+dens(x)
+
+x2 <- rstudent( n=1e5, nu = 10, mu = 0, sigma = 2 )
+dens(x2 , add=TRUE , col="red")
+
+x3 <- rstudent( n=1e5, nu = 10, mu = 2, sigma = 2 )
+dens(x3 , add=TRUE , col="green")
+
+x4 <- rstudent( n=1e5, nu = 3, mu = 0, sigma = 2.5 )
+dens(x4 , add=TRUE , col="blue")
+
+x5 <- rstudent( n=1e5, nu = 3.7, mu = 2, sigma = 2.5 )
+dens(x5 , add=TRUE , col="yellow")
+
+# could try 
+# normal(0,1)
+# normal(2,1)
+# normal(0,10)
+
+bm2_prior <- c(prior(normal(2,1), class = sds, coef = s(yrday, by = locationfactor, bs = "cc", k = 15)))
+
+
+bm_prior <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
+                family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 3000, control = list(adapt_delta = 0.99, max_treedepth = 12), prior = bm2_prior, sample_prior = "only")
+
+
+prior_summary(bm_prior)
+plot(bm_prior)
+str(bm2)
+
+plot(bm2)
+
+bm_prior2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
+                family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 3000, control = list(adapt_delta = 0.99, max_treedepth = 12), sample_prior = "only")
+plot(bm_prior2)
 
 ## look into Kat's script and the autocorrelation 
 
@@ -361,6 +409,12 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 ## BRMS
 # https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html#zero-inflated-models
 # https://www.rensvandeschoot.com/tutorials/brms-started/
+# GAMs in BRMS
+# https://discourse.mc-stan.org/t/speed-up-for-gams/11203/16
+# https://fromthebottomoftheheap.net/2018/04/21/fitting-gams-with-brms/
+# Setting priors
+# https://paul-buerkner.github.io/brms/reference/set_prior.html
+# http://paul-buerkner.github.io/brms/reference/get_prior.html
 
 ## MGCV and Plotting
 # https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/family.mgcv.html
@@ -403,16 +457,37 @@ agoutiselect_seq$hour <- hour(agoutiselect_seq$seq_start)
 hist(agoutiselect_seq$hour)
 ftable(agoutiselect_seq$seq_item)
 
+descdist(agoutiselect_seq$tooluseduration)
+testdist2 <- fitdist(agoutiselect_seq$tooluseduration, "pois")
+plot(testdist2)
 
 #### TOOL USE ITEMS ####
 # for looking at tool use item, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
 # so then would have almendra, coconut, invertebrate, palm, other. 
 ftable(agoutiselect_seq$seq_item, agoutiselect_seq$locationName)
+agoutiselect_seq$item <- as.factor(ifelse(agoutiselect_seq$seq_item == "hecrab" | agoutiselect_seq$seq_item == "hwcrab" | agoutiselect_seq$seq_item == "insect" | agoutiselect_seq$seq_item == "snail", "invertebrate",
+                                          ifelse(agoutiselect_seq$seq_item == "unknown", NA, agoutiselect_seq$seq_item)))
+ftable(agoutiselect_seq$item)
+str(agoutiselect_seq)
 
+# mgcv
+# see this https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/multinom.html
+# need to first get to probabilities like softmax thing in stat rethinking
+res_m <- gam(item ~ s(month, bs ="cc", k = 12), data=agoutiselect_seq, family=multinom(K=3), method = "REML", knots = list(month = c(0,12)))
+
+# brms
+res_bm <- brm(item ~ s(month, bs ="cc", k = 12), data=agoutiselect_seq, family="categorical", knots = list(month = c(0,12)), chains=2, cores = 4, 
+          iter = 1000)
 
 #### TOOL USE AND TIME OF DAY & LOCATIONS #####
 plot(agoutiselect_seq$hour, agoutiselect_seq$tooluseduration)
 
+m1_tuday <- gam(tooluseduration ~ s(hour, bs = "tp", k = 12) + s(locationfactor, bs = "re"), data = agoutiselect_seq,
+                method = "REML", family = poisson,  knots = list(hour = c(0,24)))
+
+summary(m1_tuday)
+draw(m1_tuday)
+gam.check(m1_tuday)
 
 #### HOW MANY INDIVIDUALS USE TOOLS #####
 plot(agoutiselect_seq$n_tooluse, agoutiselect_seq$n)
@@ -420,5 +495,30 @@ ftable(agoutiselect_seq$hour, agoutiselect_seq$n_tooluse)
 # feel like proportion of tool using events iwth more than 1 tool users are rarer in morning/evening. How to model this?
 
 
+# plot the smooth of each camera by predicting data
+new_data <- tidyr::expand(agoutiselect, nesting(locationfactor), yrday = unique(yrday))
 
+m2_pred <- bind_cols(new_data,
+                     as.data.frame(predict(m2, newdata = new_data, type = "link")))
+# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
+# V2 is predicted value of zero-inflation component and is on log-log scale
+# need to transform them back and multiply together to get actual predicted values
+ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
+m2_pred$fit <- exp(m2_pred$V1)*ilink(m2_pred$V2)
+
+# estimates split per location with each its own scale of axes and overlay of real datapoints
+ggplot(m2_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
+  facet_wrap(~ locationfactor, scales = "free")
+head(m2_pred)
+
+# check assumptions
+# concurvity (correlation between predictors)
+concurvity(m2, full = TRUE)
+concurvity(m2, full = FALSE)
+# autocorrelation
+# STILL NEED TO UNDERSTAND THIS
+acf(resid(m2), lag.max = 36, main = "ACF") 
+pacf(resid(m2), lag.max = 36, main = "pACF")
 

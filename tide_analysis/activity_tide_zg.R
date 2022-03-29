@@ -113,7 +113,7 @@ testdist2 <- fitdist(agoutiselect$toolusedurationday[agoutiselect$tooluseduratio
 plot(testdist2)
 
 hist(agoutiselect2$n)
-## a poisson distribution makes most sense, likely zero-inflated
+## a gamma distribution makes most sense to me. Likely hurdle again? 
 ## hour of day is not cyclic spline, as we have no observations at midnight and early in morning (explained in bottom of the heap youtube)
 # use fREML for faster processing
 
@@ -253,8 +253,6 @@ gam.check(am4_zp)
 #  could do rootogram to see which family is best (gamma? negative binomial? poisson?)
 rootogram(tm3.2)
 
-
-
 ## only taking into account sequences with capuchins?
 onlycap <- agoutisequence_c[agoutisequence_c$capuchin == 1,]
 onlycap <- onlycap[rowSums(is.na(onlycap)) != ncol(onlycap), ]
@@ -262,15 +260,10 @@ onlycap <- onlycap[rowSums(is.na(onlycap)) != ncol(onlycap), ]
 descdist(onlycap$n)
 
 hist(onlycap$n)
-td1 <- fitdist(onlycap$n, "lnorm", method = "mle")
+td1 <- fitdist(onlycap$n, "pois", method = "mle")
 plot(td1)
 
-descdist(agoutisequence_c$n[rowSums(is.na(agoutisequence_c)) !=ncol(agoutisequence_c)])
-hist(agoutisequence_c$n[agoutisequence_c$n > 0])
-
-td1 <- fitdist(agoutisequence_c$n, "lnorm", method = "mle")
-plot(td1)
-
+# poisson? gamma? lognormal?
 
 as.matrix(ftable(onlycap$locationfactor, onlycap$toolusers))
 
@@ -302,7 +295,7 @@ plot(tm2, all.terms = TRUE, pages = 1)
 gam.check(tm2) 
 
 # no abs
-tm2.2 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers, family = nb, data = onlycap, method = "REML",  knots = list(tidedif = c(-6,6)))
+tm2.2 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers, family = poisson, data = onlycap, method = "REML",  knots = list(tidedif = c(-6,6)))
 summary(tm2.2) 
 # visualize
 plot(tm2.2, all.terms = TRUE, pages = 1)
@@ -320,15 +313,20 @@ plot(tm3_zp, all.terms = TRUE, pages = 1)
 gam.check(tm3_zp) 
 
 # no abs
-tm3.2 <- gam(list(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), ~
-               s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re")), 
-             family = ziplss(), data = agoutisequence_c, method = "REML", knots = list(tidedif = c(-6,6)))
-summary(tm3.2) 
+tm3 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + 
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap, method = "REML", knots = list(tidedif =c(-6,6)) )
+summary(tm3) 
 # visualize
-plot(tm3.2, all.terms = TRUE, pages = 1)
-draw(tm3.2)
+plot(tm3, all.terms = TRUE, pages = 1)
 # check assumptions
-gam.check(tm3.2) 
+gam.check(tm3) 
+
+
+# in brms
+tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson,
+            data = onlycap, knots = list(tidedif = c(-6,6)), chain = 2, core = 2, iter = 5000, 
+            control = list(adapt_delta = 0.99, max_treedepth = 12))
+
 
 ## check what happens if we use time to high tide instead of low
 # so 0 is high tide
