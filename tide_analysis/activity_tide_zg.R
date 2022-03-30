@@ -264,6 +264,8 @@ td1 <- fitdist(onlycap$n, "pois", method = "mle")
 plot(td1)
 
 # poisson? gamma? lognormal?
+hist(onlycap$seq_length)
+sum(is.na(onlycap$seq_length))
 
 as.matrix(ftable(onlycap$locationfactor, onlycap$toolusers))
 
@@ -295,7 +297,7 @@ plot(tm2, all.terms = TRUE, pages = 1)
 gam.check(tm2) 
 
 # no abs
-tm2.2 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers, family = poisson, data = onlycap, method = "REML",  knots = list(tidedif = c(-6,6)))
+tm2.2 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers, family = poisson, data = onlycap, method = "REML",  knots = list(tidedif = c(-6,6)))
 summary(tm2.2) 
 # visualize
 plot(tm2.2, all.terms = TRUE, pages = 1)
@@ -312,8 +314,8 @@ plot(tm3_zp, all.terms = TRUE, pages = 1)
 # check assumptions
 gam.check(tm3_zp) 
 
-# no abs
-tm3 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + 
+# no abs seq length
+tm3 <- gam(seq_length ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + 
              s(locationfactor, bs = "re"), family = poisson, data = onlycap, method = "REML", knots = list(tidedif =c(-6,6)) )
 summary(tm3) 
 # visualize
@@ -321,12 +323,28 @@ plot(tm3, all.terms = TRUE, pages = 1)
 # check assumptions
 gam.check(tm3) 
 
+# no abs n of capuchins
+tm3.2 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + 
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap, method = "REML", knots = list(tidedif =c(-6,6)) )
+summary(tm3.2) 
+# visualize
+plot(tm3.2, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(tm3.2) 
+
 
 # in brms
-tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson,
-            data = onlycap, knots = list(tidedif = c(-6,6)), chain = 2, core = 2, iter = 5000, 
+tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers, k = 8) + toolusers + s(locationfactor, bs = "re"), family = poisson,
+            data = onlycap, knots = list(tidedif = c(-6,6)), chain = 2, core = 2, iter = 4000, 
             control = list(adapt_delta = 0.99, max_treedepth = 12))
 
+# saveRDS(tbm1, "tbm1.rds")
+# tmb1 <- readRDS("tbm1.rds")
+
+summary(tbm1)
+plot(tbm1)
+
+conditional_effects(tbm1)
 
 ## check what happens if we use time to high tide instead of low
 # so 0 is high tide
@@ -357,7 +375,8 @@ gam.check(tm4.2_zp)
 
 ## BRMS
 require(brms)
-tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + (1|locationfactor), family = zero_inflated_poisson(), data = onlycap, chain = 4, core = 4, control = list(adapt_delta = 0.99))
+
+tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers) + toolusers + (1|locationfactor), family = poisson(), data = onlycap, chain = 4, core = 4, control = list(adapt_delta = 0.99))
 # saveRDS(tbm1, file = "tbm1.rds")
 summary(tbm1)
 plot(conditional_smooths(tbm1))

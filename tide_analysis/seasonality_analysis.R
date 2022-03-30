@@ -287,7 +287,7 @@ bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, 
 summary(bm2)
 plot(bm2)
 plot(conditional_smooths(bm2))
-plot(conditional_effects(bm2, spaghetti =  TRUE))
+plot(conditional_effects(bm2))
 pp_check(bm2, type = "ecdf_overlay")
 
 # if you want to zoom in past crazy outliers (which I dont have now)
@@ -295,6 +295,7 @@ testplot <- plot(conditional_effects(bm2), plot = FALSE)[[3]]
 testplot + coord_cartesian(ylim = c(0,300))
 
 #  check for autocorrelation
+mcmc_plot(bm2, type = "acf")
 
 # plot
 season_bm <- plot(conditional_effects(bm2), plot = FALSE)[[1]]
@@ -321,9 +322,6 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 seasonsplit_bm + facet_wrap("locationfactor") +
   labs(y = "Total tool use duration per day (seconds)", x = "Day of the year")
 
-
-get_prior(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-          family = hurdle_gamma(), data = agoutiselect)
 
 ## prior predictive simulation
 # see default prior in brms and what things we can set priors for
@@ -352,8 +350,10 @@ dens(x5 , add=TRUE , col="yellow")
 # normal(0,1)
 # normal(2,1)
 # normal(0,10)
+# normal(0,4) 
+# normal(0,2)
 
-bm2_prior <- c(prior(normal(2,1), class = sds, coef = s(yrday, by = locationfactor, bs = "cc", k = 15)))
+bm2_prior <- c(prior(normal(1,0.1), class = sds, coef = s(yrday, by = locationfactor, bs = "cc", k = 15)))
 
 
 bm_prior <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
@@ -362,6 +362,9 @@ bm_prior <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfac
 
 prior_summary(bm_prior)
 plot(bm_prior)
+summary(bm_prior)
+plot(conditional_smooths(bm_prior, spaghetti = TRUE))
+
 str(bm2)
 
 plot(bm2)
@@ -412,6 +415,8 @@ plot(bm_prior2)
 # GAMs in BRMS
 # https://discourse.mc-stan.org/t/speed-up-for-gams/11203/16
 # https://fromthebottomoftheheap.net/2018/04/21/fitting-gams-with-brms/
+# https://discourse.mc-stan.org/t/knots-and-basis-dimension-in-brms/12016/3
+
 # Setting priors
 # https://paul-buerkner.github.io/brms/reference/set_prior.html
 # http://paul-buerkner.github.io/brms/reference/get_prior.html
@@ -442,7 +447,7 @@ plot(bm_prior2)
 
 ########## TOOL USE ANALYSIS ON SEQUENCE LEVEL ######
 # use agoutisequence dataset that only contains tool use sequences at Jicaron tool site
-agoutiselect_seq <- subset(agoutisequence_jt, agoutisequence_jt$tooluse == TRUE & agoutisequence_jt$tags != "R6") # for now exclude everything past R5
+agoutiselect_seq <- subset(agoutisequence_jt, agoutisequence_jt$tooluse == TRUE & agoutisequence_jt$tags != "R6" & agoutisequence_jt$locationName != "CEBUS-03") # for now exclude everything past R5
 agoutiselect_seq <- agoutiselect_seq[,c("seqday", "tooluseduration", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours", "month",
                                 "season","island", "exposure", "tool_anvil", "uniqueloctag", "seq_item", "n_tooluse", "n", "seq_start")]
 agoutiselect_seq <- droplevels.data.frame(agoutiselect_seq)
@@ -480,38 +485,39 @@ res_bm <- brm(item ~ s(month, bs ="cc", k = 12), data=agoutiselect_seq, family="
           iter = 1000)
 
 #### TOOL USE AND TIME OF DAY & LOCATIONS #####
+## add in all the 0s for at night? or can model infer this from absence of this?
+
 plot(agoutiselect_seq$hour, agoutiselect_seq$tooluseduration)
 
-m1_tuday <- gam(tooluseduration ~ s(hour, bs = "tp", k = 12) + s(locationfactor, bs = "re"), data = agoutiselect_seq,
-                method = "REML", family = poisson,  knots = list(hour = c(0,24)))
+m1_tuday <- gam(tooluseduration ~ s(hour, bs = "tp", k = 16) + s(hour, locationfactor, bs = "fs"), data = agoutiselect_seq,
+                method = "REML", family = poisson)
 
 summary(m1_tuday)
 draw(m1_tuday)
 gam.check(m1_tuday)
+
+new_data_tu <- tidyr::expand(agoutiselect_seq, nesting(locationfactor), hour = unique(hour))
+
+m1_tuday_pred <- bind_cols(new_data_tu,
+                     as.data.frame(predict(m1_tuday, newdata = new_data_tu, se.fit = TRUE)))
+
+# way 1: all in one plot using the tidymv package
+plot_smooths(model = m1_tuday, transform = exp, series = hour) + theme(legend.position = "top")
+
+# same plot as with tidymv package
+ggplot(m1_tuday_pred, aes(x = hour, y = exp(fit), group = locationfactor, color = locationfactor)) +
+  geom_line() 
+
+ggplot(m1_tuday_pred, aes(x = hour, y = exp(fit), group = locationfactor, color = locationfactor)) +
+  geom_line() +
+  geom_point(data = agoutiselect_seq, aes(y = tooluseduration)) +
+  facet_wrap(~ locationfactor, scales = "free")
 
 #### HOW MANY INDIVIDUALS USE TOOLS #####
 plot(agoutiselect_seq$n_tooluse, agoutiselect_seq$n)
 ftable(agoutiselect_seq$hour, agoutiselect_seq$n_tooluse)
 # feel like proportion of tool using events iwth more than 1 tool users are rarer in morning/evening. How to model this?
 
-
-# plot the smooth of each camera by predicting data
-new_data <- tidyr::expand(agoutiselect, nesting(locationfactor), yrday = unique(yrday))
-
-m2_pred <- bind_cols(new_data,
-                     as.data.frame(predict(m2, newdata = new_data, type = "link")))
-# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
-# V2 is predicted value of zero-inflation component and is on log-log scale
-# need to transform them back and multiply together to get actual predicted values
-ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
-m2_pred$fit <- exp(m2_pred$V1)*ilink(m2_pred$V2)
-
-# estimates split per location with each its own scale of axes and overlay of real datapoints
-ggplot(m2_pred, aes(x = yrday, y = fit, group = locationfactor, color = locationfactor)) +
-  geom_line() +
-  geom_point(data = agoutiselect, aes(y = toolusedurationday)) +
-  facet_wrap(~ locationfactor, scales = "free")
-head(m2_pred)
 
 # check assumptions
 # concurvity (correlation between predictors)

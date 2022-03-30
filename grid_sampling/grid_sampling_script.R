@@ -17,7 +17,7 @@ str(grid_shapes)
 e <- as(raster::extent(min(grid_shapes@coords[,1]), max(grid_shapes@coords[,1]), min(grid_shapes@coords[,2]), max(grid_shapes@coords[,2])), "SpatialPolygons")
 proj4string(e) <- crs(grid_shapes)
 e3 <- spTransform(e, CRS("+init=EPSG:32616"))
-ebuf <- buffer(e3, width = 1500) #add 500 m buffer
+ebuf <- buffer(e3, width = 4000) #add 500 m buffer
 e2 <- st_as_sf(e)
 e2b <- st_as_sf(ebuf)
 grid_1000m <- st_make_grid(e2b, square = T, cellsize = c(1000, 1000) ) %>% 
@@ -25,6 +25,8 @@ grid_1000m <- st_make_grid(e2b, square = T, cellsize = c(1000, 1000) ) %>%
 grid_500m <- st_make_grid(e2b, square = T, cellsize = c(500, 500) ) %>% 
   st_sf() #100m grid
 grid_250m <- st_make_grid(e2b, square = T, cellsize = c(250, 250)) %>% # the grid, covering bounding box
+  st_sf() # not really required, but makes the grid nicer to work with later
+grid_100m <- st_make_grid(e2b, square = T, cellsize = c(100, 100)) %>% # the grid, covering bounding box
   st_sf() # not really required, but makes the grid nicer to work with later
 
 all_tools_map + all_streams_map +  most_almendras_map + all_cams_map + all_tracks + mapview(grid_250m, col.regions = "white")
@@ -34,7 +36,7 @@ grid <- SpatialGrid(GridTopology(c(0, 0), c(1, 1), c(5, 4)))
 # get coordinates of center coordinates of each cell
 # https://gis.stackexchange.com/questions/203760/calculate-centre-point-of-spatialgrid-object
 #above uses sp, so we can convert an sf to an sp object
-grid_cams <- sf:::as_Spatial(grid_250m) #convert to 
+grid_cams <- sf:::as_Spatial(grid_100m) #convert to 
 grid_ctr <- sp:::coordinates(grid_cams) #this contains points, need to convert format and save as gpx
 plot(grid_cams, axes=TRUE)
 points(grid_ctr, col="red", pch=16 , cex=0.3) #converst to spartial points dataframe
@@ -45,8 +47,8 @@ grid_centers <- as.data.frame(grid_ctr)
 grid_centers$name <- paste("ZG", 1:nrow(grid_centers), sep = "_") # label per waypoint, needs to be called "name" to show up in GPX file
 grid_centers_map <- st_as_sf(grid_centers, coords = c("V1", "V2"), crs = "+init=EPSG:32616")
 
-mapview(grid_centers_map) + all_streams_map + all_tracks
-mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + all_tracks + mapview(grid_cams , alpha.regions=0.01)
+mapview(grid_centers_map) + all_streams_map
+mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + all_cams_map + mapview(grid_cams , alpha.regions=0.01)
 mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + mapview(grid_cams , alpha.regions=0.01) + mapview(all_tracks) + all_streams_map
 
 
