@@ -91,9 +91,12 @@ sum((depldays$seqday[depldays$uniqueloctag == locations$uniqueloctag[1]] %in% ag
 # exclude one-off surveys ("SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5", # "SURVEY-CEBUS-17-03-R4") 
 # SURVEY-CEBUS-24-01 is basically CEBUS-04 anvil (leaving out for now, include with "SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5")
 # manually identify deployments that have been fully coded
-codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5",
-                      "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-06-R4", "CEBUS-06-R5", "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", "CEBUS-09-R2", 
-                      "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
+codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-01-R6",
+                      "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5", "CEBUS-02-R6",
+                      "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-05-R6" , 
+                      "CEBUS-06-R4", "CEBUS-06-R5", 
+                      "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", 
+                      "CEBUS-09-R2", "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
 agoutiselect <- agoutiday2[agoutiday2$uniqueloctag %in% codeddeployments,]
 
 ## for these deployments, add in the days that the camera was running but not triggered (and flag these)
@@ -188,7 +191,7 @@ library(dplyr)
 # using mgcv package 
 # some notes:
 # set bs = "cc" for month and day of the year as you need a cyclic cubic spine, since there should be no discontinuity between january and december
-# set knots at 0 & 12 or at 0 and 366 as January and December should match at end of January and beginning of December, but can still be different
+# set knots at 0.5 & 12.5 or at 0.5 and 365.5 as January and December should match at end of January and beginning of December, but can still be different
 ## must include 'by' factor in model as well as they are centered!
 # can use 'select = TRUE' to penalize on the null space (look up what that is)
 # Use ziplss, two step zero-inflated poisson. Gives estimate of 0/1 and poisson component. 
@@ -203,10 +206,10 @@ library(dplyr)
 # still predicting crazy things in the "false 0"/missing data space. 
 m2 <- gam(list(toolusedurationday ~ s(yrday, bs = "cc", k = 10) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k =15), 
                ~ s(yrday, bs = "cc") + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc")),  data = agoutiselect, 
-          knots = list(yrday=c(0,365)), family = ziplss(), method = "REML", select= TRUE)
+          knots = list(yrday=c(0.5,365.5)), family = ziplss(), method = "REML", select= TRUE)
 
 summary(m2)
-draw(m2)
+draw(m2, overall_uncertainty = TRUE)
 
 gam.check(m2)
 
@@ -246,7 +249,7 @@ m5.2 <- gam(list(toolusedurationday ~ s(month, bs = "cc", k = 8) + s(yrday, bs =
                    ti(month, yrday, by = locationfactor, bs = c("cc", "cc") ) +  s(yrday, by = locationfactor, bs = "cc", k =8) +  s(month, by = locationfactor, bs = "cc", k = 8),
                  ~ s(month, bs = "cc", k = 8) + s(yrday, bs = "cc", k = 8) + ti(month, yrday, bs = c("cc", "cc")) + s(locationfactor, bs = "re") +
                    ti(month, yrday, by = locationfactor, bs = "cc", k =8) +  s(yrday, by = locationfactor, bs = "cc", k =8) +  s(month, by = locationfactor, bs = "cc", k = 8)),  data = agoutiselect, 
-            knots = list(yrday=c(0,365), month = c(0,8)), family = ziplss(), method = "REML", select= TRUE)
+            knots = list(yrday=c(0.5,365.5), month = c(0.5,12.5)), family = ziplss(), method = "REML", select= TRUE)
 
 # saveRDS(m5.2, file = "m5.2.rds")
 # m5.2 <- readRDS("m5.2.rds")
@@ -279,10 +282,58 @@ vis.gam(m5.2) # visualize interaction effect
 # in bottom of the heap blog say: "the samples needed thinning to deal with some strong autocorrelation in the Markov chains — thin = 10," Do this?
 # also needs month?
 # priors
-bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-           family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 10000, control = list(adapt_delta = 0.99, max_treedepth = 12))
-# saveRDS(bm2, file = "bm2_full.rds")
-# bm2 <- readRDS("bm2_full.rds")
+
+## prior predictive simulation
+# see default prior in brms and what things we can set priors for
+get_prior(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0.5,365.5)),
+          family = hurdle_gamma(), data = agoutiselect)
+
+# simulate student t distribution
+library(rethinking)
+?rethinking::rstudent
+x <- rstudent( n=1e5, nu = 10, mu = 0, sigma = 1 )
+dens(x)
+
+x2 <- rstudent( n=1e5, nu = 10, mu = 0, sigma = 2 )
+dens(x2 , add=TRUE , col="red")
+
+x3 <- rstudent( n=1e5, nu = 10, mu = 2, sigma = 2 )
+dens(x3 , add=TRUE , col="green")
+
+x4 <- rstudent( n=1e5, nu = 3, mu = 0, sigma = 2.5 )
+dens(x4 , add=TRUE , col="blue")
+
+x5 <- rstudent( n=1e5, nu = 3.7, mu = 2, sigma = 2.5 )
+dens(x5 , add=TRUE , col="yellow")
+
+# could try 
+# normal(0,1)
+# normal(2,1)
+# normal(0,10)
+# normal(0,4) 
+# normal(0,2)
+
+bm2_prior <- c(prior(normal(0,4), class = sds, coef = s(yrday, by = locationfactor, bs = "cc", k = 15)),
+               prior(normal(0,2), class = sds, coef = s(yrday, bs = "cc", k = 12)))
+
+
+bm_prior <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), 
+                knots = list(yrday = c(0.5,365.5)), family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 3000, 
+                control = list(adapt_delta = 0.99, max_treedepth = 12), prior = bm2_prior, sample_prior = "only")
+
+
+prior_summary(bm_prior)
+plot(bm_prior)
+summary(bm_prior)
+# can do below but takes a long time
+# plot(conditional_smooths(bm_prior, spaghetti = TRUE))
+
+# now run model with prior
+bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), 
+           knots = list(yrday = c(0.5,365.5)), family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 5000, prior = bm2_prior,
+           control = list(adapt_delta = 0.99, max_treedepth = 12))
+# saveRDS(bm2, file = "bm2_prior_full.rds")
+ bm2 <- readRDS("bm2_full.rds")
 
 summary(bm2)
 plot(bm2)
@@ -323,55 +374,11 @@ seasonsplit_bm + facet_wrap("locationfactor") +
   labs(y = "Total tool use duration per day (seconds)", x = "Day of the year")
 
 
-## prior predictive simulation
-# see default prior in brms and what things we can set priors for
-get_prior(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-          family = hurdle_gamma(), data = agoutiselect)
-
-# simulate student t distribution
-library(rethinking)
-?rethinking::rstudent
-x <- rstudent( n=1e5, nu = 10, mu = 0, sigma = 1 )
-dens(x)
-
-x2 <- rstudent( n=1e5, nu = 10, mu = 0, sigma = 2 )
-dens(x2 , add=TRUE , col="red")
-
-x3 <- rstudent( n=1e5, nu = 10, mu = 2, sigma = 2 )
-dens(x3 , add=TRUE , col="green")
-
-x4 <- rstudent( n=1e5, nu = 3, mu = 0, sigma = 2.5 )
-dens(x4 , add=TRUE , col="blue")
-
-x5 <- rstudent( n=1e5, nu = 3.7, mu = 2, sigma = 2.5 )
-dens(x5 , add=TRUE , col="yellow")
-
-# could try 
-# normal(0,1)
-# normal(2,1)
-# normal(0,10)
-# normal(0,4) 
-# normal(0,2)
-
-bm2_prior <- c(prior(normal(1,0.1), class = sds, coef = s(yrday, by = locationfactor, bs = "cc", k = 15)))
-
-
-bm_prior <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-                family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 3000, control = list(adapt_delta = 0.99, max_treedepth = 12), prior = bm2_prior, sample_prior = "only")
-
-
-prior_summary(bm_prior)
-plot(bm_prior)
-summary(bm_prior)
-plot(conditional_smooths(bm_prior, spaghetti = TRUE))
-
 str(bm2)
 
 plot(bm2)
 
-bm_prior2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), knots = list(yrday = c(0,365)),
-                family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 3000, control = list(adapt_delta = 0.99, max_treedepth = 12), sample_prior = "only")
-plot(bm_prior2)
+
 
 ## look into Kat's script and the autocorrelation 
 
