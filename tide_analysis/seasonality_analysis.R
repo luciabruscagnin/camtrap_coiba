@@ -330,10 +330,10 @@ summary(bm_prior)
 
 # now run model with prior
 bm2 <- brm(toolusedurationday ~ s(yrday, bs = "cc", k = 12) + s(locationfactor, bs = "re") + s(yrday, by = locationfactor, bs = "cc", k = 15), 
-           knots = list(yrday = c(0.5,365.5)), family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 5000, prior = bm2_prior,
+           knots = list(yrday = c(0.5,365.5)), family = hurdle_gamma(), data = agoutiselect, chain = 4, core = 4, iter = 8000, prior = bm2_prior,
            control = list(adapt_delta = 0.99, max_treedepth = 12))
 # saveRDS(bm2, file = "bm2_prior_full.rds")
- bm2 <- readRDS("bm2_full.rds")
+# bm2 <- readRDS("bm2_full.rds")
 
 summary(bm2)
 plot(bm2)
@@ -372,13 +372,6 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 # without real points but separate plots
 seasonsplit_bm + facet_wrap("locationfactor") +
   labs(y = "Total tool use duration per day (seconds)", x = "Day of the year")
-
-
-str(bm2)
-
-plot(bm2)
-
-
 
 ## look into Kat's script and the autocorrelation 
 
