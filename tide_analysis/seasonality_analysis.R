@@ -485,12 +485,11 @@ res_bm <- brm(item ~ s(month, bs ="cc", k = 12), data=agoutiselect_seq, family="
           iter = 1000)
 
 #### TOOL USE AND TIME OF DAY & LOCATIONS #####
-## add in all the 0s for at night? or can model infer this from absence of this?
 
 plot(agoutiselect_seq$hour, agoutiselect_seq$tooluseduration)
 
-m1_tuday <- gam(tooluseduration ~ s(hour, bs = "tp", k = 16) + s(hour, locationfactor, bs = "fs"), data = agoutiselect_seq,
-                method = "REML", family = poisson)
+m1_tuday <- gam(tooluseduration ~ s(hour, k = 12) + s(locationfactor, bs = "re") + n_tooluse, data = agoutiselect_seq, family = poisson,
+                method = "REML")
 
 summary(m1_tuday)
 draw(m1_tuday)
@@ -512,6 +511,19 @@ ggplot(m1_tuday_pred, aes(x = hour, y = exp(fit), group = locationfactor, color 
   geom_line() +
   geom_point(data = agoutiselect_seq, aes(y = tooluseduration)) +
   facet_wrap(~ locationfactor, scales = "free")
+
+# in brms
+# need other family. Poisson? normal gamma? something else?
+bm1_tuday <- brm(tooluseduration ~ s(hour, k = 12) + s(locationfactor, bs = "re") + n_tooluse, data = agoutiselect_seq,
+                 family = hurdle_gamma(), chains = 4, cores = 4, iter  = 10000, control = list(adapt_delta = 0.99, max_treedepth = 12) )
+
+# saveRDS(bm1_tuday, "bm1_tuday_07042022.rds") is wrong because this dataset has no zeros so therefore also nothing to hurdle on
+# bm1_tuday <- readRDS("bm1tuday_07042022.rds")
+
+summary(bm1_tuday)
+plot(bm1_tuday)
+plot(conditional_smooths(bm1_tuday))
+plot(conditional_effects(bm1_tuday))
 
 #### HOW MANY INDIVIDUALS USE TOOLS #####
 plot(agoutiselect_seq$n_tooluse, agoutiselect_seq$n)

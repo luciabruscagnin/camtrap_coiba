@@ -99,9 +99,9 @@ ebuf <- buffer(e3, width = 1500) #add 500 m buffer
 e2 <- st_as_sf(e)
 e2b <- st_as_sf(ebuf)
 grid_1000m <- st_make_grid(e2b, square = T, cellsize = c(1000, 1000) ) %>% 
-  st_sf() #100m grid
+  st_sf() #1000m grid
 grid_500m <- st_make_grid(e2b, square = T, cellsize = c(500, 500) ) %>% 
-  st_sf() #100m grid
+  st_sf() #500m grid
 grid_250m <- st_make_grid(e2b, square = T, cellsize = c(250, 250)) %>% # the grid, covering bounding box
   st_sf() # not really required, but makes the grid nicer to work with later
 mapview(grid_250m , col.regions="white")  + all_tools_map + all_streams_map + all_cams_map + most_almendras_map

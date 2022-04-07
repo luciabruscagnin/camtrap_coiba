@@ -166,7 +166,7 @@ ggplot(data.frame(Fitted = fitted(am1_b),
 
 ## Model 2: number of capuchins depending on hour of day, by tool use/vs non tool users
 am2_zp <- gam(list(n ~ s(hour, bs = "cc", by = toolusers, k = 24) + toolusers, ~ s(hour, bs = "cc", by = toolusers, k = 24) + toolusers),
-              family = ziplss(), knots = list(hour = c(0,24)), data = agoutiselect2, method = "REML")
+              family = ziplss(), data = agoutiselect2, method = "REML")
 summary(am2_zp) 
 # visualize
 plot(am2_zp, all.terms = TRUE, pages = 1)

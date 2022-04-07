@@ -6,6 +6,7 @@ library(mapview)
 library(rgdal)
 library(sf)
 library(raster)
+library(maptools)
 
 # first run coiba_map_gps_viz.R to create all the layers for the maps, should make this so it is standalone at some point
 #source("map/coiba_map_gps_viz.R")
@@ -17,7 +18,7 @@ str(grid_shapes)
 e <- as(raster::extent(min(grid_shapes@coords[,1]), max(grid_shapes@coords[,1]), min(grid_shapes@coords[,2]), max(grid_shapes@coords[,2])), "SpatialPolygons")
 proj4string(e) <- crs(grid_shapes)
 e3 <- spTransform(e, CRS("+init=EPSG:32616"))
-ebuf <- buffer(e3, width = 4000) #add 500 m buffer
+ebuf <- buffer(e3, width = 500) #add 500 m buffer
 e2 <- st_as_sf(e)
 e2b <- st_as_sf(ebuf)
 grid_1000m <- st_make_grid(e2b, square = T, cellsize = c(1000, 1000) ) %>% 
@@ -33,29 +34,38 @@ all_tools_map + all_streams_map +  most_almendras_map + all_cams_map + all_track
 
 grid <- SpatialGrid(GridTopology(c(0, 0), c(1, 1), c(5, 4)))
 
+# get rotated grid parallel to coast
+grid_100m2 <- st_make_grid(e2b, square = T, cellsize = c(100, 100) ) 
+
+rotang = 50
+rot = function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
+grd_rot <- (grid_100m2 - st_centroid(st_union(grid_100m2))) * rot(rotang * pi / 180) +
+  st_centroid(st_union(grid_100m2)) 
+
+grid_100m_t <- st_as_sf(grd_rot)
+st_crs(grid_100m_t) <- "+init=EPSG:32616"
+mapview(grid_100m_t) + all_cams_map
+
 # get coordinates of center coordinates of each cell
 # https://gis.stackexchange.com/questions/203760/calculate-centre-point-of-spatialgrid-object
 #above uses sp, so we can convert an sf to an sp object
-grid_cams <- sf:::as_Spatial(grid_100m) #convert to 
+grid_cams <- sf:::as_Spatial(grid_100m_t) #convert to 
 grid_ctr <- sp:::coordinates(grid_cams) #this contains points, need to convert format and save as gpx
 plot(grid_cams, axes=TRUE)
 points(grid_ctr, col="red", pch=16 , cex=0.3) #converst to spartial points dataframe
-mapview(grid_250m) + all_tools_map
 
 # plot over topo map
 grid_centers <- as.data.frame(grid_ctr)
-grid_centers$name <- paste("ZG", 1:nrow(grid_centers), sep = "_") # label per waypoint, needs to be called "name" to show up in GPX file
+grid_centers$name <- paste("TU", 1:nrow(grid_centers), sep = "_") # label per waypoint, needs to be called "name" to show up in GPX file
 grid_centers_map <- st_as_sf(grid_centers, coords = c("V1", "V2"), crs = "+init=EPSG:32616")
 
 mapview(grid_centers_map) + all_streams_map
 mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + all_cams_map + mapview(grid_cams , alpha.regions=0.01)
 mapview(grid_centers_map , cex=1.5 , label=TRUE , col.regions ="black") + mapview(grid_cams , alpha.regions=0.01) + mapview(all_tracks) + all_streams_map
 
-
 # check if transformation went okay
 plot(grid_cams)
 plot(grid_centers_map, add = TRUE)
-
 head(grid_centers_map)
 
 ## convert points and save as gpx
@@ -66,6 +76,59 @@ crs(grid_centers_map3)
 
 # to write GPX file, only re-run if something changed
 # writeOGR(grid_centers_map3, dsn = "grid_sampling/JicaronTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
+
+# afterwards upload gpx tracks to Garmin basecamp to put on Garmin
+
+### non tool using group
+# center on CEBUS-09-02 camera?
+NTU <- subset(all_cams, all_cams$camera_id == "SURVEY-CEBUS-09-02")
+NTU_map <- mapview(NTU , col.regions="gold"  )
+NTU_map
+
+# move polygon with buffer to non tool use site (did this manually)
+e_shift <- maptools::elide(ebuf, shift = c(3300,-1600))
+proj4string(e_shift) <- crs(ebuf)
+
+mapview(e_shift) + all_cams_map
+e_shift2 <- st_as_sf(e_shift)
+
+# get rotated grid parallel to coast
+grid_100m2_shift <- st_make_grid(e_shift2, square = T, cellsize = c(100, 100) ) 
+
+rotang2 = 30
+grd_rot2 <- (grid_100m2_shift - st_centroid(st_union(grid_100m2_shift))) * rot(rotang2 * pi / 180) +
+  st_centroid(st_union(grid_100m2_shift)) 
+
+grid_100m_ts <- st_as_sf(grd_rot2)
+st_crs(grid_100m_ts) <- "+init=EPSG:32616"
+mapview(grid_100m_ts) + NTU_map
+
+# get coordinates of center coordinates of each cell
+# https://gis.stackexchange.com/questions/203760/calculate-centre-point-of-spatialgrid-object
+#above uses sp, so we can convert an sf to an sp object
+grid_cams2 <- sf:::as_Spatial(grid_100m_ts) #convert to 
+grid_ctr2 <- sp:::coordinates(grid_cams2) #this contains points, need to convert format and save as gpx
+plot(grid_cams2, axes=TRUE)
+points(grid_ctr2, col="red", pch=16 , cex=0.3) #converst to spartial points dataframe
+
+# plot over topo map
+grid_centers2 <- as.data.frame(grid_ctr2)
+grid_centers2$name <- paste("NTU", 1:nrow(grid_centers2), sep = "_") # label per waypoint, needs to be called "name" to show up in GPX file
+grid_centers2_map <- st_as_sf(grid_centers2, coords = c("V1", "V2"), crs = "+init=EPSG:32616")
+
+mapview(grid_centers2_map) + all_streams_map
+mapview(grid_centers2_map , cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + all_cams_map + mapview(grid_cams2 , alpha.regions=0.01)
+mapview(grid_centers2_map , cex=1.5 , label=TRUE , col.regions ="black") + NTU_map + mapview(grid_cams2 , alpha.regions=0.01) + mapview(all_tracks) + all_streams_map
+
+
+## convert points and save as gpx
+grid_centers2_map2 <- SpatialPointsDataFrame(coords=grid_centers2[,c(1,2)],data=grid_centers2,proj4string =CRS("+init=EPSG:32616")) 
+# need to transform to longitude/latitude 
+grid_centers2_map3 <- spTransform(grid_centers2_map2, CRS("+init=EPSG:4326"))
+crs(grid_centers2_map3)
+
+# to write GPX file, only re-run if something changed
+# writeOGR(grid_centers2_map3, dsn = "grid_sampling/JicaronNTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
 
 # afterwards upload gpx tracks to Garmin basecamp to put on Garmin
 
