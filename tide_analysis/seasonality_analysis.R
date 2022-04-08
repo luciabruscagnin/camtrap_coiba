@@ -509,6 +509,8 @@ res_bm2 <- brm(item ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"),
               knots = list(month = c(0.5,12.5)), chains=2, cores = 4, 
           iter = 3000)
 
+# saveRDS(res_bm2, file = "res_bm2.rds")
+
 summary(res_bm2)
 plot(res_bm2)
 plot(conditional_smooths(res_bm2, categorical = TRUE))
@@ -557,16 +559,22 @@ plot(conditional_effects(tres_bm2, categorical = TRUE))
 
 #### TOOL USE AND TIME OF DAY & LOCATIONS #####
 
-plot(agoutiselect_seq$hour, agoutiselect_seq$tooluseduration)
+# do we need to aggregate to total seconds of tool use per hour
+# Does this make sense? then you can't consider nr of individuals per sequence etc. 
+# what does gam assume? does it take average per hour? or sum? 
 
-m1_tuday <- gam(tooluseduration ~ s(hour, k = 12) + s(locationfactor, bs = "re") + n_tooluse, data = agoutiselect_seq, family = poisson,
+plot(agoutiselect_seqt$hour, agoutiselect_seqt$tooluseduration)
+ftable(agoutiselect_seqt$hour)
+hist(agoutiselect_seqt$hour)
+
+m1_tuday <- gam(tooluseduration ~ s(hour, k = 16) + s(locationfactor, bs = "re") + n_tooluse, data = agoutiselect_seqt, family = poisson(),
                 method = "REML")
 
 summary(m1_tuday)
 draw(m1_tuday)
 gam.check(m1_tuday)
 
-new_data_tu <- tidyr::expand(agoutiselect_seq, nesting(locationfactor), hour = unique(hour))
+new_data_tu <- tidyr::expand(agoutiselect_seqt, nesting(locationfactor), hour = unique(hour))
 
 m1_tuday_pred <- bind_cols(new_data_tu,
                      as.data.frame(predict(m1_tuday, newdata = new_data_tu, se.fit = TRUE)))
@@ -586,10 +594,10 @@ ggplot(m1_tuday_pred, aes(x = hour, y = exp(fit), group = locationfactor, color 
 # in brms
 # need other family. Poisson? normal gamma? something else?
 bm1_tuday <- brm(tooluseduration ~ s(hour, k = 12) + s(locationfactor, bs = "re") + n_tooluse, data = agoutiselect_seq,
-                 family = hurdle_gamma(), chains = 4, cores = 4, iter  = 10000, control = list(adapt_delta = 0.99, max_treedepth = 12) )
+                 family = poisson, chains = 2, cores = 4, iter  = 3000, control = list(adapt_delta = 0.99, max_treedepth = 12) )
 
 # saveRDS(bm1_tuday, "bm1_tuday_07042022.rds") is wrong because this dataset has no zeros so therefore also nothing to hurdle on
-# bm1_tuday <- readRDS("bm1tuday_07042022.rds")
+# bm1_tuday <- readRDS("bm1_tuday_07042022.rds")
 
 summary(bm1_tuday)
 plot(bm1_tuday)
