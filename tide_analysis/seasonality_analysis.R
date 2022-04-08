@@ -445,44 +445,115 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8698177/
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8648868/#MOESM1
 
-########## TOOL USE ANALYSIS ON SEQUENCE LEVEL ######
-# use agoutisequence dataset that only contains tool use sequences at Jicaron tool site
-agoutiselect_seq <- subset(agoutisequence_jt, agoutisequence_jt$tooluse == TRUE & agoutisequence_jt$tags != "R6" & agoutisequence_jt$locationName != "CEBUS-03") # for now exclude everything past R5
+########## ANALYSIS ON SEQUENCE LEVEL ######
+
+# for question on what they forage on in generally, need agoutisequence dataset that only contains jicaron tool use group
+# exclude CEBUS-03 cause it's on same anvil as CEBUS-02
+agoutiselect_seq <- subset(agoutisequence_jt, agoutisequence_jt$locationName != "CEBUS-03")
 agoutiselect_seq <- agoutiselect_seq[,c("seqday", "tooluseduration", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours", "month",
-                                "season","island", "exposure", "tool_anvil", "uniqueloctag", "seq_item", "n_tooluse", "n", "seq_start")]
+                                        "season","island", "exposure", "tool_anvil", "uniqueloctag", "seq_toolitem", "seq_normalitem", "tooluse",
+                                        "seq_item", "n_tooluse", "n", "seq_start")]
 agoutiselect_seq <- droplevels.data.frame(agoutiselect_seq)
 unique(agoutiselect_seq$uniqueloctag)
 
-# make locationfactor and yrday variable 
-agoutiselect_seq$locationfactor <- as.factor(agoutiselect_seq$locationName)
-agoutiselect_seq$yrday <- yday(agoutiselect_seq$seqday)
-agoutiselect_seq$hour <- hour(agoutiselect_seq$seq_start)
+# change variables that need some altering
+agoutiselect_seq <- agoutiselect_seq %>%
+  mutate(locationfactor = as.factor(locationName),
+         yrday = yday(seqday), 
+         hour = hour(seq_start)
+  )
 
+## if you want only tool use sequences
+agoutiselect_seqt <- agoutiselect_seq[which(agoutiselect_seq$tooluse == TRUE),]
 
 hist(agoutiselect_seq$hour)
 ftable(agoutiselect_seq$seq_item)
 
-descdist(agoutiselect_seq$tooluseduration)
-testdist2 <- fitdist(agoutiselect_seq$tooluseduration, "pois")
+descdist(agoutiselect_seqt$tooluseduration)
+testdist2 <- fitdist(agoutiselect_seqt$tooluseduration, "pois")
 plot(testdist2)
 
 #### TOOL USE ITEMS ####
-# for looking at tool use item, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
-# so then would have almendra, coconut, invertebrate, palm, other. 
+# first consider what they forage on in generally (seasonally)
+# for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
+# so then would have almendra, coconut, invertebrate, fruit, other. 
 ftable(agoutiselect_seq$seq_item, agoutiselect_seq$locationName)
-agoutiselect_seq$item <- as.factor(ifelse(agoutiselect_seq$seq_item == "hecrab" | agoutiselect_seq$seq_item == "hwcrab" | agoutiselect_seq$seq_item == "insect" | agoutiselect_seq$seq_item == "snail", "invertebrate",
-                                          ifelse(agoutiselect_seq$seq_item == "unknown", NA, agoutiselect_seq$seq_item)))
+agoutiselect_seq$item <- as.factor(ifelse(agoutiselect_seq$seq_item == "crab" | agoutiselect_seq$seq_item == "insect" | agoutiselect_seq$seq_item == "snail", "invertebrate",
+                                          ifelse(agoutiselect_seq$seq_item == "palm" | agoutiselect_seq$seq_item == "fruit", "fruit", 
+                                                ifelse(agoutiselect_seq$seq_item == "unknown" | agoutiselect_seq$seq_item == "other", NA, agoutiselect_seq$seq_item))))
 ftable(agoutiselect_seq$item)
-str(agoutiselect_seq)
 
 # mgcv
 # see this https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/multinom.html
-# need to first get to probabilities like softmax thing in stat rethinking
-res_m <- gam(item ~ s(month, bs ="cc", k = 12), data=agoutiselect_seq, family=multinom(K=3), method = "REML", knots = list(month = c(0,12)))
+# set reference category as almendras
+agoutiselect_seq$item <- relevel(agoutiselect_seq$item, ref = "almendra")
+agoutiselect_seq$item2 <- as.numeric(agoutiselect_seq$item) -1
+
+res_m <- gam(list(item2 ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"),~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re"),
+                  ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re")), 
+             data=agoutiselect_seq, family=multinom(K=3), method = "REML", knots = list(month = c(0.5,12.5)))
+
+summary(res_m)
+draw(res_m)
+gam.check(res_m)
 
 # brms
-res_bm <- brm(item ~ s(month, bs ="cc", k = 12), data=agoutiselect_seq, family="categorical", knots = list(month = c(0,12)), chains=2, cores = 4, 
-          iter = 1000)
+res_bm <- brm(item ~ month, data = agoutiselect_seq, family = "categorical", chains = 2, cores = 2, iter = 3000)
+
+summary(res_bm)
+plot(res_bm)
+plot(conditional_effects(res_bm, categorical = TRUE))
+
+# smooth version 
+res_bm2 <- brm(item ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"), data=agoutiselect_seq, family="categorical", 
+              knots = list(month = c(0.5,12.5)), chains=2, cores = 4, 
+          iter = 3000)
+
+summary(res_bm2)
+plot(res_bm2)
+plot(conditional_smooths(res_bm2, categorical = TRUE))
+plot(conditional_effects(res_bm2, categorical = TRUE))
+
+### only what they use tools on
+# for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
+# so then would have almendra, coconut, invertebrate, fruit, other. 
+ftable(agoutiselect_seqt$seq_toolitem)
+agoutiselect_seqt$seq_toolitem <- as.character(agoutiselect_seqt$seq_toolitem)
+agoutiselect_seqt$item <- as.factor(ifelse(str_detect(agoutiselect_seqt$seq_toolitem, "crab") | agoutiselect_seqt$seq_item == "insect" | agoutiselect_seqt$seq_toolitem == "snail", "invertebrate",
+                                          ifelse(agoutiselect_seqt$seq_toolitem == "palm" | agoutiselect_seqt$seq_toolitem == "fruit", "fruit", 
+                                                 ifelse(agoutiselect_seqt$seq_toolitem == "unknown" | agoutiselect_seqt$seq_toolitem == "other", NA, agoutiselect_seqt$seq_toolitem))))
+ftable(agoutiselect_seqt$item)
+
+# mgcv
+# set reference category as almendras
+agoutiselect_seqt$item <- relevel(agoutiselect_seqt$item, ref = "almendra")
+agoutiselect_seqt$item2 <- as.numeric(agoutiselect_seqt$item) -1
+
+tres_m <- gam(list(item2 ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"),~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re"),
+                  ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re")), 
+             data=agoutiselect_seqt, family=multinom(K=3), method = "REML", knots = list(month = c(0.5,12.5)))
+
+summary(tres_m)
+draw(tres_m)
+gam.check(tres_m)
+
+# brms
+# just glm approach
+tres_bm <- brm(item ~ month, data = agoutiselect_seqt, family = "categorical", chains = 2, cores = 2, iter = 3000)
+
+summary(tres_bm)
+plot(tres_bm)
+plot(conditional_effects(tres_bm, categorical = TRUE))
+
+# smooth version / gam approach
+tres_bm2 <- brm(item ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"), data=agoutiselect_seqt, family="categorical", 
+               knots = list(month = c(0.5,12.5)), chains=2, cores = 2, 
+               iter = 2000)
+
+summary(tres_bm2)
+plot(tres_bm2)
+plot(conditional_smooths(tres_bm2, categorical = TRUE))
+plot(conditional_effects(tres_bm2, categorical = TRUE))
 
 #### TOOL USE AND TIME OF DAY & LOCATIONS #####
 

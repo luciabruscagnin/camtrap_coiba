@@ -39,6 +39,7 @@ agoutigross <- left_join(agoutigross, depl_keys, "deploymentID")
 # filter out deployments we're not using
 agoutigross <- agoutigross[agoutigross$flag == 0,]
 
+#### Capuchin detections #####
 # create column per sequence if a capuchin was present 1/0 and if capuchins, how many in the sequence (a count)
 agoutigross$capuchin <- ifelse(agoutigross$scientificName == "Cebus imitator", 1, 0)
 
@@ -50,6 +51,7 @@ agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
 # replace NAs with 0 for the capuchin count
 agoutigross$n[is.na(agoutigross$n)] <- 0
 
+#### Timestamps & Sequence Info #####
 # turn sequence start time into POSIXct format
 # replace T with a space
 agoutigross$time <- str_replace(agoutigross$timestamp, "T", " ")
@@ -123,7 +125,7 @@ agoutigross <- left_join(agoutigross, enddep, "deploymentID")
 # add deployment length in hours, this is an exposure
 agoutigross$dep_length_hours <-as.numeric(difftime(agoutigross$dep_end,agoutigross$dep_start,units="hours"))
 
-#### ADDING EXTRA VARIABLES E.G. TIME OF YEAR/TOOL USE INFO ####
+#### ADDING EXTRA VARIABLES ####
 # make month column
 agoutigross$month <- month(agoutigross$seq_start)
 
@@ -141,18 +143,49 @@ deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id"
 
 agoutigross <- left_join(agoutigross, deployment_info2, "locationName")
 
-# what tool users are processing
-agoutigross$item <- ifelse(str_detect(agoutigross$behaviour, "Almendra"), "almendra", 
-                           ifelse(str_detect(agoutigross$behaviour, "Coconut"), "coconut", 
-                                  ifelse(str_detect(agoutigross$behaviour, "Embedded"), "insect",
-                                         ifelse(str_detect(agoutigross$behaviour, "Halloween"), "hwcrab",
-                                                ifelse(str_detect(agoutigross$behaviour, "Hermit"), "hecrab",
-                                                       ifelse(str_detect(agoutigross$behaviour, "Snail"), "snail",
-                                                              ifelse(str_detect(agoutigross$behaviour, "Palm"), "palm",
-                                                                     ifelse(str_detect(agoutigross$behaviour, "Other"), "other", 
-                                                                            ifelse(str_detect(agoutigross$behaviour, "Unknown"), "unknown", "NA")))))))))                                        
+##### Foraging items #####
+# what is being foraged on per sequence
+# what they are foraging using tools
+agoutigross$tool_item <- ifelse(str_detect(agoutigross$behaviour, "TAF: Almendra"), "almendra", 
+                           ifelse(str_detect(agoutigross$behaviour, "TAF: Coconut"), "coconut", 
+                                  ifelse(str_detect(agoutigross$behaviour, "TAF: Embedded"), "insect",
+                                         ifelse(str_detect(agoutigross$behaviour, "TAF: Halloween"), "hwcrab",
+                                                ifelse(str_detect(agoutigross$behaviour, "TAF: Hermit"), "hecrab",
+                                                       ifelse(str_detect(agoutigross$behaviour, "TAF: Snail"), "snail",
+                                                              ifelse(str_detect(agoutigross$behaviour, "TAF: Palm"), "palm",
+                                                                     ifelse(str_detect(agoutigross$behaviour, "TAF: Other"), "other", 
+                                                                            ifelse(str_detect(agoutigross$behaviour, "TAF: Unknown"), "unknown", NA)))))))))                                        
 
-ftable(agoutigross$item)  
+ftable(agoutigross$tool_item)
+
+# what they are foraging on without tools
+agoutigross$normal_item <- ifelse(str_detect(agoutigross$behaviour, "F: Almendra flesh"), "almendra", 
+                                  ifelse(str_detect(agoutigross$behaviour, "F: Coco flesh|F: Coco water"), "coconut", 
+                                         ifelse(str_detect(agoutigross$behaviour, "F: Insect"), "insect",
+                                                                     ifelse(str_detect(agoutigross$behaviour, "F: Fruit"), "fruit",
+                                                                            ifelse(str_detect(agoutigross$behaviour, "\\bF: Other"), "other", 
+                                                                                   ifelse(str_detect(agoutigross$behaviour, "\\bF: Unknown"), "unknown", NA))))))                                      
+
+ftable(agoutigross$normal_item)
+
+# if 'other', see if we can get information from the comments
+agoutigross$comment_item <- NA
+agoutigross$comment_item[which(str_detect(agoutigross$behaviour, "Other"))] <- 
+  agoutigross$comments.x[which(str_detect(agoutigross$behaviour, "Other"))]
+
+# include at least fruit and crab and snail
+agoutigross$normal_item[which(agoutigross$normal_item == "other")] <- 
+  ifelse(str_detect(agoutigross$comment_item[which(agoutigross$normal_item == "other")], "crab"), "crab",
+         ifelse(str_detect(agoutigross$comment_item[which(agoutigross$normal_item == "other")], "fruit|berr"), "fruit",
+                ifelse(str_detect(agoutigross$comment_item[which(agoutigross$normal_item == "other")], "snail"), "snail", "other")))
+
+# also for tool using 
+agoutigross$comment_item[which(agoutigross$tool_item == "other")]
+
+agoutigross$tool_item[which(agoutigross$tool_item == "other")] <- 
+  ifelse(str_detect(agoutigross$comment_item[which(agoutigross$tool_item == "other")], "Halloween crab"), "hwcrab",
+         ifelse(str_detect(agoutigross$comment_item[which(agoutigross$tool_item == "other")], "fruit"), "fruit",
+                ifelse(str_detect(agoutigross$comment_item[which(agoutigross$tool_item == "other")], "snail"), "snail", "other")))
 
 # whether tool-using occurred in the sequence or not
 agoutigross$tooluse <- str_detect(agoutigross$behaviour, "TAF") # now just takes all types of tool use, also unknown
@@ -166,19 +199,52 @@ agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")
 # replace NAs with 0 for the tool use
 agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
 # make sure only the tool use sequences have items (don't want to get the normal foraging items)
-agoutigross$item[agoutigross$tooluse == "FALSE"] <- NA
+# not really necessary but a good check
+agoutigross$tool_item[agoutigross$tooluse == "FALSE"] <- NA
 
 ## get sequence-level variable of what is mostly being processed in that sequence
-items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$item)))
+# tool items
+tool_items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$tool_item)))
 # set unknown tool use to 1 for all rows, so that when there are two things being processed (e.g. one unknown, one almendra) you keep the almendra
 # this is crude solution but works
-items$unknown <- 1
-items$seq_item <- colnames(items)[max.col(items,ties.method="first")]  
+tool_items$unknown <- 1
+tool_items$seq_toolitem <- colnames(tool_items)[max.col(tool_items,ties.method="first")]  
 # now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
-items$sequenceID <- rownames(items)
-items <- items[,c("sequenceID", "seq_item")]
+tool_items$sequenceID <- rownames(tool_items)
+tool_items <- tool_items[,c("sequenceID", "seq_toolitem")]
 
-agoutigross <- left_join(agoutigross, items, "sequenceID")
+agoutigross <- left_join(agoutigross, tool_items, "sequenceID")
+
+# normal items
+agoutigross_foraging <- agoutigross[str_detect(agoutigross$behaviour, "\\bF:"),]
+normal_items <- as.data.frame(as.matrix(ftable(agoutigross_foraging$sequenceID, agoutigross_foraging$normal_item)))
+# set unknown foraging to 1 for all rows, so that when there are two things being processed (e.g. one unknown, one almendra) you keep the almendra
+# this is crude solution but works
+normal_items$unknown <- 1
+normal_items$seq_normalitem <- colnames(normal_items)[max.col(normal_items,ties.method="first")]  
+# now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
+normal_items$sequenceID <- rownames(normal_items)
+normal_items <- normal_items[,c("sequenceID", "seq_normalitem")]
+
+agoutigross <- left_join(agoutigross, normal_items, "sequenceID")
+
+# see whether they both forage with and without tools and create variable with most information
+# so what's being foraged irrespective of with or without tools
+agoutigross$bothforage <- ifelse(is.na(agoutigross$seq_toolitem) == FALSE & is.na(agoutigross$seq_normalitem) == FALSE, 1, 0)
+
+# how many cases in which they forage with and without tools
+unique(agoutigross$behaviour[which(agoutigross$bothforage == 1)])
+
+# make general item one, if they both use tools and forage normally, tools take precedent
+agoutigross$seq_item <- ifelse(agoutigross$bothforage == 0 & is.na(agoutigross$seq_toolitem) == FALSE, agoutigross$seq_toolitem,
+                           ifelse(agoutigross$bothforage == 0 & is.na(agoutigross$seq_normalitem) == FALSE, agoutigross$seq_normalitem,
+                                  ifelse(agoutigross$bothforage == 1 & agoutigross$seq_toolitem == "unknown", agoutigross$seq_normalitem,
+                                         ifelse(agoutigross$bothforage == 1 & agoutigross$seq_toolitem != "unknown", agoutigross$seq_toolitem, NA))))
+
+# simplify to categories that overlap
+agoutigross$seq_item <- ifelse(str_detect(agoutigross$seq_item, "crab"), "crab", agoutigross$seq_item)
+
+#### Cleaning ##### 
 
 # create column to flag the timelapse triggers at 12:00:00 and 00:00:00
 agoutigross$timelapse <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$classificationTimestamp == "" & str_detect(agoutigross$seq_start, "00:00") == "TRUE", 1, 0)
@@ -188,10 +254,10 @@ agoutigross$uncoded <- ifelse(agoutigross$observationType == "unclassified" & ag
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
 agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
-                                            "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time")]
+                                            "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item")]
 
 
-## FORMAT: ONE ROW PER SEQUENCE
+#### FORMAT: ONE ROW PER SEQUENCE ####
 # drop duplicated sequences, necessary form for tidal analyses and data exploration
 # lose individual info etc so to analyze like that need to use agoutigross
 agoutisequence <- agouticlean[!duplicated(agouticlean$sequenceID),]
