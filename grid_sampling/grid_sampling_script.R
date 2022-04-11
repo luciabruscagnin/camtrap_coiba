@@ -74,7 +74,22 @@ grid_centers_map2 <- SpatialPointsDataFrame(coords=grid_centers[,c(1,2)],data=gr
 grid_centers_map3 <- spTransform(grid_centers_map2, CRS("+init=EPSG:4326"))
 crs(grid_centers_map3)
 
+## subset to points of interest
+TU_gridcenters <- grid_centers_map3[c(135, 137, 139, 141, 150:158,166:174, 181:190, 197:206, 213:222),]
+
+# attempt to add static labels (doesn't allow for layering of mapview objects)
+library(leafem)
+mapview(TU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") %>%
+  addStaticLabels(label = TU_gridcenters$name,
+                  noHide = TRUE,
+                  direction = 'top',
+                  textOnly = TRUE,
+                  textsize = "10px")
+
+mapview(TU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + mapview(grid_cams, alpha.regions=0.01)
+
 # to write GPX file, only re-run if something changed
+# THIS DOESNT WORK NOW. FIX
 # writeOGR(grid_centers_map3, dsn = "grid_sampling/JicaronTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
 
 # afterwards upload gpx tracks to Garmin basecamp to put on Garmin
@@ -120,15 +135,38 @@ mapview(grid_centers2_map) + all_streams_map
 mapview(grid_centers2_map , cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + all_cams_map + mapview(grid_cams2 , alpha.regions=0.01)
 mapview(grid_centers2_map , cex=1.5 , label=TRUE , col.regions ="black") + NTU_map + mapview(grid_cams2 , alpha.regions=0.01) + mapview(all_tracks) + all_streams_map
 
-
 ## convert points and save as gpx
 grid_centers2_map2 <- SpatialPointsDataFrame(coords=grid_centers2[,c(1,2)],data=grid_centers2,proj4string =CRS("+init=EPSG:32616")) 
 # need to transform to longitude/latitude 
 grid_centers2_map3 <- spTransform(grid_centers2_map2, CRS("+init=EPSG:4326"))
 crs(grid_centers2_map3)
 
+## subset to points of interest
+NTU_gridcenters <- grid_centers2_map3[c(35:38, 51:56, 67:72, 83:88, 99:104, 115:120, 131:136, 148:153, 164:169),]
+
+# attempt to add static labels (doesn't allow for layering of mapview objects)
+library(leafem)
+mapview(TU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") %>%
+  addStaticLabels(label = TU_gridcenters$name,
+                  noHide = TRUE,
+                  direction = 'top',
+                  textOnly = TRUE,
+                  textsize = "10px")
+
+mapview(NTU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") + mapview(grid_cams2, alpha.regions=0.01) + NTU_map
+
+# get static labels (still tweak this)
+library(leafem)
+mapview(grid_centers2_map , cex=1.5 , label=TRUE , col.regions ="black") %>%
+  addStaticLabels(label = grid_centers2_map$name,
+                  noHide = TRUE,
+                  direction = 'top',
+                  textOnly = TRUE,
+                  textsize = "10px")
+
 # to write GPX file, only re-run if something changed
-# writeOGR(grid_centers2_map3, dsn = "grid_sampling/JicaronNTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
+
+# writeOGR(NTU_gridcenters, dsn = "grid_sampling/JicaronNTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
 
 # afterwards upload gpx tracks to Garmin basecamp to put on Garmin
 
