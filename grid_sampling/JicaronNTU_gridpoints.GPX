@@ -1,0 +1,368 @@
+<?xml version="1.0"?>
+<gpx version="1.1" creator="GDAL 3.2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogr="http://osgeo.org/gdal" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+<metadata><bounds minlat="7.252956882138040" minlon="-81.799036739910250" maxlat="7.260219173220082" maxlon="-81.790699914571647"/></metadata>                  
+<wpt lat="7.25447885469662" lon="-81.79903673991025">
+  <name>NTU_35</name>
+  <extensions>
+    <ogr:V1>1074904.878193128155544</ogr:V1>
+    <ogr:V2>805182.569840551237576</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.254019467985317" lon="-81.798260663360551">
+  <name>NTU_36</name>
+  <extensions>
+    <ogr:V1>1074991.480733506614342</ogr:V1>
+    <ogr:V2>805132.56984055112116</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.253560081054347" lon="-81.797484589012399">
+  <name>NTU_37</name>
+  <extensions>
+    <ogr:V1>1075078.08327388507314</ogr:V1>
+    <ogr:V2>805082.56984055112116</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.253100693903956" lon="-81.796708516865763">
+  <name>NTU_38</name>
+  <extensions>
+    <ogr:V1>1075164.685814263531938</ogr:V1>
+    <ogr:V2>805032.56984055112116</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.255253824874739" lon="-81.798576696197898">
+  <name>NTU_51</name>
+  <extensions>
+    <ogr:V1>1074954.878193127922714</ogr:V1>
+    <ogr:V2>805269.172380929463543</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.254794436766312" lon="-81.797800619903796">
+  <name>NTU_52</name>
+  <extensions>
+    <ogr:V1>1075041.480733506614342</ogr:V1>
+    <ogr:V2>805219.172380929347128</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.254335048438173" lon="-81.797024545811482">
+  <name>NTU_53</name>
+  <extensions>
+    <ogr:V1>1075128.08327388484031</ogr:V1>
+    <ogr:V2>805169.172380929463543</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.253875659890576" lon="-81.796248473920897">
+  <name>NTU_54</name>
+  <extensions>
+    <ogr:V1>1075214.685814263299108</ogr:V1>
+    <ogr:V2>805119.172380929463543</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.253416271123779" lon="-81.795472404232072">
+  <name>NTU_55</name>
+  <extensions>
+    <ogr:V1>1075301.288354641990736</ogr:V1>
+    <ogr:V2>805069.172380929463543</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.25295688213804" lon="-81.794696336744991">
+  <name>NTU_56</name>
+  <extensions>
+    <ogr:V1>1075387.890895020216703</ogr:V1>
+    <ogr:V2>805019.172380929347128</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256028793445685" lon="-81.798116650283774">
+  <name>NTU_67</name>
+  <extensions>
+    <ogr:V1>1075004.878193128155544</ogr:V1>
+    <ogr:V2>805355.774921307922341</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.25556940394" lon="-81.797340574245283">
+  <name>NTU_68</name>
+  <extensions>
+    <ogr:V1>1075091.480733506614342</ogr:V1>
+    <ogr:V2>805305.774921308038756</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.255110014214557" lon="-81.796564500408792">
+  <name>NTU_69</name>
+  <extensions>
+    <ogr:V1>1075178.08327388484031</ogr:V1>
+    <ogr:V2>805255.774921308038756</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.254650624269617" lon="-81.795788428774287">
+  <name>NTU_70</name>
+  <extensions>
+    <ogr:V1>1075264.685814263531938</ogr:V1>
+    <ogr:V2>805205.774921307922341</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.254191234105434" lon="-81.795012359341754">
+  <name>NTU_71</name>
+  <extensions>
+    <ogr:V1>1075351.288354641990736</ogr:V1>
+    <ogr:V2>805155.774921307922341</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.25373184372227" lon="-81.794236292111179">
+  <name>NTU_72</name>
+  <extensions>
+    <ogr:V1>1075437.890895020449534</ogr:V1>
+    <ogr:V2>805105.774921307922341</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256803760409307" lon="-81.797656602167635">
+  <name>NTU_83</name>
+  <extensions>
+    <ogr:V1>1075054.878193128155544</ogr:V1>
+    <ogr:V2>805442.377461686381139</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256344369506226" lon="-81.796880526384768">
+  <name>NTU_84</name>
+  <extensions>
+    <ogr:V1>1075141.480733506614342</ogr:V1>
+    <ogr:V2>805392.377461686381139</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.255884978383342" lon="-81.79610445280413">
+  <name>NTU_85</name>
+  <extensions>
+    <ogr:V1>1075228.08327388484031</ogr:V1>
+    <ogr:V2>805342.377461686381139</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.255425587040925" lon="-81.795328381425705">
+  <name>NTU_86</name>
+  <extensions>
+    <ogr:V1>1075314.685814263531938</ogr:V1>
+    <ogr:V2>805292.377461686381139</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.254966195479224" lon="-81.794552312249465">
+  <name>NTU_87</name>
+  <extensions>
+    <ogr:V1>1075401.288354641990736</ogr:V1>
+    <ogr:V2>805242.377461686497554</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.254506803698494" lon="-81.793776245275424">
+  <name>NTU_88</name>
+  <extensions>
+    <ogr:V1>1075487.890895020216703</ogr:V1>
+    <ogr:V2>805192.377461686497554</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.25757872576545" lon="-81.797196551849254">
+  <name>NTU_99</name>
+  <extensions>
+    <ogr:V1>1075104.878193128155544</ogr:V1>
+    <ogr:V2>805528.980002064956352</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.257119333464836" lon="-81.796420476322027">
+  <name>NTU_100</name>
+  <extensions>
+    <ogr:V1>1075191.480733506614342</ogr:V1>
+    <ogr:V2>805478.980002064839937</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256659940944382" lon="-81.795644402997254">
+  <name>NTU_101</name>
+  <extensions>
+    <ogr:V1>1075278.08327388484031</ogr:V1>
+    <ogr:V2>805428.980002064839937</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256200548204348" lon="-81.794868331874909">
+  <name>NTU_102</name>
+  <extensions>
+    <ogr:V1>1075364.685814263531938</ogr:V1>
+    <ogr:V2>805378.980002064839937</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.255741155244985" lon="-81.794092262955004">
+  <name>NTU_103</name>
+  <extensions>
+    <ogr:V1>1075451.288354641990736</ogr:V1>
+    <ogr:V2>805328.980002064839937</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.255281762066559" lon="-81.793316196237498">
+  <name>NTU_104</name>
+  <extensions>
+    <ogr:V1>1075537.890895020216703</ogr:V1>
+    <ogr:V2>805278.980002064839937</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.258353689513962" lon="-81.796736499328418">
+  <name>NTU_115</name>
+  <extensions>
+    <ogr:V1>1075154.878193128155544</ogr:V1>
+    <ogr:V2>805615.58254244341515</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.257894295815679" lon="-81.79596042405683">
+  <name>NTU_116</name>
+  <extensions>
+    <ogr:V1>1075241.480733506614342</ogr:V1>
+    <ogr:V2>805565.58254244341515</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.257434901897518" lon="-81.795184350987924">
+  <name>NTU_117</name>
+  <extensions>
+    <ogr:V1>1075328.08327388507314</ogr:V1>
+    <ogr:V2>805515.582542443298735</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256975507759733" lon="-81.794408280121687">
+  <name>NTU_118</name>
+  <extensions>
+    <ogr:V1>1075414.685814263531938</ogr:V1>
+    <ogr:V2>805465.582542443298735</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256516113402581" lon="-81.793632211458117">
+  <name>NTU_119</name>
+  <extensions>
+    <ogr:V1>1075501.288354641990736</ogr:V1>
+    <ogr:V2>805415.582542443298735</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256056718826322" lon="-81.792856144997174">
+  <name>NTU_120</name>
+  <extensions>
+    <ogr:V1>1075587.890895020216703</ogr:V1>
+    <ogr:V2>805365.582542443298735</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.259128651654689" lon="-81.796276444604871">
+  <name>NTU_131</name>
+  <extensions>
+    <ogr:V1>1075204.878193128155544</ogr:V1>
+    <ogr:V2>805702.185082821757533</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.258669256558603" lon="-81.795500369588964">
+  <name>NTU_132</name>
+  <extensions>
+    <ogr:V1>1075291.480733506614342</ogr:V1>
+    <ogr:V2>805652.185082821757533</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.258209861242602" lon="-81.794724296775939">
+  <name>NTU_133</name>
+  <extensions>
+    <ogr:V1>1075378.08327388507314</ogr:V1>
+    <ogr:V2>805602.185082821757533</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.257750465706931" lon="-81.793948226165838">
+  <name>NTU_134</name>
+  <extensions>
+    <ogr:V1>1075464.685814263531938</ogr:V1>
+    <ogr:V2>805552.185082821873948</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.257291069951854" lon="-81.79317215775859">
+  <name>NTU_135</name>
+  <extensions>
+    <ogr:V1>1075551.288354641757905</ogr:V1>
+    <ogr:V2>805502.185082821873948</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.256831673977623" lon="-81.792396091554224">
+  <name>NTU_136</name>
+  <extensions>
+    <ogr:V1>1075637.890895020449534</ogr:V1>
+    <ogr:V2>805452.185082821873948</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.259444215693458" lon="-81.795040312918175">
+  <name>NTU_148</name>
+  <extensions>
+    <ogr:V1>1075341.480733506614342</ogr:V1>
+    <ogr:V2>805738.787623200216331</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.258984818979473" lon="-81.794264240361073">
+  <name>NTU_149</name>
+  <extensions>
+    <ogr:V1>1075428.08327388507314</ogr:V1>
+    <ogr:V2>805688.787623200216331</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.258525422045783" lon="-81.79348817000708">
+  <name>NTU_150</name>
+  <extensions>
+    <ogr:V1>1075514.685814263531938</ogr:V1>
+    <ogr:V2>805638.787623200216331</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.25806602489264" lon="-81.79271210185621">
+  <name>NTU_151</name>
+  <extensions>
+    <ogr:V1>1075601.288354641990736</ogr:V1>
+    <ogr:V2>805588.787623200216331</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.257606627520311" lon="-81.791936035908407">
+  <name>NTU_152</name>
+  <extensions>
+    <ogr:V1>1075687.890895020449534</ogr:V1>
+    <ogr:V2>805538.787623200332746</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.25714722992904" lon="-81.791159972163697">
+  <name>NTU_153</name>
+  <extensions>
+    <ogr:V1>1075774.493435398908332</ogr:V1>
+    <ogr:V2>805488.787623200332746</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.260219173220082" lon="-81.794580254044263">
+  <name>NTU_164</name>
+  <extensions>
+    <ogr:V1>1075391.480733506614342</ogr:V1>
+    <ogr:V2>805825.390163578442298</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.259759775107985" lon="-81.793804181743084">
+  <name>NTU_165</name>
+  <extensions>
+    <ogr:V1>1075478.08327388484031</ogr:V1>
+    <ogr:V2>805775.390163578442298</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.259300376776141" lon="-81.793028111645228">
+  <name>NTU_166</name>
+  <extensions>
+    <ogr:V1>1075564.685814263299108</ogr:V1>
+    <ogr:V2>805725.390163578558713</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.258840978224802" lon="-81.792252043750722">
+  <name>NTU_167</name>
+  <extensions>
+    <ogr:V1>1075651.288354641990736</ogr:V1>
+    <ogr:V2>805675.390163578442298</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.258381579454229" lon="-81.791475978059523">
+  <name>NTU_168</name>
+  <extensions>
+    <ogr:V1>1075737.890895020216703</ogr:V1>
+    <ogr:V2>805625.390163578558713</ogr:V2>
+  </extensions>
+</wpt>
+<wpt lat="7.257922180464678" lon="-81.790699914571647">
+  <name>NTU_169</name>
+  <extensions>
+    <ogr:V1>1075824.493435398675501</ogr:V1>
+    <ogr:V2>805575.390163578558713</ogr:V2>
+  </extensions>
+</wpt>
+</gpx>

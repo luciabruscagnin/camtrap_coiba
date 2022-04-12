@@ -89,9 +89,7 @@ mapview(TU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") %>%
 mapview(TU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") + all_streams_map + mapview(grid_cams, alpha.regions=0.01)
 
 # to write GPX file, only re-run if something changed
-# THIS DOESNT WORK NOW. FIX
-# writeOGR(grid_centers_map3, dsn = "grid_sampling/JicaronTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
-
+# writeOGR(TU_gridcenters, dsn = "grid_sampling/JicaronTU_gridpoints.GPX", dataset_options="GPX_USE_EXTENSIONS=yes",layer="waypoints",driver="GPX", overwrite_layer = T)
 # afterwards upload gpx tracks to Garmin basecamp to put on Garmin
 
 ### non tool using group
@@ -154,15 +152,6 @@ mapview(TU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") %>%
                   textsize = "10px")
 
 mapview(NTU_gridcenters, cex=1.5 , label=TRUE , col.regions ="black") + mapview(grid_cams2, alpha.regions=0.01) + NTU_map
-
-# get static labels (still tweak this)
-library(leafem)
-mapview(grid_centers2_map , cex=1.5 , label=TRUE , col.regions ="black") %>%
-  addStaticLabels(label = grid_centers2_map$name,
-                  noHide = TRUE,
-                  direction = 'top',
-                  textOnly = TRUE,
-                  textsize = "10px")
 
 # to write GPX file, only re-run if something changed
 

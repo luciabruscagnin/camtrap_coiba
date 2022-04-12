@@ -449,10 +449,15 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 
 # for question on what they forage on in generally, need agoutisequence dataset that only contains jicaron tool use group
 # exclude CEBUS-03 cause it's on same anvil as CEBUS-02
-agoutiselect_seq <- subset(agoutisequence_jt, agoutisequence_jt$locationName != "CEBUS-03")
-agoutiselect_seq <- agoutiselect_seq[,c("seqday", "tooluseduration", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours", "month",
-                                        "season","island", "exposure", "tool_anvil", "uniqueloctag", "seq_toolitem", "seq_normalitem", "tooluse",
-                                        "seq_item", "n_tooluse", "n", "seq_start")]
+agoutiselect_seq <- subset(agoutisequence_jt, agoutisequence_jt$locationName != "CEBUS-03" & agoutisequence_jt$exposure == 24)
+# remove unnecessary datasets
+agoutiselect_seq <- agoutiselect_seq[, !names(agoutiselect_seq) %in% c("observationID", "observationType", "cameraSetup",
+                                                                       "taxonID", "scientificName", "countNew", "count", "lifeStage",
+                                                                       "sex", "behaviour", "individualID", "classificationMethod", "classifiedBy",
+                                                                       "classificationTimestamp", "comments.x", "locationID", "setupBy", "cameraInterval",
+                                                                       "cameraHeight", "cameraHeading", "flag", "tool_item", "normal_item", "agesexF", "bothforage", 
+                                                                       "dep_startday", "dep_endday", "dep_starttime", "dep_endtime")]
+
 agoutiselect_seq <- droplevels.data.frame(agoutiselect_seq)
 unique(agoutiselect_seq$uniqueloctag)
 
@@ -559,10 +564,7 @@ plot(conditional_effects(tres_bm2, categorical = TRUE))
 
 #### TOOL USE AND TIME OF DAY & LOCATIONS #####
 
-# do we need to aggregate to total seconds of tool use per hour
-# Does this make sense? then you can't consider nr of individuals per sequence etc. 
-# what does gam assume? does it take average per hour? or sum? 
-
+## normal not taking age/sex into account
 plot(agoutiselect_seqt$hour, agoutiselect_seqt$tooluseduration)
 ftable(agoutiselect_seqt$hour)
 hist(agoutiselect_seqt$hour)
@@ -603,6 +605,38 @@ summary(bm1_tuday)
 plot(bm1_tuday)
 plot(conditional_smooths(bm1_tuday))
 plot(conditional_effects(bm1_tuday))
+
+### tool use duration by age
+
+## THIS IS A MESS,  NEED TO CLEAN THIS UP AND LOOK AT IT AGAIN
+## reshape to every sequence ID 3 times, one of adult, or for juvenile, one for subadult
+# have nr_toolusers and age_toolusers factor
+library(reshape2)
+long <- melt(agoutiselect_seqt, measure.vars = c("tu_nAdult", "tu_nSubadult", "tu_nJuvenile"))
+long$age <- as.factor(long$variable)
+long$sequenceIDF <- as.factor(long$sequenceID)
+
+testgam <- gam(tooluseduration ~ s(hour, by = age, k = 16) + s(locationfactor, by = age, bs = "re") + n:age, data = long_short, family = poisson(),
+                method = "REML")
+
+long_short <- long[!long$value == 0,]
+testgam <- gam(tooluseduration ~ s(hour, by = age, k = 16) + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
+               method = "REML")
+
+draw(testgam)
+summary(testgam)
+plot_smooths(model = testgam, transform = exp, series = hour) + theme(legend.position = "top")
+
+new_data_tu_age <- tidyr::expand(long_short, nesting(age), hour = unique(hour), locationfactor = unique(locationfactor), n = unique(n))
+
+testgam_pred <- bind_cols(new_data_tu_age,
+                           as.data.frame(predict(testgam, newdata = new_data_tu_age, se.fit = TRUE)))
+
+ggplot(testgam_pred, aes(x = hour, y = exp(fit), group = age, color = age)) +
+  geom_line() +
+  geom_point(data = long_short, aes(y = tooluseduration)) +
+  facet_wrap(~ age, scales = "free")
+
 
 #### HOW MANY INDIVIDUALS USE TOOLS #####
 plot(agoutiselect_seq$n_tooluse, agoutiselect_seq$n)

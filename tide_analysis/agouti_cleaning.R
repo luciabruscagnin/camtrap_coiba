@@ -39,18 +39,6 @@ agoutigross <- left_join(agoutigross, depl_keys, "deploymentID")
 # filter out deployments we're not using
 agoutigross <- agoutigross[agoutigross$flag == 0,]
 
-#### Capuchin detections #####
-# create column per sequence if a capuchin was present 1/0 and if capuchins, how many in the sequence (a count)
-agoutigross$capuchin <- ifelse(agoutigross$scientificName == "Cebus imitator", 1, 0)
-
-agoutigross_cap <- agoutigross[agoutigross$capuchin == 1, ]
-cap_numbers <- agoutigross_cap %>%
-  count(sequenceID)
-
-agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
-# replace NAs with 0 for the capuchin count
-agoutigross$n[is.na(agoutigross$n)] <- 0
-
 #### Timestamps & Sequence Info #####
 # turn sequence start time into POSIXct format
 # replace T with a space
@@ -143,6 +131,46 @@ deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id"
 
 agoutigross <- left_join(agoutigross, deployment_info2, "locationName")
 
+#### Capuchin detections #####
+# create column per sequence if a capuchin was present 1/0 and if capuchins, how many in the sequence (a count)
+agoutigross$capuchin <- ifelse(agoutigross$scientificName == "Cebus imitator", 1, 0)
+
+# make blank sex or life stage put as unknown when there is a capuchin
+agoutigross$sex[which(agoutigross$capuchin == TRUE & agoutigross$sex == "")] <- "unknown"
+agoutigross$lifeStage[which(agoutigross$capuchin == TRUE & agoutigross$lifeStage == "")] <- "unknown"
+
+# make agesex variable that is paste of sex and life stage
+agoutigross$agesex <- ifelse(agoutigross$capuchin == TRUE, 
+                             paste(agoutigross$lifeStage, agoutigross$sex, sep = " "), NA)
+as.matrix(ftable(agoutigross$agesex))
+agoutigross$agesexF <- as.factor(agoutigross$agesex)
+
+agoutigross_cap <- agoutigross[agoutigross$capuchin == 1, ]
+cap_numbers <- agoutigross_cap %>%
+  count(sequenceID)
+
+agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
+# replace NAs with 0 for the capuchin count
+agoutigross$n[is.na(agoutigross$n)] <- 0
+
+### Age/sex classes ####
+# make frequency table of agesex per sequence
+cap_agesex <- as.data.frame(as.matrix(ftable(agoutigross_cap$sequenceID, agoutigross_cap$agesex)))
+colnames(cap_agesex) <- c("nAF", "nAM", "nAU", "nJF", "nJM", "nJU", "nSF", "nSM", "nSU", 
+                          "nUF", "nUM", "nUU")
+cap_agesex$sequenceID <- rownames(cap_agesex)
+
+# add this to agoutigross dataframe
+agoutigross <- left_join(agoutigross, cap_agesex, "sequenceID")
+
+# make new colum for total number of males, total number of females,
+# total adults, total subadults, total juveniles per sequence
+agoutigross$nAdult <- agoutigross$nAF + agoutigross$nAM + agoutigross$nAU
+agoutigross$nSubadult <- agoutigross$nSF + agoutigross$nSM + agoutigross$nSU
+agoutigross$nJuvenile <- agoutigross$nJF + agoutigross$nJM + agoutigross$nJU
+agoutigross$nFemales <- agoutigross$nAF + agoutigross$nSF + agoutigross$nJF + agoutigross$nUF
+agoutigross$nMales <- agoutigross$nAM + agoutigross$nSM + agoutigross$nJM + agoutigross$nUM
+
 ##### Foraging items #####
 # what is being foraged on per sequence
 # what they are foraging using tools
@@ -202,6 +230,24 @@ agoutigross$n_tooluse[is.na(agoutigross$n_tooluse)] <- 0
 # not really necessary but a good check
 agoutigross$tool_item[agoutigross$tooluse == "FALSE"] <- NA
 
+# also do tool using identity (adult/subadult/juvenile or even age/sex (though no females really so eh))
+head(agoutigross_tools)
+
+# make frequency table of agesex per sequence
+cap_toolsagesex <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$agesexF)))
+
+colnames(cap_toolsagesex) <- c("tu_nAF", "tu_nAM", "tu_nAU", "tu_nJF", "tu_nJM", "tu_nJU", "tu_nSF", "tu_nSM", "tu_nSU", 
+                          "tu_nUF", "tu_nUM", "tu_nUU")
+cap_toolsagesex$sequenceID <- rownames(cap_toolsagesex)
+
+# add this to agoutigross dataframe
+agoutigross <- left_join(agoutigross, cap_toolsagesex, "sequenceID")
+
+# make new colum for total adults, total subadults, total juveniles per sequence
+agoutigross$tu_nAdult <- agoutigross$tu_nAF + agoutigross$tu_nAM + agoutigross$tu_nAU
+agoutigross$tu_nSubadult <- agoutigross$tu_nSF + agoutigross$tu_nSM + agoutigross$tu_nSU
+agoutigross$tu_nJuvenile <- agoutigross$tu_nJF + agoutigross$tu_nJM + agoutigross$tu_nJU
+
 ## get sequence-level variable of what is mostly being processed in that sequence
 # tool items
 tool_items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$tool_item)))
@@ -255,7 +301,6 @@ agoutigross$uncoded <- ifelse(agoutigross$observationType == "unclassified" & ag
 # keep checking if these are the right ones to remove
 agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
                                             "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item")]
-
 
 #### FORMAT: ONE ROW PER SEQUENCE ####
 # drop duplicated sequences, necessary form for tidal analyses and data exploration
