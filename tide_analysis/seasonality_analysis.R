@@ -427,6 +427,10 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 # https://fromthebottomoftheheap.net/2018/10/23/introducing-gratia/
 # https://gavinsimpson.github.io/gratia/
 # https://cran.r-project.org/web/packages/tidymv/vignettes/plot-smooths.html
+# https://stats.stackexchange.com/questions/546378/how-to-plot-gams-on-the-scale-of-the-response-with-univariate-smooths-interacti
+# https://cran.r-project.org/web/packages/tidymv/vignettes/predict-gam.html
+# https://stackoverflow.com/questions/60161344/is-there-a-way-to-produce-predict-gam-type-terms-values-that-are-not-cen
+#
 
 ## Offsets
 # https://stats.stackexchange.com/questions/136037/modelling-count-data-where-offset-variable-is-0-for-some-observations
@@ -569,7 +573,7 @@ plot(agoutiselect_seqt$hour, agoutiselect_seqt$tooluseduration)
 ftable(agoutiselect_seqt$hour)
 hist(agoutiselect_seqt$hour)
 
-m1_tuday <- gam(tooluseduration ~ s(hour, k = 16) + s(locationfactor, bs = "re") + n_tooluse, data = agoutiselect_seqt, family = poisson(),
+m1_tuday <- gam(tooluseduration ~ s(hour, k = 10) + s(locationfactor, bs = "re") + n, data = agoutiselect_seqt, family = poisson(),
                 method = "REML")
 
 summary(m1_tuday)
@@ -577,7 +581,7 @@ draw(m1_tuday)
 gam.check(m1_tuday)
 
 new_data_tu <- tidyr::expand(agoutiselect_seqt, nesting(locationfactor), hour = unique(hour))
-
+# need to put n to some kind of constant 
 m1_tuday_pred <- bind_cols(new_data_tu,
                      as.data.frame(predict(m1_tuday, newdata = new_data_tu, se.fit = TRUE)))
 
@@ -606,36 +610,96 @@ plot(bm1_tuday)
 plot(conditional_smooths(bm1_tuday))
 plot(conditional_effects(bm1_tuday))
 
-### tool use duration by age
-
-## THIS IS A MESS,  NEED TO CLEAN THIS UP AND LOOK AT IT AGAIN
+### Tool use duration by age ###
 ## reshape to every sequence ID 3 times, one of adult, or for juvenile, one for subadult
 # have nr_toolusers and age_toolusers factor
 library(reshape2)
 long <- melt(agoutiselect_seqt, measure.vars = c("tu_nAdult", "tu_nSubadult", "tu_nJuvenile"))
 long$age <- as.factor(long$variable)
+# potentially collapse subadult with adult
+long$age2 <- factor(ifelse(long$age == "tu_nSubadult", "tu_nAdult", as.character(long$age)))
 long$sequenceIDF <- as.factor(long$sequenceID)
-
-testgam <- gam(tooluseduration ~ s(hour, by = age, k = 16) + s(locationfactor, by = age, bs = "re") + n:age, data = long_short, family = poisson(),
-                method = "REML")
-
+# subset to only when capuchins of this age class where there
 long_short <- long[!long$value == 0,]
-testgam <- gam(tooluseduration ~ s(hour, by = age, k = 16) + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
+long_short <- droplevels.data.frame(long_short)
+
+# for now leave out the sequence ID. By since some sequences are repeated now, you should either:
+# a) do a separate model per age class
+# b) do one big model but in this form (with sequence ID as factor?), accounting for sequence ID repetition:
+# testgam <- gam(tooluseduration ~ s(hour, by = age, k = 16) + s(locationfactor, sequenceID, bs = "re") + n:sequenceID, data = long_short, family = poisson(), method = "REML")
+# this might require either a better computer to run it on, or running with gamm4 or gamm?
+plot(long_short$hour, long_short$tooluseduration)
+plot(long_short$hour[which(long_short$age2 == "tu_nAdult")], long_short$tooluseduration[which(long_short$age2 == "tu_nAdult")])
+plot(long_short$hour[which(long_short$age2 == "tu_nJuvenile")], long_short$tooluseduration[which(long_short$age2 == "tu_nJuvenile")])
+
+# tool use duration depending on time of day split by adult vs juveniles
+testgam <- gam(tooluseduration ~ s(hour, by = age2, k = 16) + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
                method = "REML")
 
-draw(testgam)
+plot(testgam, trans = exp, shift = coef(testgam)[1],
+     shade = TRUE, shade.col = "lightblue", pages = 1)
+draw(testgam, overall_uncertainty = TRUE)
 summary(testgam)
-plot_smooths(model = testgam, transform = exp, series = hour) + theme(legend.position = "top")
+gam.check(testgam)
 
-new_data_tu_age <- tidyr::expand(long_short, nesting(age), hour = unique(hour), locationfactor = unique(locationfactor), n = unique(n))
+concurvity(testgam, full = TRUE)
+concurvity(testgam, full = FALSE)
+
+plot_smooths(model = testgam, series = hour, comparison = age2, exclude_random = TRUE) + theme(legend.position = "top")
+plot_difference(testgam, series = hour, difference = list(age2 = c("tu_nAdult", "tu_nJuvenile")))
+
+## plot on real scale
+
+# mostly a lot of 1 so keep n at 1
+new_data_tu_age <- tidyr::expand(long_short, nesting(age2), hour = unique(hour), locationfactor = unique(locationfactor), n = 1)
 
 testgam_pred <- bind_cols(new_data_tu_age,
                            as.data.frame(predict(testgam, newdata = new_data_tu_age, se.fit = TRUE)))
-
-ggplot(testgam_pred, aes(x = hour, y = exp(fit), group = age, color = age)) +
-  geom_line() +
+str(testgam_pred)
+ggplot(testgam_pred, aes(x = hour, y = exp(fit), group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line") +
   geom_point(data = long_short, aes(y = tooluseduration)) +
-  facet_wrap(~ age, scales = "free")
+  facet_wrap(~ age2, scales = "free")
+
+# with mean duration of tool use per hour
+ggplot(testgam_pred, aes(x = hour, y = exp(fit), group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line") + 
+  stat_summary(data = long_short, aes(y = tooluseduration), fun = mean, geom = "point")
+
+ggplot(long_short, aes(x = hour, y = tooluseduration, group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line")
+
+# brms
+testbm <- brm(tooluseduration ~ s(hour, by = age2, k = 16) + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
+              cores = 4, chains = 2, iter = 2000, control = list(adapt_delta = 0.99, max_treedepth = 12))
+
+# average nr of tool users per hour per age class (only if there was tool use occurring)
+plot(long$hour, long$n_tooluse)
+plot(long$hour[which(long$age2 == "tu_nAdult")], long$value[which(long$age2 == "tu_nAdult")])
+plot(long$hour[which(long$age2 != "tu_nAdult")], long$value[which(long$age2 != "tu_nAdult")])
+
+testgam2 <- gam(value ~ s(hour, by = age2, k = 16) + s(locationfactor, bs = "re"), data = long_short, family = ziP(),
+               method = "REML")
+
+plot(testgam2)
+draw(testgam2, overall_uncertainty = TRUE)
+summary(testgam2)
+gam.check(testgam2)
+str(long)
+
+# mostly a lot of 1 so keep n at 1
+new_data_tu_age2 <- tidyr::expand(long_short, nesting(age2), hour = unique(hour), locationfactor = unique(locationfactor))
+
+testgam2_pred <- bind_cols(new_data_tu_age2,
+                          as.data.frame(predict(testgam2, newdata = new_data_tu_age2, se.fit = TRUE)))
+
+ggplot(testgam_pred, aes(x = hour, y = exp(fit), group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line") +
+  geom_point(data = long_short, aes(y = tooluseduration)) +
+  facet_wrap(~ age2, scales = "free")
+
+ggplot(testgam2_pred, aes(x = hour, y = exp(fit), group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line")
 
 
 #### HOW MANY INDIVIDUALS USE TOOLS #####
