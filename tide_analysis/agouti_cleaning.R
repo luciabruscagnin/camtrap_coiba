@@ -349,6 +349,14 @@ for (i in 1:nrow(agoutisequence)) {
   agoutisequence$tidedif2[i] <- Closest((as.vector(difftime(agoutisequence$seq_start[i], TidesHigh$TIDE_TIME,   units = "hours"))), 0)
 }
 
+## PREP
+# create unique variable (like deployment ID) that is location name + tag
+agoutisequence$uniqueloctag <- paste(agoutisequence$locationName, agoutisequence$tag, sep = "-")
+# make temperature numerical
+agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
+# add seqday variable (RDate format)
+agoutisequence$seqday <- as.Date(format(agoutisequence$seq_start, "%Y-%m-%d"))
+
 ### EXPLORING DATA ####
 # below is just me attempting many things
 

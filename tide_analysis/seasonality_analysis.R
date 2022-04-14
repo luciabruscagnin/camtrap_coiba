@@ -8,14 +8,6 @@
 # Aggregate to the day level per camera
 # potentially for activity patterns on the day can work with same script but on all cameras
 
-## PREP
-# create unique variable (like deployment ID) that is location name + tag
-agoutisequence$uniqueloctag <- paste(agoutisequence$locationName, agoutisequence$tag, sep = "-")
-# make temperature numerical
-agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
-# add seqday variable (RDate format)
-agoutisequence$seqday <- as.Date(format(agoutisequence$seq_start, "%Y-%m-%d"))
-
 ## EXPOSURE
 # how long the camera was running on a day
 ## NOTE: in later deployments (R10 on) to conserve batteries we have cameras on a schedule to be off at night, but before run for 24 hours

@@ -29,7 +29,7 @@ agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
 agoutisequence_c$toolusers <- as.factor(agoutisequence_c$tool_site)
 agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
 
-
+unique(agoutisequence_c$locationfactor)
 #  ## SKIP THIS? need to add in the hours that the camera wasn't triggered as 0s  #####
 # first make overview of deployments we have in this dataframe and their start and end days
 # NOTE: CAN LIKELY DO THIS EASIER BY GENERATING THIS ENTIRE THING ONCE AND THEN FILTERING? 
@@ -90,6 +90,37 @@ agoutiselect2$picksetup <- ifelse(agoutiselect2$seqday == date(agoutiselect2$dep
 agoutiselect2 <- agoutiselect2[agoutiselect2$picksetup == 0, c("uniqueloctag", "seqday", "hour", "deploymentID", "locationName", "tags", "capuchin", 
                                                                "n", "seq_start", "seq_end", "seq_length", "temperature", "dep_start", "dep_end", "dep_length_hours",
                                                                "island", "tool_anvil", "tool_site", "exposure", "toolusers", "locationfactor")] # add "noanimal if you added 0's)
+
+#### Adding Claudio's non tool use data ######
+cldata <- read.csv("tide_analysis/coiba-bioblitz_observations_2018-06-03_06-58-00..csv")
+
+# subset to only capuchin encounters
+cldata <- cldata[(cldata$Species_Name_Common == "Panamanian White-throated Capuchin"),]
+### FROM HERE ON OUT STILL CHECK
+
+#Remove arboreal captures. 
+#All camera set-up/pick-up events are coded as Terrestrial Capture.
+#These will remain after subsetting so that deployments with zero events will be counted. 
+cldata <- cldata[(cldata$Capture.type == "Terrestrial Capture"),]
+
+table(cldata$Camera_Deployment_ID)
+length(unique(cldata$Camera_Deployment_ID)) # 26 cameras
+#Remove unused levels of categorical variables.
+cldata <- droplevels(cldata)
+
+#Check structure of the data.
+str(cldata)
+#I changed JicaronForest to Coiba-2-17 to have the same format as the rest. 
+
+#### what I need to get out:
+# nr of capuchins 
+# camera ID (to later match to distance from coast)
+# timestamp of sequence
+# sequence duration?
+# island (coiba vs Jicaron)
+# add in tidedif (run functions from agouti_cleaning again. )
+
+
 
 ### This dataframe still has several sequences per hour, for hours where the camera wasn't triggered it just has a 0 for capuchin count
 str(agoutiselect2)
