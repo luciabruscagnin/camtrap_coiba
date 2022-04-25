@@ -215,7 +215,7 @@ hist(h.lub)
 # I used this a lot for troubleshooting
 ## still have problem with some that apparently have less white lines in the top? So can't do skip = 9 (which works for some)
 # instead do blank.lines.skip = TRUE, this seems to get them all at the same amount of unnecessary lines at the top that we can deal with later
-tidalgross <- read.csv("cebaco_island_tide_charts/csvs/2017_01_cebaco.csv", header = FALSE, blank.lines.skip = TRUE)
+tidalgross <- read.csv("cebaco_island_tide_charts/csvs/2015_08_cebaco.csv", header = FALSE, blank.lines.skip = TRUE)
 
 ##### GENERAL CLEAN-UP #####
 # some files seem to have a 10th column with only NAs. Remove that one if it's there 
@@ -254,7 +254,7 @@ if(sum(tidalgross$MONTHYEAR == "DAY") == nrow(tidalgross)) {
 } 
 
 # cut unnecessary bottom part of and remove MONTHYEAR (column 8)
-tidalgross <- tidalgross[-c(nrow(tidalgross), (nrow(tidalgross)-1)), -8]
+tidalgross <- tidalgross[rowSums(is.na(tidalgross[ , 0:ncol(tidalgross)])) == 0, -8]
 # keep only day number (day of the week is always 3 characters)
 tidalgross$DAY <- substr(tidalgross$DAY, 1, nchar(tidalgross$DAY)-3)
 # remove rows that have a blank value for DAY to get all dataframes equally trimmed
