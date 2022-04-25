@@ -49,7 +49,10 @@ agoutiselect2 <- agoutiselect2[c("deploymentID", "sequenceID", "scientificName",
 #### Adding Claudio's non tool use data for tidal questions ######
 cldata <- read.csv("tide_analysis/coiba-bioblitz_observations_2018-06-03_06-58-00..csv")
 
-length(unique(cldata$Camera_Deployment_ID)) # 26 cameras
+# exclude CBA-0 deployment in 2011
+cldata <- cldata[!cldata$Array == "CT-CBA-0", ]
+
+length(unique(cldata$Camera_Deployment_ID)) # 43 cameras
 str(cldata)
 # time stamp in same format as agoutiselect2 and rename variables
 cldata$deploymentID <- cldata$Camera_Deployment_ID
@@ -78,7 +81,7 @@ cldata$capuchin <- ifelse(cldata$scientificName == "Cebus capucinus imitator", 1
 cldata$n <- ifelse(cldata$capuchin == 1, cldata$Count, 0)
 cldata$tooluse <- FALSE
 cldata$tidedifabs <- NA
-cldata$tidedifabs <-  for (i in 1:nrow(cldata)) {
+for (i in 1:nrow(cldata)) {
   cldata$tidedifabs[i] <- min(abs(difftime(cldata$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
 }
 cldata$tidedif <- NA
@@ -176,7 +179,7 @@ gam.check(tm2abs)
 ## Model 3: check what happens if we use time to high tide instead of low
 # so 0 is high tide
 # no abs
-tm3 <- gam(n ~ s(tidedif2, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = ziP, data = onlycap, method = "REML" )
+tm3 <- gam(n ~ s(tidedif2, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML" )
 summary(tm3) 
 # visualize
 plot(tm3, all.terms = TRUE, pages = 1)
@@ -200,6 +203,40 @@ plot(conditional_smooths(tbm1))
 pp_check(tbm1) 
 plot(tbm1)
 pairs(tbm1)
+
+# abs
+tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers, k = 8) + toolusers + s(locationfactor, bs = "re"), family = poisson,
+            data = onlycap_tj, knots = list(tidedif = c(-6,6)), chain = 2, core = 2, iter = 4000, 
+            control = list(adapt_delta = 0.99, max_treedepth = 12))
+
+# saveRDS(tbm1, "tbm1.rds")
+# tmb1 <- readRDS("tbm1.rds")
+
+summary(tbm1)
+plot(tbm1)
+
+plot(conditional_effects(tbm1))
+plot(conditional_smooths(tbm1))
+pp_check(tbm1) 
+plot(tbm1)
+pairs(tbm1)
+
+## abs
+tbm1a <- brm(n ~ s(tidedifabs, by = toolusers, k = 10) + toolusers + s(locationfactor, bs = "re"), family = poisson,
+            data = onlycap_tj, chain = 2, core = 2, iter = 2000, 
+            backend = "cmdstanr")
+
+# saveRDS(tbm1a, "tbm1a.rds")
+# tbm1a <- readRDS("tbm1a.rds")
+
+summary(tbm1a)
+plot(tbm1a)
+
+plot(conditional_effects(tbm1a))
+plot(conditional_smooths(tbm1a))
+pp_check(tbm1a) 
+plot(tbm1a)
+pairs(tbm1a)
 
 # NEXT STEP: incorporate distance to coast for each camera location! 
 
