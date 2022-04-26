@@ -179,38 +179,23 @@ gam.check(tm2abs)
 ## Model 3: check what happens if we use time to high tide instead of low
 # so 0 is high tide
 # no abs
-tm3 <- gam(n ~ s(tidedif2, bs = "cc", by = toolusers) + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML" )
+tm3 <- gam(n ~ s(tidedif2, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML" )
 summary(tm3) 
 # visualize
 plot(tm3, all.terms = TRUE, pages = 1)
+draw(tm3)
 # check assumptions
 gam.check(tm3) 
 
 ## BRMS
-# number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as 
-tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers, k = 8) + toolusers + s(locationfactor, bs = "re"), family = poisson,
-            data = onlycap_tj, knots = list(tidedif = c(-6,6)), chain = 2, core = 2, iter = 4000, 
-            control = list(adapt_delta = 0.99, max_treedepth = 12))
-
-# saveRDS(tbm1, "tbm1.rds")
-# tmb1 <- readRDS("tbm1.rds")
-
-summary(tbm1)
-plot(tbm1)
-
-plot(conditional_effects(tbm1))
-plot(conditional_smooths(tbm1))
-pp_check(tbm1) 
-plot(tbm1)
-pairs(tbm1)
-
+# number of capuchins by tidedif (absolute) and split by toolusers, with locationfactor as random effect
 # abs
 tbm1a <- brm(n ~ s(tidedifabs, by = toolusers, k = 10) + toolusers + s(locationfactor, bs = "re"), family = poisson,
             data = onlycap_tj, chain = 2, core = 2, iter = 4000, control = list(adapt_delta = 0.99), 
             backend = "cmdstanr")
 
-#saveRDS(tbm1a, "tbm1a.rds")
-#tbm1a <- readRDS("tbm1a.rds")
+#saveRDS(tbm1a, "tide_analysis/ModelRDS/tbm1a.rds")
+# tbm1a <- readRDS("tide_analysis/ModelRDS/tbm1a.rds")
 
 summary(tbm1a)
 plot(tbm1a)
@@ -222,9 +207,47 @@ plot(tbm1a)
 pairs(tbm1a)
 
 # plot with actual data
+# number of capuchins per sequence tool use vs not tool use
+ncap <- plot(conditional_effects(tbm1a), plot = FALSE)[[1]]
+ncap + labs(y = "Average number of capuchins per sequence", x = "Tool Using Group Yes(1)/No(0)") + theme_bw()
+
+#tidedifabs by tool users vs non tool users
+abstu <- plot(conditional_effects(tbm1a), plot = FALSE)[[3]]
+abstu + labs(y = "Average number of capuchins per sequence", x = "Hours to nearest low tide (absolute)") + theme_bw() +
+  stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedifabs, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
+
+# number of capuchins per locations
+# give colors to tool users vs non tool users locations
+ncaploc <- plot(conditional_effects(tbm1a), plot = FALSE)[[4]]
+ncaploc + labs(y = "Average number of capuchins per sequence", x = "Camera locations", color = "Tool users") + theme_bw() +
+  stat_summary(data = onlycap_tj, aes(y = n, x = locationfactor, color = toolusers), geom = "point", fun = mean, inherit.aes = FALSE)
+
+### non absolute
+# number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as 
+tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers, k = 8) + toolusers + s(locationfactor, bs = "re"), family = poisson,
+            data = onlycap_tj, knots = list(tidedif = c(-6,6)), chain = 2, core = 2, iter = 4000, 
+            control = list(adapt_delta = 0.99, max_treedepth = 12))
+
+# saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1.rds")
+# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1.rds")
+
+summary(tbm1)
+plot(tbm1)
+
+plot(conditional_effects(tbm1))
+plot(conditional_smooths(tbm1))
+pp_check(tbm1) 
+plot(tbm1)
+pairs(tbm1)
+
+#tidedif by tool users vs non tool users
+nonabstu <- plot(conditional_effects(tbm1), plot = FALSE)[[3]]
+nonabstu + labs(y = "Average number of capuchins per sequence", x = "Hours to nearest low tide (absolute)") + theme_bw() +
+  stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedif, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
 
 
 # NEXT STEP: incorporate distance to coast for each camera location! 
+# IMPORTANT: also include sequence length (but how for Claudio's data?)
 
 #### ACTIVITY TOOL USERS VS NON TOOL USERS ####
 # decide if only Jicaron or both islands

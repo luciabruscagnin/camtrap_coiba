@@ -412,6 +412,11 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 # Setting priors
 # https://paul-buerkner.github.io/brms/reference/set_prior.html
 # http://paul-buerkner.github.io/brms/reference/get_prior.html
+# https://discourse.mc-stan.org/t/prior-predictive-check-multivariate-model/17220
+# https://discourse.mc-stan.org/t/prior-predictive-check-multivariate-model/17220
+# https://github.com/paul-buerkner/brms/issues/459
+# https://www.magesblog.com/post/2018-08-02-use-domain-knowledge-to-review-prior-predictive-distributions/
+
 
 ## MGCV and Plotting
 # https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/family.mgcv.html
@@ -422,7 +427,10 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 # https://stats.stackexchange.com/questions/546378/how-to-plot-gams-on-the-scale-of-the-response-with-univariate-smooths-interacti
 # https://cran.r-project.org/web/packages/tidymv/vignettes/predict-gam.html
 # https://stackoverflow.com/questions/60161344/is-there-a-way-to-produce-predict-gam-type-terms-values-that-are-not-cen
-#
+
+
+## Model selection with mgcv
+# https://osf.io/wgc4f/wiki/mgcv:%20model%20selection/
 
 ## Offsets
 # https://stats.stackexchange.com/questions/136037/modelling-count-data-where-offset-variable-is-0-for-some-observations
@@ -510,12 +518,20 @@ res_bm2 <- brm(item ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"),
               knots = list(month = c(0.5,12.5)), chains=2, cores = 4, 
           iter = 3000)
 
-# saveRDS(res_bm2, file = "res_bm2.rds")
+# saveRDS(res_bm2, file = "tide_analysis/ModelRDS/res_bm2.rds")
+# res_bm2 <- readRDS("tide_analysis/ModelRDS/res_bm2.rds")
 
 summary(res_bm2)
 plot(res_bm2)
 plot(conditional_smooths(res_bm2, categorical = TRUE))
 plot(conditional_effects(res_bm2, categorical = TRUE))
+
+# plot
+seasonitem <- plot(conditional_effects(res_bm2, categorical= TRUE), plot = FALSE)[[1]]
+seasonitem + labs(y = "Probability", x = "Month") + theme_bw()
+
+locationitem <- plot(conditional_effects(res_bm2, categorical = TRUE), plot = FALSE)[[2]]
+locationitem + labs(y = "Probability", x = "Camera location") + theme_bw()
 
 ### only what they use tools on
 # for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
@@ -592,15 +608,27 @@ ggplot(m1_tuday_pred, aes(x = hour, y = exp(fit), group = locationfactor, color 
 # in brms
 # need other family. Poisson? normal gamma? something else?
 bm1_tuday <- brm(tooluseduration ~ s(hour, k = 12) + s(locationfactor, bs = "re") + n_tooluse, data = agoutiselect_seq,
-                 family = poisson, chains = 2, cores = 4, iter  = 3000, control = list(adapt_delta = 0.99, max_treedepth = 12) )
+                 family = poisson, chains = 2, cores = 4, iter  = 3000, control = list(adapt_delta = 0.99, max_treedepth = 12),
+                 backend = "cmdstanr")
 
-# saveRDS(bm1_tuday, "bm1_tuday_07042022.rds") is wrong because this dataset has no zeros so therefore also nothing to hurdle on
-# bm1_tuday <- readRDS("bm1_tuday_07042022.rds")
+# saveRDS(bm1_tuday, "tide_analysis/ModelRDS/bm1_tuday_26042022.rds") 
+# bm1_tuday <- readRDS("tide_analysis/ModelRDS/bm1_tuday_26042022.rds")
 
 summary(bm1_tuday)
 plot(bm1_tuday)
 plot(conditional_smooths(bm1_tuday))
 plot(conditional_effects(bm1_tuday))
+
+#tool use duration and number of tool users
+numbertool <- plot(conditional_effects(bm1_tuday), plot = FALSE)[[1]]
+numbertool + labs(y = "Duration of tool use (seconds)", x = "Number of tool users") + theme_bw() +
+  geom_point(data = agoutiselect_seqt, aes(y = tooluseduration, x = n_tooluse), inherit.aes = FALSE)
+
+# tool use duration depending on hour of day
+hourtool <- plot(conditional_effects(bm1_tuday), plot = FALSE)[[2]]
+hourtool + labs(y = "Duration of tool use (seconds)", x = "Hour of day") + theme_bw() +
+  stat_summary(data = agoutiselect_seqt, aes(y = tooluseduration, x = hour), fun = mean, geom = "point", inherit.aes = FALSE)
+
 
 ### Tool use duration by age ###
 ## reshape to every sequence ID 3 times, one of adult, or for juvenile, one for subadult
@@ -663,7 +691,7 @@ ggplot(long_short, aes(x = hour, y = tooluseduration, group = age2, color = age2
 
 # brms
 testbm <- brm(tooluseduration ~ s(hour, by = age2, k = 16) + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
-              cores = 4, chains = 2, iter = 2000, control = list(adapt_delta = 0.99, max_treedepth = 12))
+              cores = 4, chains = 2, iter = 2000, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr")
 
 # average nr of tool users per hour per age class (only if there was tool use occurring)
 plot(long$hour, long$n_tooluse)
