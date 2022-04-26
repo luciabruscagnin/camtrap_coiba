@@ -220,7 +220,8 @@ gam.check(tm4)
 # non tool users
 vis.gam(tm4, view = c("tidedif", "gmaps"), color = "heat", theta = -30, cond = list(toolusers=0))
 # tool users
-vis.gam(tm4, view = c("tidedif", "gmaps"), color = "heat", theta = -30, cond = list(toolusers=1))
+vis.gam(tm4, view = c("tidedif", "gmaps"), theta = -30, cond = list(toolusers=1))
+vis.gam(tm4, view = c("tidedif", "gmaps"), theta = -60, cond = list(toolusers=1))
 
 # partial effects
 par(mfrow=c(1,2))
