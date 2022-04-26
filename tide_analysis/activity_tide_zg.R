@@ -9,6 +9,7 @@ require(mgcv)
 require(ggplot2)
 require(gratia)
 require(fitdistrplus)
+require(itsadug)
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
 ##### ACTIVITY DURING DAY #####
@@ -135,7 +136,20 @@ onlycap_t <- agoutiselect_t[agoutiselect_t$capuchin == 1,]
 # - location factor, factor for each location
 
 ## make only Jicaron dataset initially
-onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron",]
+onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & onlycap_t$locationfactor != "CEBUS-03",]
+
+## distance to coast (preliminary based on google maps)
+dist2coast <- read.csv("tide_analysis/Dist2coast.csv", header = TRUE)
+
+onlycap_tj <- left_join(onlycap_tj, dist2coast, by = "locationfactor")
+onlycap_tj$distcat <- as.factor(onlycap_tj$distcat)
+onlycap_tj$distcat2 <- factor(ifelse(onlycap_tj$distcat == "100-150" | onlycap_tj$distcat == "150-200", "100-200", 
+                              ifelse(onlycap_tj$distcat == "250-300" | onlycap_tj$distcat == "300-350", "200-400", 
+                                     ifelse(onlycap_tj$distcat == "<50" | onlycap_tj$distcat == "50-100", "<100", ">400"))), 
+                              levels = c("<100", "100-200", "200-400", ">400"))
+
+onlycap_tj$gmaps <- as.numeric(onlycap_tj$gmaps)
+onlycap_tj$locationfactor <- as.factor(onlycap_tj$locationfactor)
 
 ## Model 1: split by tool use vs non tool users
 # no abs
@@ -186,6 +200,66 @@ plot(tm3, all.terms = TRUE, pages = 1)
 draw(tm3)
 # check assumptions
 gam.check(tm3) 
+
+## distance to coast preliminary
+# non absolute tide dif
+# distance in meters (guess from google maps)
+# te(x, z) includes both the smooth main effects of x and z, plus their smooth interaction. 
+# ti() is just the pure smooth interaction of x and z.
+# te() is like x*Z or x + z + x:z if you want to write it all out
+# ti() is like X:Z only
+
+tm4 <- gam(n ~ ti(tidedif, gmaps, bs = c("cc", "tp"), by = toolusers, k = 10) + toolusers +
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
+summary(tm4) 
+draw(tm4)
+plot(tm4)
+gam.check(tm4)
+
+# rotate with theta
+# non tool users
+vis.gam(tm4, view = c("tidedif", "gmaps"), color = "heat", theta = -30, cond = list(toolusers=0))
+# tool users
+vis.gam(tm4, view = c("tidedif", "gmaps"), color = "heat", theta = -30, cond = list(toolusers=1))
+
+# partial effects
+par(mfrow=c(1,2))
+# Note: specify zlim when comparing two plots
+pvisgam(tm4, view=c("tidedif", "gmaps"), select=1, 
+        main='Group=Non-toolusers', labcex=.8,
+        zlim=c(-1,1), print.summary=FALSE)
+pvisgam(tm4, view=c("tidedif", "gmaps"), select=2, 
+        main='Group=Toolusers', labcex=.8,
+        zlim=c(-1,1), print.summary=FALSE)
+dev.off()
+
+# distance categorical
+tm4b <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + s(tidedif, bs = "cc", by = distcat2) +
+              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
+summary(tm4b)
+draw(tm4b)
+gam.check(tm4b)
+
+# non absolute tide dif
+# distance in meters (guess from google maps)
+tm5 <- gam(n ~ ti(tidedifabs, gmaps, bs = c("cc", "tp"), by = toolusers, k = 10) + toolusers +
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
+summary(tm5) 
+draw(tm5)
+plot(tm5)
+gam.check(tm5)
+
+# distance categorical
+tm5b <- gam(n ~ s(tidedifabs, bs = "cc", by = toolusers, k = 10) + toolusers + s(tidedifabs, bs = "cc", by = distcat2) +
+              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
+summary(tm5b)
+draw(tm5b)
+
+# by location
+tm7 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + s(tidedif, bs = "cc", by = locationfactor) +
+              locationfactor, family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
+summary(tm7)
+plot(tm7)
 
 ## BRMS
 # number of capuchins by tidedif (absolute) and split by toolusers, with locationfactor as random effect
