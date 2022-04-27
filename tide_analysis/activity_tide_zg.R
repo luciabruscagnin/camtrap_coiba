@@ -139,16 +139,9 @@ onlycap_t <- agoutiselect_t[agoutiselect_t$capuchin == 1,]
 onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & onlycap_t$locationfactor != "CEBUS-03",]
 
 ## distance to coast (preliminary based on google maps)
-dist2coast <- read.csv("tide_analysis/Dist2coast.csv", header = TRUE)
+dist2coast <- read.csv("tide_analysis/tidalcams2.csv", header = TRUE)
 
-onlycap_tj <- left_join(onlycap_tj, dist2coast, by = "locationfactor")
-onlycap_tj$distcat <- as.factor(onlycap_tj$distcat)
-onlycap_tj$distcat2 <- factor(ifelse(onlycap_tj$distcat == "100-150" | onlycap_tj$distcat == "150-200", "100-200", 
-                              ifelse(onlycap_tj$distcat == "250-300" | onlycap_tj$distcat == "300-350", "200-400", 
-                                     ifelse(onlycap_tj$distcat == "<50" | onlycap_tj$distcat == "50-100", "<100", ">400"))), 
-                              levels = c("<100", "100-200", "200-400", ">400"))
-
-onlycap_tj$gmaps <- as.numeric(onlycap_tj$gmaps)
+onlycap_tj <- left_join(onlycap_tj, tidalcams2, by = "locationfactor")
 onlycap_tj$locationfactor <- as.factor(onlycap_tj$locationfactor)
 
 ## Model 1: split by tool use vs non tool users
@@ -209,19 +202,19 @@ gam.check(tm3)
 # te() is like x*Z or x + z + x:z if you want to write it all out
 # ti() is like X:Z only
 
-tm4 <- gam(n ~ ti(tidedif, gmaps, bs = c("cc", "tp"), by = toolusers, k = 10) + toolusers +
+tm4 <- gam(n ~ ti(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = 10) + toolusers +
              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
 summary(tm4) 
-draw(tm4)
+draw(tm4, rug= FALSE)
 plot(tm4)
 gam.check(tm4)
 
 # rotate with theta
 # non tool users
-vis.gam(tm4, view = c("tidedif", "gmaps"), color = "heat", theta = -30, cond = list(toolusers=0))
+vis.gam(tm4, view = c("tidedif", "distcoast"), color = "heat", theta = -30, cond = list(toolusers=0))
 # tool users
-vis.gam(tm4, view = c("tidedif", "gmaps"), theta = -30, cond = list(toolusers=1))
-vis.gam(tm4, view = c("tidedif", "gmaps"), theta = -60, cond = list(toolusers=1))
+vis.gam(tm4, view = c("tidedif", "distcoast"), theta = -30, cond = list(toolusers=1))
+vis.gam(tm4, view = c("tidedif", "distcoast"), theta = -40, phi = 20, cond = list(toolusers=1))
 
 # partial effects
 par(mfrow=c(1,2))
@@ -234,13 +227,6 @@ pvisgam(tm4, view=c("tidedif", "gmaps"), select=2,
         zlim=c(-1,1), print.summary=FALSE)
 dev.off()
 
-# distance categorical
-tm4b <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + s(tidedif, bs = "cc", by = distcat2) +
-              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
-summary(tm4b)
-draw(tm4b)
-gam.check(tm4b)
-
 # non absolute tide dif
 # distance in meters (guess from google maps)
 tm5 <- gam(n ~ ti(tidedifabs, gmaps, bs = c("cc", "tp"), by = toolusers, k = 10) + toolusers +
@@ -249,12 +235,6 @@ summary(tm5)
 draw(tm5)
 plot(tm5)
 gam.check(tm5)
-
-# distance categorical
-tm5b <- gam(n ~ s(tidedifabs, bs = "cc", by = toolusers, k = 10) + toolusers + s(tidedifabs, bs = "cc", by = distcat2) +
-              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
-summary(tm5b)
-draw(tm5b)
 
 # by location
 tm7 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + s(tidedif, bs = "cc", by = locationfactor) +
@@ -299,9 +279,9 @@ ncaploc + labs(y = "Average number of capuchins per sequence", x = "Camera locat
 
 ### non absolute
 # number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as 
-tbm1 <- brm(n ~ s(tidedif, bs = "cc", by = toolusers, k = 8) + toolusers + s(locationfactor, bs = "re"), family = poisson,
+tbm1 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = 10) + toolusers + s(locationfactor, bs = "re"), family = poisson,
             data = onlycap_tj, knots = list(tidedif = c(-6,6)), chain = 2, core = 2, iter = 4000, 
-            control = list(adapt_delta = 0.99, max_treedepth = 12))
+            control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr")
 
 # saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1.rds")
 # tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1.rds")
