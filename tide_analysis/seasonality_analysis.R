@@ -482,6 +482,15 @@ descdist(agoutiselect_seqt$tooluseduration)
 testdist2 <- fitdist(agoutiselect_seqt$tooluseduration, "pois")
 plot(testdist2)
 
+### temperature
+
+# can get temperature from external source
+# or potentially, per day or hour, construct average temperature based on average of camera data
+# first have to get out the crazy values (e.g. 56 degrees)
+# ?
+
+
+
 #### TOOL USE ITEMS ####
 # first consider what they forage on in generally (seasonally)
 # for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
@@ -580,11 +589,13 @@ plot(conditional_effects(tres_bm2, categorical = TRUE))
 plot(agoutiselect_seqt$hour, agoutiselect_seqt$tooluseduration)
 ftable(agoutiselect_seqt$hour)
 hist(agoutiselect_seqt$hour)
+agoutiselect_seqt$season <- as.factor(agoutiselect_seqt$season)
 
 m1_tuday <- gam(tooluseduration ~ s(hour, k = 10) + s(locationfactor, bs = "re") + n, data = agoutiselect_seqt, family = poisson(),
                 method = "REML")
 
 summary(m1_tuday)
+plot(m1_tuday)
 draw(m1_tuday)
 gam.check(m1_tuday)
 
@@ -629,6 +640,34 @@ hourtool <- plot(conditional_effects(bm1_tuday), plot = FALSE)[[2]]
 hourtool + labs(y = "Duration of tool use (seconds)", x = "Hour of day") + theme_bw() +
   stat_summary(data = agoutiselect_seqt, aes(y = tooluseduration, x = hour), fun = mean, geom = "point", inherit.aes = FALSE)
 
+### Model 2: Adding in season/month
+# with dry/wet season as by level
+m2_tuday <- gam(tooluseduration ~ s(hour, by = season, k = 10) + season + s(locationfactor, bs = "re") + n, data = agoutiselect_seqt, family = poisson(),
+                method = "REML")
+
+summary(m2_tuday)
+plot(m2_tuday)
+draw(m2_tuday)
+gam.check(m2_tuday)
+
+# mostly a lot of 1 so keep n at 1
+new_data_tu_season <- tidyr::expand(agoutiselect_seqt, nesting(season), hour = unique(hour), locationfactor = unique(locationfactor), n = 1)
+
+m2_pred <- bind_cols(new_data_tu_season,
+                      as.data.frame(predict(m2_tuday, newdata = new_data_tu_season, se.fit = TRUE)))
+
+ggplot(m2_pred, aes(x = hour, y = exp(fit), group = season, color = season)) +
+  stat_summary(fun = mean, geom = "line") +
+  geom_point(data = agoutiselect_seqt, aes(y = tooluseduration)) +
+  facet_wrap(~ season, scales = "free")
+
+# with mean duration of tool use per hour
+ggplot(m2_pred, aes(x = hour, y = exp(fit), group = season, color = season)) +
+  stat_summary(fun = mean, geom = "line") + 
+  stat_summary(data = agoutiselect_seqt, aes(y = tooluseduration), fun = mean, geom = "point")
+
+ggplot(agoutiselect_seqt, aes(x = hour, y = tooluseduration, group = season, color = season)) +
+  stat_summary(fun = mean, geom = "line")
 
 ### Tool use duration by age ###
 ## reshape to every sequence ID 3 times, one of adult, or for juvenile, one for subadult
@@ -653,7 +692,7 @@ plot(long_short$hour[which(long_short$age2 == "tu_nAdult")], long_short$toolused
 plot(long_short$hour[which(long_short$age2 == "tu_nJuvenile")], long_short$tooluseduration[which(long_short$age2 == "tu_nJuvenile")])
 
 # tool use duration depending on time of day split by adult vs juveniles
-testgam <- gam(tooluseduration ~ s(hour, by = age2, k = 16) + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
+testgam <- gam(tooluseduration ~ s(hour, by = age2, k = 16) + age2 + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
                method = "REML")
 
 plot(testgam, trans = exp, shift = coef(testgam)[1],
@@ -692,6 +731,44 @@ ggplot(long_short, aes(x = hour, y = tooluseduration, group = age2, color = age2
 # brms
 testbm <- brm(tooluseduration ~ s(hour, by = age2, k = 16) + s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
               cores = 4, chains = 2, iter = 2000, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr")
+
+## including season
+testgam_season <- gam(tooluseduration ~ s(hour, by = interaction(season, age2), k = 16) + age2 + season +
+                        s(locationfactor, bs = "re") + n, data = long_short, family = poisson(),
+               method = "REML")
+
+plot(testgam_season)
+draw(testgam_season, overall_uncertainty = TRUE)
+summary(testgam_season)
+gam.check(testgam_season)
+
+# mostly a lot of 1 so keep n at 1
+new_data_tu_ageseason <- tidyr::expand(long_short, nesting(age2, season), hour = unique(hour), locationfactor = unique(locationfactor), n = 1)
+
+testgam_season_pred <- bind_cols(new_data_tu_ageseason,
+                          as.data.frame(predict(testgam_season, newdata = new_data_tu_ageseason, se.fit = TRUE)))
+
+ggplot(testgam_season_pred, aes(x = hour, y = exp(fit), group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line") +
+  geom_point(data = long_short, aes(y = tooluseduration)) +
+  facet_wrap(~ season, scales = "free")
+
+# with mean duration of tool use per hour
+ggplot(testgam_season_pred, aes(x = hour, y = exp(fit), group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line") + 
+  stat_summary(data = long_short, aes(y = tooluseduration), fun = mean, geom = "point") +
+  facet_wrap(~season) + coord_cartesian(ylim = c(0,150))
+
+ggplot(long_short, aes(x = hour, y = tooluseduration, group = age2, color = age2)) +
+  stat_summary(fun = mean, geom = "line")
+
+## brms
+tuday_as <- brm(tooluseduration ~ s(hour, by = interaction(season, age2), k = 16) + age2 + season +
+                  s(locationfactor, bs = "re") + n, data = long_short, family = poisson(), 
+                chains = 2, cores = 2, iter = 4000, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr" )
+
+#save RDS
+# load RDS
 
 # average nr of tool users per hour per age class (only if there was tool use occurring)
 plot(long$hour, long$n_tooluse)
