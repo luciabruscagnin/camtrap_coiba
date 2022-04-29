@@ -765,10 +765,25 @@ ggplot(long_short, aes(x = hour, y = tooluseduration, group = age2, color = age2
 ## brms
 tuday_as <- brm(tooluseduration ~ s(hour, by = interaction(season, age2), k = 16) + age2 + season +
                   s(locationfactor, bs = "re") + n, data = long_short, family = poisson(), 
-                chains = 2, cores = 2, iter = 4000, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr" )
+                chains = 2, cores = 2, iter = 2000, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr" )
+## maximum treedepth reached in 99% of cases. Need to formulate this differently. Look at how to do 
+# interaction by smooth in brms. So 3-way smooth with two factors in brms
 
-#save RDS
-# load RDS
+# saveRDS(tuday_as, "tide_analysis/ModelRDS/tuday_as_28042022.rds") 
+# tuday_as <- readRDS("tide_analysis/ModelRDS/tuday_as_28042022.rds")
+
+summary(tuday_as)
+plot(tuday_as)
+plot(conditional_smooths(tuday_as))
+plot(conditional_effects(tuday_as))
+## plots are interesting though! 
+# longer tool use duration by adults than juveniles
+# longer tool use duration in dry vs wet season
+# global tool use hour pattern with peak around 11 and around 20. Dip around 12/13 (hottest part of day?)
+# In dry season adults use tool for much longer than juveniles, and longer than adults and juveniles in wet season
+
+
+
 
 # average nr of tool users per hour per age class (only if there was tool use occurring)
 plot(long$hour, long$n_tooluse)

@@ -12,6 +12,8 @@ require(fitdistrplus)
 require(itsadug)
 require(mgcViz)
 require(rgl)
+require(ggthemes)
+require(viridis)
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
 ##### ACTIVITY DURING DAY #####
@@ -105,12 +107,11 @@ cldata$dataorigin <- "cldata"
 cldata2 <- cldata[which(colnames(cldata) %in% colnames(agoutiselect2))]
 
 ## should now be in right order and same columns as agoutiselect2
-# then add rows cldata2 to agoutiselect 2 in big new dataframe (agoutiselect_t) for tidal analyses
-## exclude pickup set up days (so only keep picksetup == 0) or agoutisequence$cameraSetup == "FALSE" 
+# add rows cldata2 to agoutiselect 2 in big new dataframe (agoutiselect_t) for tidal analyses
 agoutiselect_t <- rbind(agoutiselect2, cldata2)
 # exclude days on which cameras were deployed or picked up (to take away that bias)
 agoutiselect_t <- agoutiselect_t[(agoutiselect_t$picksetup == 0),]
-### exclude only NAs rows
+# exclude only NAs rows
 agoutiselect_t <- agoutiselect_t[rowSums(is.na(agoutiselect_t)) != ncol(agoutiselect_t),]
 agoutiselect_t$locationfactor <- as.factor(agoutiselect_t$locationName)
 
@@ -133,6 +134,7 @@ hist(onlycap_tj$distcoast[onlycap_tj$toolusers == 1])
 # see https://stats.stackexchange.com/questions/472434/gam-2d-factor-smooth-with-uneven-sampling-in-xz-space-across-factor-levels-r
 # https://stats.stackexchange.com/questions/432227/smooth-bivariate-interaction-decomposition-in-gam-models
 # https://stats.stackexchange.com/questions/45446/intuition-behind-tensor-product-interactions-in-gams-mgcv-package-in-r
+# https://stackoverflow.com/questions/68659805/mgcv-gam-more-than-one-variable-in-by-argument-smooth-varying-by-more-than-1
 # te(x, z) includes both the smooth main effects of x and z, plus their smooth interaction. 
 # ti() is just the pure smooth interaction of x and z.
 # te() is like x*Z or x + z + x:z if you want to write it all out
@@ -278,33 +280,113 @@ plot(sm(b2,3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug()
 # interactive 3d plot
 plotRGL(sm(b2, 3), ylim = c(0,65), residuals = TRUE)
 
+### Model 5: including seasonality
+onlycap_tj$seasonF <- as.factor(onlycap_tj$season)
+
+# only looking at tool using group
+tm5 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+            te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 1,], method = "REML",
+          select = TRUE, knots = list(tidedif =c(-6,6)) )
+#saveRDS(tm5, "tide_analysis/ModelRDS/tm5.rds")
+
+summary(tm5)
+
+plot(tm5, pages = 1)
+draw(tm5)
+gam.check(tm5) # gam check seems ok
+concurvity(tm5)
+
+b3 <- getViz(tm5)
+# with points on
+plot(sm(b3, 3)) + l_fitRaster() + l_fitContour() + l_rug()
+
+# interactive 3d plot
+plotRGL(sm(b3, 3), ylim = c(0,65), residuals = TRUE)
+
+# looking at non tool users
+tm5b <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+            te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 0,], method = "REML",
+          select = TRUE, knots = list(tidedif =c(-6,6)) )
+# saveRDS(tm5b, "tide_analysis/ModelRDS/tm5b.rds")
+
+summary(tm5b)
+
+plot(tm5b, pages = 1)
+draw(tm5b)
+gam.check(tm5b) # gam check seems ok
+concurvity(tm5b)
+
+## together in one model
+# looking at non tool users
+tm6 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+             te(tidedif, distcoast, bs = c("cc", "tp"), by = interaction(seasonF, toolusers), k = c(10,6), m = 1) + toolusers + seasonF + 
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
+           select = TRUE, knots = list(tidedif =c(-6,6)) )
+#saveRDS(tm6, "tide_analysis/ModelRDS/tm6.rds")
+
+summary(tm6)
+
+plot(tm6, pages = 1)
+draw(tm6)
+gam.check(tm6) # gam check seems ok
+concurvity(tm6)
+
+vis.gam(tm5, view = c("tidedif", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(seasonF = "Wet"))
+
+b5 <- getViz(tm6)
+# with points on
+plot(sm(b5,5), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug() 
+plot(sm(b5,4), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug() 
+plot(sm(b5,2)) + l_fitRaster() + l_fitContour() + l_rug()
+
+# interactive 3d plot
+plotRGL(sm(b4, 3), ylim = c(0,65), residuals = TRUE)
+
 ## BRMS
 ### non absolute
 # number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as 
 tbm1 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
-              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, chain = 2, core = 2, iter = 4000, 
-            control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr")
+              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, chain = 2, core = 2, iter = 5000, 
+            control = list(adapt_delta = 0.99), backend = "cmdstanr")
 
 # saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_distcoast.rds")
-# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1.rds")
+# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_distcoast.rds")
 
 summary(tbm1)
 plot(tbm1)
 
 plot(conditional_effects(tbm1))
 plot(conditional_smooths(tbm1))
+plot(marginal_smooths(tbm1))
 pp_check(tbm1) 
 plot(tbm1)
 pairs(tbm1)
 
+mcmc_plot(tbm1, variable = c("b_Intercept", "b_toolusers1", "bs_t2tidedifdistcoast_1", "sds_slocationfactor_1"), type = "areas")
+
+distcoastplot <- plot(conditional_smooths(tbm1, rug = TRUE, int_conditions = list(toolusers = 1)), plot = FALSE)[[2]]
+#saveRDS(distcoastplot, "tide_analysis/ModelRDS/distcoastplot_brms.rds")
+#distcoastplot <- readRDS("tide_analysis/ModelRDS/distcoastplot_brms.rds")
+distcoastplot + ggplot2::ylim(0, 65) + theme_bw() + theme(panel.grid = element_blank()) +  labs(x = "Hours to nearest low tide (0)", y = "Distance to coast (m)", title = "Tool users") +
+  guides(color=guide_legend(title="Change in number of capuchins per sequence"))
+# if we want to fill it etc I think we need to predict or get fit out of brms object and make it ourselves with geom_contour
+ggplot(distcoastplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + geom_contour_filled() + ylim(0,65) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  theme_bw() + theme(panel.grid = element_blank()) + 
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", title = "Tool users", fill = "Change in number of capuchins per sequence") +
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), inherit.aes = FALSE) 
+
+conditional_effects(tbm1)
+
 #tidedif by tool users vs non tool users
-nonabstu <- plot(conditional_effects(tbm1), plot = FALSE)[[3]]
-nonabstu + labs(y = "Average number of capuchins per sequence", x = "Hours to nearest low tide (absolute)") + theme_bw() +
+tidalcapstu <- plot(conditional_effects(tbm1), plot = FALSE)[[5]]
+tidalcapstu + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
   stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedif, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
 
+### ABSOLUTE
 # number of capuchins by tidedif (absolute) and split by toolusers, with locationfactor as random effect
-# abs
 tbm1a <- gam(n ~ te(tidedifabs, distcoast, bs = c("tp", "tp"), k = c(10, 6)) +
                te(tidedifabs, distcoast, bs = c("tp", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
                s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, chain = 2, core = 2, iter = 4000, 
