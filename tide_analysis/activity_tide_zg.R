@@ -104,6 +104,38 @@ cldata$toolusers <- 0 # check this
 cldata$picksetup <- ifelse(cldata$seqday == date(cldata$dep_start) | cldata$seqday == date(cldata$dep_end), 1, 0)
 cldata$dataorigin <- "cldata"
 
+
+cldata3 <- read.csv("tide_analysis/S1-Data-CapuchinFiveSites.csv") # date is in days since january 1st 1900
+cldata3$Image_Sequence_DateTime2 <- as.numeric(cldata3$Image_Sequence_DateTime)
+as_datetime2 <- function(x) as.POSIXct("1900-01-01") + as.difftime(x, units = "days")
+cldata3$seq_start <- as_datetime2(cldata3$Image_Sequence_DateTime2)
+# strip dataframe to only data we need (frames with capuchins)
+cldata3 <- cldata3[which(cldata3$Species_Name_Latin == "Cebus capucinus imitator") & str_detect(cldata3$Camera_Site, "Coiba") == TRUE,]
+for (i in 1:nrow(cldata3)) { 
+  if (is.na(cldata3$seq_start[i]) == TRUE) { 
+  cldata3$seq_start[i] <- as.POSIXct(cldata3$Image_Sequence_DateTime[i], format = "%Y-%m-%d %H:%M")
+  }
+} 
+
+
+min(abs(difftime(cldata$seq_start[which(cldata$capuchin == 1)][3], cldata3$seq_start, units = "secs")))
+
+difftime(cldata$seq_start[which(cldata$capuchin == 1)][1], cldata3$seq_start, units = "secs")
+
+library(lubridate)
+?as_datetime
+
+sum(is.na(cldata3$seq_start))
+cldata$seq_length <- cldata3$Duration[which(cldata$Image_Sequence_ID == cldata3$Image_Sequence_ID)]
+str(cldata)
+cldata$Image_Sequence_ID[which(cldata$capuchin == 1)] %in% cldata3$Image_Sequence_ID
+cldata[which(cldata$Image_Sequence_ID[which(cldata$capuchin == 1)] %in% cldata3$Image_Sequence_ID== FALSE),]
+cldata3[which(cldata$Image_Sequence_ID[which(cldata$capuchin == 1)] %in% cldata3$Image_Sequence_ID== FALSE),]
+
+
+
+
+
 cldata2 <- cldata[which(colnames(cldata) %in% colnames(agoutiselect2))]
 
 ## should now be in right order and same columns as agoutiselect2
