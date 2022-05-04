@@ -3,6 +3,7 @@
 
 ## STEP 1: Run "agouti_cleaning.R" script and its dependencies (1. "exiftempseq_cleaning.R" 2. "tide_cleaning.R")
 
+## Packages required
 require(tidyr)
 require(brms)
 require(mgcv)
@@ -16,8 +17,6 @@ require(ggthemes)
 require(viridis)
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
-##### ACTIVITY DURING DAY #####
-# start using the cleaned agoutisequence
 str(agoutisequence)
 
 # need to filter out deployments that are not fully coded
@@ -26,26 +25,28 @@ str(agoutisequence)
 # want to exclude deployments that have uncoded sequences
 # can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
 cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
-codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5])
+codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5]) # deployments that miss less than 5 sequences
 
 # subset only fully coded deployments 
 agoutisequence_c <- agoutisequence[(agoutisequence$uniqueloctag %in% codeddeployments_total),]
 agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
-agoutisequence_c$toolusers <- as.factor(agoutisequence_c$tool_site)
+agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users"))
 agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
 
 unique(agoutisequence_c$locationfactor)
 
 ### select #####
 
-# DON'T RUN THE FOLLOWING LINE IF YOU ADDED IN THE HOURS THAT CAMERAS WERENT TRIGGERED
+# Could add in the hours that the cameras werent triggered but were deployed (see bottom of script)
+# If this is done, then don't run following line
 agoutiselect2 <- agoutisequence_c
 
 # create flag for deployment pick up and setup days
 # most of the pickup/setup days were at the start/end of the deployment. But sometimes people came to mess with cameras in middle of deployment. Should exclude those too
 picksetupdays <- unique(agoutiselect2$seqday[which(agoutiselect2$seqday == date(agoutiselect2$dep_start) | agoutiselect2$seqday == date(agoutiselect2$dep_end) | agoutiselect2$cameraSetup ==  "True")] )
 agoutiselect2$picksetup <- ifelse(agoutiselect2$seqday %in% picksetupdays , 1, 0)
-agoutiselect2$dataorigin <- "agoutidata"
+
+agoutiselect2$dataorigin <- "agoutidata" # to differentiate from other dataset
 agoutiselect2 <- agoutiselect2[c("deploymentID", "sequenceID", "scientificName", "locationName", "longitude", "latitude", "cameraSetup", "seq_start", 
                                                                "seq_end", "seq_length", "temperature", "dep_start", "dep_end", "dep_length_hours", "month", 
                                                                "season", "island", "tool_anvil", "tool_site", "streambed", "capuchin", "n", "tooluse", "tidedifabs", 
@@ -59,6 +60,7 @@ cldata <- cldata[!cldata$Array == "CT-CBA-0", ]
 
 length(unique(cldata$Camera_Deployment_ID)) # 43 cameras
 str(cldata)
+
 # time stamp in same format as agoutiselect2 and rename variables
 cldata$deploymentID <- cldata$Camera_Deployment_ID
 cldata$sequenceID <- cldata$Image_Sequence_ID
@@ -100,41 +102,21 @@ for (i in 1:nrow(cldata)) {
 cldata$uniqueloctag <- cldata$locationName
 cldata$seqday <- as.Date(format(cldata$seq_start, "%Y-%m-%d"))
 cldata$hour <- hour(cldata$seq_start)
-cldata$toolusers <- 0 # check this
+cldata$toolusers <- factor(cldata$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users")) 
 cldata$picksetup <- ifelse(cldata$seqday == date(cldata$dep_start) | cldata$seqday == date(cldata$dep_end), 1, 0)
 cldata$dataorigin <- "cldata"
 
-
+# add duration (from Claudio's other dataset)
 cldata3 <- read.csv("tide_analysis/S1-Data-CapuchinFiveSites.csv") # date is in days since january 1st 1900
-cldata3$Image_Sequence_DateTime2 <- as.numeric(cldata3$Image_Sequence_DateTime)
-as_datetime2 <- function(x) as.POSIXct("1900-01-01") + as.difftime(x, units = "days")
-cldata3$seq_start <- as_datetime2(cldata3$Image_Sequence_DateTime2)
 # strip dataframe to only data we need (frames with capuchins)
-cldata3 <- cldata3[which(cldata3$Species_Name_Latin == "Cebus capucinus imitator") & str_detect(cldata3$Camera_Site, "Coiba") == TRUE,]
-for (i in 1:nrow(cldata3)) { 
-  if (is.na(cldata3$seq_start[i]) == TRUE) { 
-  cldata3$seq_start[i] <- as.POSIXct(cldata3$Image_Sequence_DateTime[i], format = "%Y-%m-%d %H:%M")
-  }
-} 
+cldata3 <- cldata3[which(cldata3$Species_Name_Latin == "Cebus capucinus imitator") & str_detect(cldata3$Camera_Site, "Coiba") == TRUE, c("Image_Sequence_ID", "Duration")]
+cldata3$Image_Sequence_ID <- as.integer(cldata3$Image_Sequence_ID)
 
-
-min(abs(difftime(cldata$seq_start[which(cldata$capuchin == 1)][3], cldata3$seq_start, units = "secs")))
-
-difftime(cldata$seq_start[which(cldata$capuchin == 1)][1], cldata3$seq_start, units = "secs")
-
-library(lubridate)
-?as_datetime
-
-sum(is.na(cldata3$seq_start))
-cldata$seq_length <- cldata3$Duration[which(cldata$Image_Sequence_ID == cldata3$Image_Sequence_ID)]
-str(cldata)
-cldata$Image_Sequence_ID[which(cldata$capuchin == 1)] %in% cldata3$Image_Sequence_ID
-cldata[which(cldata$Image_Sequence_ID[which(cldata$capuchin == 1)] %in% cldata3$Image_Sequence_ID== FALSE),]
-cldata3[which(cldata$Image_Sequence_ID[which(cldata$capuchin == 1)] %in% cldata3$Image_Sequence_ID== FALSE),]
-
-
-
-
+cldata <- left_join(cldata, cldata3, by = "Image_Sequence_ID")
+cldata[which(is.na(cldata$Duration) == TRUE & cldata$capuchin == 1),]
+# have two NA's now 
+# need to ask Claudio what this is and see if I can find the duration for these 
+cldata$seq_length <- round(cldata$Duration * 60,1) # I think it's in minutes so I'm making it in seconds like our data
 
 cldata2 <- cldata[which(colnames(cldata) %in% colnames(agoutiselect2))]
 
@@ -154,35 +136,6 @@ agoutiselect_t$locationfactor <- as.factor(agoutiselect_t$locationName)
 onlycap_t <- agoutiselect_t[agoutiselect_t$capuchin == 1,]
 
 ##### TIDAL #####
-# Just like above, might need to add in the not observed zero days. Maybe this is better to do for all deployments in the agouti cleaning script?? think about where this makes sense
-# this is harder here cause it's not on the day level but on the sequence level and per hour to low tide
-# so can't as easily add in the True 0's or differentiate them from the false ones. 
-# is it necessary??? Think about this.
-
-## some resources on interactions in GAMs
-## very uneven sampling between tool users and non tool users and very different range
-hist(onlycap_tj$distcoast[onlycap_tj$toolusers == 0])
-hist(onlycap_tj$distcoast[onlycap_tj$toolusers == 1])
-# see https://stats.stackexchange.com/questions/472434/gam-2d-factor-smooth-with-uneven-sampling-in-xz-space-across-factor-levels-r
-# https://stats.stackexchange.com/questions/432227/smooth-bivariate-interaction-decomposition-in-gam-models
-# https://stats.stackexchange.com/questions/45446/intuition-behind-tensor-product-interactions-in-gams-mgcv-package-in-r
-# https://stackoverflow.com/questions/68659805/mgcv-gam-more-than-one-variable-in-by-argument-smooth-varying-by-more-than-1
-# te(x, z) includes both the smooth main effects of x and z, plus their smooth interaction. 
-# ti() is just the pure smooth interaction of x and z.
-# te() is like x*Z or x + z + x:z if you want to write it all out
-# ti() is like X:Z only
-
-
-## GAMs
-## outcome variable:
-# number of capuchins per sequence (to be consistent with Claudio's data)
-# currently don't include sequence length as offset, if we would, need to get it for Claudio's data
-# can do only Jicaron, or both Jicaron and Coiba
-
-## predictors:
-# - time until next low tide (tidedif). Either as absolute difference (tidedifabs) or not absolute (tidedif). Also have tidedif2 which is time to closest high tide
-# - tool users 1/0, tool using group on Jicaron/Coiba vs not tool using groups
-# - location factor, factor for each location
 
 ## make only Jicaron dataset initially
 onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & onlycap_t$locationfactor != "CEBUS-03",]
@@ -194,12 +147,52 @@ onlycap_tj <- left_join(onlycap_tj, dist2coast, by = "locationfactor")
 onlycap_tj$locationfactor <- as.factor(onlycap_tj$locationfactor)
 # remove only NA rows
 onlycap_tj <- onlycap_tj[which(is.na(onlycap_tj$deploymentID) == FALSE),]
-summary(onlycap_tj$distcoast[onlycap_tj$toolusers == 1])
-summary(onlycap_tj$distcoast[onlycap_tj$tooluser == 0])
 
-## Model 1: split by tool use vs non tool users
-# no abs
-tm1 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers, family = poisson, data = onlycap_tj, method = "REML",  knots = list(tidedif = c(-6,6)))
+## very uneven sampling between tool users and non tool users and very different range
+hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Non-tool-users"])
+hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Tool-users"])
+summary(onlycap_tj$distcoast[onlycap_tj$toolusers == "Tool-users"])
+summary(onlycap_tj$distcoast[onlycap_tj$toolusers == "Non-tool-users"])
+
+## some resources on interactions in GAMs
+# see https://stats.stackexchange.com/questions/472434/gam-2d-factor-smooth-with-uneven-sampling-in-xz-space-across-factor-levels-r
+# https://stats.stackexchange.com/questions/432227/smooth-bivariate-interaction-decomposition-in-gam-models
+# https://stats.stackexchange.com/questions/45446/intuition-behind-tensor-product-interactions-in-gams-mgcv-package-in-r
+# https://stackoverflow.com/questions/68659805/mgcv-gam-more-than-one-variable-in-by-argument-smooth-varying-by-more-than-1
+# te(x, z) includes both the smooth main effects of x and z, plus their smooth interaction. 
+# ti() is just the pure smooth interaction of x and z.
+# te() is like x*Z or x + z + x:z if you want to write it all out
+# ti() is like X:Z only
+
+## could consider using sequence length as another metric of capuchin presence, but relationship might not be straightforward/linear
+## investigate relationship number of capuchins and sequence length
+onlycap_tj$tooluseF <- as.factor(onlycap_tj$tooluse)
+# compare tool use sequences and non tool use sequences
+seqmodel <- gam(seq_length ~ s(n, by = tooluseF) + tooluseF + s(locationfactor, bs = "re"),  family = poisson, data = onlycap_tj[onlycap_tj$dataorigin == "agoutidata",], method = "REML" )
+summary(seqmodel)
+draw(seqmodel)
+
+# compare tool site to non tool site cameras
+seqmodel2 <- gam(seq_length ~ s(n, by = toolusers) + toolusers + s(locationfactor, bs = "re"),  family = poisson, data = onlycap_tj[onlycap_tj$dataorigin == "agoutidata",], method = "REML" )
+summary(seqmodel2)
+draw(seqmodel2)
+
+# so might not be converging line of evidence/useful metric of capuchin activity, because it differs so much between tool use and non tool use sequences
+
+## GAMs
+## outcome variable:
+# number of capuchins per sequence
+# only Jicaron
+
+## predictors:
+# - time until next low tide (tidedif). Either as absolute difference (tidedifabs) or not absolute (tidedif). Also have tidedif2 which is time to closest high tide
+# - tool users 1/0, tool using group on Jicaron/Coiba vs not tool using groups
+# - location factor, factor for each location
+
+## Model 1: Effect of time to nearest low tide on number of capuchins, split for tool using and non tool using groups and with locationfactor as random effect
+# non-absolute time to low tide (-6 hours to +6 hours, where 0 is low tide)
+tm1 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + 
+               s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
 summary(tm1) 
 # visualize
 plot(tm1, all.terms = TRUE, pages = 1)
@@ -207,8 +200,8 @@ draw(tm1)
 # check assumptions
 gam.check(tm1) 
 
-# abs
-tm1abs <- gam(n ~ s(tidedifabs, by = toolusers) + toolusers, family = poisson, data = onlycap_tj, method = "REML" )
+# absolute time to low tide (between 0 and 6 where 0 is low tide)
+tm1abs <- gam(n ~ s(tidedifabs, by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML" )
 summary(tm1abs) 
 # visualize
 plot(tm1abs, all.terms = TRUE, pages = 1)
@@ -216,169 +209,134 @@ draw(tm1abs)
 # check assumptions
 gam.check(tm1abs) 
 
-## Model 2: add location of camera as random effect
-# no abs 
-tm2 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + 
-               s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
-summary(tm2) 
-# visualize
-plot(tm2, all.terms = TRUE, pages = 1)
-draw(tm2)
-# check assumptions
-gam.check(tm2) 
-
-# abs
-tm2abs <- gam(n ~ s(tidedifabs, by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML" )
-summary(tm2abs) 
-# visualize
-plot(tm2abs, all.terms = TRUE, pages = 1)
-draw(tm2abs)
-# check assumptions
-gam.check(tm2abs) 
-
-## Model 3: check what happens if we use time to high tide instead of low
+## Check: use time to high tide instead of low
 # so 0 is high tide
-# no abs
-tm3 <- gam(n ~ s(tidedif2, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML" )
-summary(tm3) 
+tm1high <- gam(n ~ s(tidedif2, bs = "cc", by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML" )
+summary(tm1high) 
 # visualize
-plot(tm3, all.terms = TRUE, pages = 1)
-draw(tm3)
+plot(tm1high, all.terms = TRUE, pages = 1)
+draw(tm1high)
 # check assumptions
-gam.check(tm3) 
+gam.check(tm1high) 
 
-## Model 4: Including distance to coast
-# distance in meters 
+## Model 2: Including distance to coast in model 1
+# distance in meters for each camera (see dist2coast.R script for how it was calculated)
 
-# non absolute tide dif
-tm4 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+# non-absolute tide difference
+tm2 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
              te(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
            select = TRUE, knots = list(tidedif =c(-6,6)) )
 
-summary(tm4) 
-# so see significant smooth for tool users but not for non tool users
-# and variation between cameras
+summary(tm2) 
+# visualize
+plot(tm2, pages = 1)
+draw(tm2)
+gam.check(tm2) # gam check seems ok
+concurvity(tm2)
+
+# look at the tidedif, distcoast interaction for tool users in more detail
+# too far is to say how much the smooth should extrapolate beyond the data
+vis.gam(tm2, view = c("tidedif", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(toolusers = "Tool-users"))
+vis.gam(tm2, view = c("tidedif", "distcoast"), plot.type = "perspective", too.far = 0.05, cond = list(toolusers = "Tool-users"))
+# have the way too big y axis when using vis.gam (due to scale difference), switch to mgcviz
+
+b <- getViz(tm2)
+# with points on
+plot(sm(b, 3), ylim = c(0,65)) +  l_fitRaster() + l_fitContour() + l_points()
+# with rug (and alpha to show where most data is)
+plot(sm(b,3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha =0.05)
+
+# interactive 3d plot
+plotRGL(sm(b, 3), ylim = c(0,65), residuals = TRUE)
+
+# absolute tide difference
+tm2abs <- gam(n ~ te(tidedifabs, distcoast, bs = c("tp", "tp"), k = c(10, 6)) +
+             te(tidedifabs, distcoast, bs = c("tp", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
+           select = TRUE)
+summary(tm2abs) 
+plot(tm2abs, pages = 1)
+draw(tm2abs)
+gam.check(tm2abs) # gam check seems ok
+concurvity(tm2abs)
+
+b2 <- getViz(tm2abs)
+# with points on
+plot(sm(b2, 3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_points()
+# with rug
+plot(sm(b2,3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05)
+
+# interactive 3d plot
+plotRGL(sm(b2, 3), ylim = c(0,65), residuals = TRUE)
+
+### Model 3: Including seasonality
+# so new predictor, whether it is the Wet (May-November) or the Dry season (December-April)
+onlycap_tj$seasonF <- as.factor(onlycap_tj$season)
+
+# Two approaches, can either look at a split model (one for tool users, one for non tool users) or a combined one with a 4-way interaction
+
+## Option A: Split models for tool use and non tool use
+# tool using group
+tm3 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+            te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 1,], method = "REML",
+          select = TRUE, knots = list(tidedif =c(-6,6)) )
+# saveRDS(tm3, "tide_analysis/ModelRDS/tm3.rds")
+# tm3 <- readRDS("tide_analysis/ModelRDS/tm3.rds")
+
+summary(tm3)
+plot(tm3, pages = 1)
+draw(tm3)
+gam.check(tm3) 
+concurvity(tm3)
+
+b3 <- getViz(tm3)
+plot(sm(b3, 3)) + l_fitRaster() + l_fitContour() + l_rug(alpha=0.05)
+# interactive 3d plot
+plotRGL(sm(b3, 3), ylim = c(0,65), residuals = TRUE)
+
+# looking at non tool users
+tm3b <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+            te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 0,], method = "REML",
+          select = TRUE, knots = list(tidedif =c(-6,6)) )
+# saveRDS(tm3b, "tide_analysis/ModelRDS/tm3b.rds")
+# tm3b <- readRDS("tide_analysis/ModelRDS/tm3b.rds")
+
+summary(tm3b)
+plot(tm3b, pages = 1)
+draw(tm3b)
+gam.check(tm3b) 
+concurvity(tm3b)
+
+## Option B: Together in one model with a 4-way interaction
+tm4 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+             te(tidedif, distcoast, bs = c("cc", "tp"), by = interaction(seasonF, toolusers), k = c(10,6), m = 1) + toolusers + seasonF + 
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
+           select = TRUE, knots = list(tidedif =c(-6,6)) )
+# saveRDS(tm4, "tide_analysis/ModelRDS/tm4.rds")
+# tm4 <- readRDS("tide_analysis/ModelRDS/tm4.rds")
+
+summary(tm4)
 plot(tm4, pages = 1)
 draw(tm4)
 gam.check(tm4) # gam check seems ok
 concurvity(tm4)
 
-# look at the tidedif, distcoast interaction for tool users in more detail
-# too far is to say how much the smooth should extrapolate beyond the data
-vis.gam(tm4, view = c("tidedif", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(toolusers = 1))
-vis.gam(tm4, view = c("tidedif", "distcoast"), plot.type = "perspective", too.far = 0.05, cond = list(toolusers = 1))
-# have the way too big y axis when using vis.gam, switch to mgcviz
+vis.gam(tm4, view = c("tidedif", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(seasonF = "Wet"))
 
-b <- getViz(tm4)
+b4 <- getViz(tm4)
 # with points on
-plot(sm(b, 3), ylim = c(0,65)) +  l_fitRaster() + l_fitContour() + l_points()
-# with rug
-plot(sm(b,3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug()
-
-# interactive 3d plot
-plotRGL(sm(b, 3), ylim = c(0,65), residuals = TRUE)
-
-# so see here that there are less capuchins on cameras close to coast before low tide
-# and more capuchins on cameras close to coast right after low tide
-# and see them moving away as you get further from low tide
-
-# absolute tide dif
-# distance in meters 
-tm4abs <- gam(n ~ te(tidedifabs, distcoast, bs = c("tp", "tp"), k = c(10, 6)) +
-             te(tidedifabs, distcoast, bs = c("tp", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
-             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
-           select = TRUE)
-summary(tm4abs) 
-# so see significant smooth for tool users but not for non tool users
-# and variation between cameras + trend for distance to coast and tidedif
-plot(tm4abs, pages = 1)
-draw(tm4abs)
-gam.check(tm4abs) # gam check seems ok
-concurvity(tm4abs)
-
-# look at the tidedif, distcoast interaction for tool users in more detail
-# too far is to say how much the smooth should extrapolate beyond the data
-vis.gam(tm4abs, view = c("tidedifabs", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(toolusers = 1))
-vis.gam(tm4abs, view = c("tidedifabs", "distcoast"), plot.type = "perspective", too.far = 0.05, cond = list(toolusers = 1))
-# have the way too big y axis when using vis.gam, switch to mgcviz
-
-b2 <- getViz(tm4abs)
-# with points on
-plot(sm(b2, 3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_points()
-# with rug
-plot(sm(b2,3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug()
-
-# interactive 3d plot
-plotRGL(sm(b2, 3), ylim = c(0,65), residuals = TRUE)
-
-### Model 5: including seasonality
-onlycap_tj$seasonF <- as.factor(onlycap_tj$season)
-
-# only looking at tool using group
-tm5 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
-            te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
-            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 1,], method = "REML",
-          select = TRUE, knots = list(tidedif =c(-6,6)) )
-#saveRDS(tm5, "tide_analysis/ModelRDS/tm5.rds")
-
-summary(tm5)
-
-plot(tm5, pages = 1)
-draw(tm5)
-gam.check(tm5) # gam check seems ok
-concurvity(tm5)
-
-b3 <- getViz(tm5)
-# with points on
-plot(sm(b3, 3)) + l_fitRaster() + l_fitContour() + l_rug()
-
-# interactive 3d plot
-plotRGL(sm(b3, 3), ylim = c(0,65), residuals = TRUE)
-
-# looking at non tool users
-tm5b <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
-            te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
-            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 0,], method = "REML",
-          select = TRUE, knots = list(tidedif =c(-6,6)) )
-# saveRDS(tm5b, "tide_analysis/ModelRDS/tm5b.rds")
-
-summary(tm5b)
-
-plot(tm5b, pages = 1)
-draw(tm5b)
-gam.check(tm5b) # gam check seems ok
-concurvity(tm5b)
-
-## together in one model
-# looking at non tool users
-tm6 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
-             te(tidedif, distcoast, bs = c("cc", "tp"), by = interaction(seasonF, toolusers), k = c(10,6), m = 1) + toolusers + seasonF + 
-             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
-           select = TRUE, knots = list(tidedif =c(-6,6)) )
-#saveRDS(tm6, "tide_analysis/ModelRDS/tm6.rds")
-
-summary(tm6)
-
-plot(tm6, pages = 1)
-draw(tm6)
-gam.check(tm6) # gam check seems ok
-concurvity(tm6)
-
-vis.gam(tm5, view = c("tidedif", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(seasonF = "Wet"))
-
-b5 <- getViz(tm6)
-# with points on
-plot(sm(b5,5), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug() 
-plot(sm(b5,4), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug() 
-plot(sm(b5,2)) + l_fitRaster() + l_fitContour() + l_rug()
+plot(sm(b4,5), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05) 
+plot(sm(b4,4), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05) 
+plot(sm(b4,2)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05)
 
 # interactive 3d plot
 plotRGL(sm(b4, 3), ylim = c(0,65), residuals = TRUE)
 
-## BRMS
-### non absolute
-# number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as 
+### BRMS
+## Model 1: number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
 tbm1 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
               s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, chain = 2, core = 2, iter = 5000, 
@@ -400,24 +358,23 @@ pairs(tbm1)
 mcmc_plot(tbm1, variable = c("b_Intercept", "b_toolusers1", "bs_t2tidedifdistcoast_1", "sds_slocationfactor_1"), type = "areas")
 
 distcoastplot <- plot(conditional_smooths(tbm1, rug = TRUE, int_conditions = list(toolusers = 1)), plot = FALSE)[[2]]
-#saveRDS(distcoastplot, "tide_analysis/ModelRDS/distcoastplot_brms.rds")
-#distcoastplot <- readRDS("tide_analysis/ModelRDS/distcoastplot_brms.rds")
+# saveRDS(distcoastplot, "tide_analysis/ModelRDS/distcoastplot_brms.rds")
+# distcoastplot <- readRDS("tide_analysis/ModelRDS/distcoastplot_brms.rds")
+
 distcoastplot + ggplot2::ylim(0, 65) + theme_bw() + theme(panel.grid = element_blank()) +  labs(x = "Hours to nearest low tide (0)", y = "Distance to coast (m)", title = "Tool users") +
   guides(color=guide_legend(title="Change in number of capuchins per sequence"))
-# if we want to fill it etc I think we need to predict or get fit out of brms object and make it ourselves with geom_contour
+# if we want to fill it etc we need to predict or get fit out of brms object and make it ourselves with geom_contour
 ggplot(distcoastplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + geom_contour_filled() + ylim(0,65) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
   theme_bw() + theme(panel.grid = element_blank()) + 
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", title = "Tool users", fill = "Change in number of capuchins per sequence") +
   geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), inherit.aes = FALSE) 
-
-conditional_effects(tbm1)
 
 #tidedif by tool users vs non tool users
 tidalcapstu <- plot(conditional_effects(tbm1), plot = FALSE)[[5]]
 tidalcapstu + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
   stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedif, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
 
-### ABSOLUTE
+## Model 1A: with absolute tide difference
 # number of capuchins by tidedif (absolute) and split by toolusers, with locationfactor as random effect
 tbm1a <- gam(n ~ te(tidedifabs, distcoast, bs = c("tp", "tp"), k = c(10, 6)) +
                te(tidedifabs, distcoast, bs = c("tp", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
@@ -452,10 +409,10 @@ ncaploc <- plot(conditional_effects(tbm1a), plot = FALSE)[[4]]
 ncaploc + labs(y = "Average number of capuchins per sequence", x = "Camera locations", color = "Tool users") + theme_bw() +
   stat_summary(data = onlycap_tj, aes(y = n, x = locationfactor, color = toolusers), geom = "point", fun = mean, inherit.aes = FALSE)
 
+## STILL DO: seasonality model (either 4 way interaction or two split ones, or both) in brms
 
 
-# NEXT STEP: incorporate distance to coast for each camera location! 
-# IMPORTANT: also include sequence length (but how for Claudio's data?)
+###############################################################################
 
 #### ACTIVITY TOOL USERS VS NON TOOL USERS ####
 # decide if only Jicaron or both islands
@@ -537,35 +494,7 @@ summary(am2.2)
 plot(am2.2, all.terms = TRUE, pages = 1)
 draw(am2.2)
 
-
-## old plotting method
-locationcol <- c("#5081db",
-                 "#a0bf52",
-                 "#746dd8",
-                 "#c09f43",
-                 "#583687",
-                 "#4cc186",
-                 "#41aaeb",
-                 "#639a49",
-                 "#d177ca",
-                 "#33d4d1",
-                 "#932c6c",
-                 "#6789cf",
-                 "#d6587d",
-                 "#c47236",
-                 "#ba4c46")
-
-# change this plot, try to figure it out. Only plot tool user points in one graph and non tool users in other. 
-# FIGURE OUT SCALES?
-par(mar=c(5.1, 4.1, 4.1, 11.1), xpd=TRUE)
-plot(am3_zp, select = 1, shade = TRUE, shade.col = "lightblue", seWithMean = TRUE, shift = coef(am3_zp)[1], ylim = c(0, log(max(agoutiselect2$n))))
-points(agoutiselect2$hour, log(agoutiselect2$n), col = locationcol[(as.numeric(agoutiselect2$locationfactor) + 1)], pch = agoutiselect2$tool_site + 1)
-legend("topright", inset=c(-0.35,0), legend = levels(agoutiselect2$locationfactor), pch = 19, col = locationcol, cex = 0.9 )
-legend("bottomright", inset=c(-0.25,0), legend = c("Non-tool-users", "Tool-users"), pch = c(1,2),cex = 0.9 )
-dev.off()
-
-
-## save dataframes we need for analysis as rds
+########################################
 #### NOTES #######
 ## still use this?
 ## CHECK IF THIS WORKS AND IF IT'S NECESSARY
