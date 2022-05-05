@@ -15,6 +15,7 @@ require(mgcViz)
 require(rgl)
 require(ggthemes)
 require(viridis)
+require(truncdist)
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
 str(agoutisequence)
@@ -164,6 +165,30 @@ summary(onlycap_tj$distcoast[onlycap_tj$toolusers == "Non-tool-users"])
 # te() is like x*Z or x + z + x:z if you want to write it all out
 # ti() is like X:Z only
 
+testdist1.1 <- fitdist(onlycap_tj$n, "pois")
+plot(testdist1.1)
+
+testdist1.2 <- fitdist(onlycap_tj$n, "gamma", "mme")
+plot(testdist1.2)
+
+testdist1.3 <- fitdist(onlycap_tj$n, "exp", "mme")
+plot(testdist1.3)
+
+testdist1.4 <- fitdist(onlycap_tj$n, "weibull", "mle")
+plot(testdist1.4)
+
+# Gamma is better than poisson. Or exponential
+# zero-truncated poisson?
+dtruncated_poisson <- function(x, lambda) {
+  dtrunc(x, "pois", a = 0.5, b = Inf, lambda)
+}
+
+ptruncated_poisson <- function(x, lambda) {
+  ptrunc(x, "pois", a = 0.5, b = Inf, lambda)
+}
+
+testtrunc <- fitdist(onlycap_tj$n, "truncated_poisson", start = list(lambda = 0.5))
+?fitdist
 ## could consider using sequence length as another metric of capuchin presence, but relationship might not be straightforward/linear
 ## investigate relationship number of capuchins and sequence length
 onlycap_tj$tooluseF <- as.factor(onlycap_tj$tooluse)
@@ -176,6 +201,10 @@ draw(seqmodel)
 seqmodel2 <- gam(seq_length ~ s(n, by = toolusers) + toolusers + s(locationfactor, bs = "re"),  family = poisson, data = onlycap_tj[onlycap_tj$dataorigin == "agoutidata",], method = "REML" )
 summary(seqmodel2)
 draw(seqmodel2)
+
+hist(onlycap_tj$seq_length, breaks = 100)
+hist(onlycap_tj$n[onlycap_tj$toolusers == "Non-tool-users"], breaks = 100)
+hist(onlycap_tj$n[onlycap_tj$toolusers == "Tool-users"], breaks = 100)
 
 # so might not be converging line of evidence/useful metric of capuchin activity, because it differs so much between tool use and non tool use sequences
 
@@ -225,7 +254,7 @@ gam.check(tm1high)
 # non-absolute tide difference
 tm2 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
              te(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
-             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
+             s(locationfactor, bs = "re"), family = Gamma(link = "log"), data = onlycap_tj, method = "REML",
            select = TRUE, knots = list(tidedif =c(-6,6)) )
 
 summary(tm2) 
@@ -335,15 +364,51 @@ plot(sm(b4,2)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05)
 # interactive 3d plot
 plotRGL(sm(b4, 3), ylim = c(0,65), residuals = TRUE)
 
+## need to figure out which k makes sense for tensor product
+onlycap_tj$toolusers2 <- relevel(onlycap_tj$toolusers, ref = "Tool-users")
+
+tm4b <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10,8)) +
+            te(tidedif, distcoast, bs = c("cc", "tp"), by = interaction(seasonF, toolusers), k = c(5,4), m = 1) + toolusers + seasonF + 
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
+          select = TRUE, knots = list(tidedif =c(-6,6)) )
+?family.mgcv
+
+test <- gam(n ~ s(distcoast, k = 8) + s(tidedif, bs = "cc", k = 12) + te(tidedif, distcoast, bs = c("cc", "tp"), k = c(12, 8), by = interaction(seasonF, toolusers)), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif=c(-6,6)))
+gam.check(test)
+
+summary(tm4b)
+plot(tm4b, pages = 1)
+draw(tm4b)
+gam.check(tm4b) # gam check seems ok
+
+vis.gam(tm4, view = c("tidedif", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(seasonF = "Wet"))
+
+b4 <- getViz(tm4)
+# with points on
+plot(sm(b4,5), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05) 
+plot(sm(b4,4), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05) 
+plot(sm(b4,2)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05)
+
+# interactive 3d plot
+plotRGL(sm(b4, 3), ylim = c(0,65), residuals = TRUE)
+
 ### BRMS
 ## Model 1: number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
-tbm1 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
-              t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
-              s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, chain = 2, core = 2, iter = 5000, 
+tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(5, 3), full = TRUE) +
+              t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(5, 3), m = 1) + toolusers +
+              s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr")
 
-# saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_distcoast.rds")
-# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_distcoast.rds")
+# saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_ztpois.rds")
+# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_ztpois.rds")
+tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99)) # check spelling etc. Try reloo if moment_match doesn't work
+?add_criterion
+# potentially try to add backend = "cmdstanr" to the add_criterion. 
+# then can do
+loo(tbm1)
+# loo r squared etc 
+
+
 
 summary(tbm1)
 plot(tbm1)
