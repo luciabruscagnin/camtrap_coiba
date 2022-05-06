@@ -8,6 +8,16 @@
 # Aggregate to the day level per camera
 # potentially for activity patterns on the day can work with same script but on all cameras
 
+# call packages
+library(reshape2)
+library(mgcv)
+library(brms)
+library(gratia)
+library(tidyr)
+library(tidymv)
+library(ggplot2)
+library(dplyr)
+
 ## EXPOSURE
 # how long the camera was running on a day
 ## NOTE: in later deployments (R10 on) to conserve batteries we have cameras on a schedule to be off at night, but before run for 24 hours
@@ -166,13 +176,7 @@ plot(toolusedurationday ~ seqday, data = agoutiselect)
 plot(toolusedurationday ~ month, data = agoutiselect)
 
 #### GAM ####
-library(mgcv)
-library(brms)
-library(gratia)
-library(tidyr)
-library(tidymv)
-library(ggplot2)
-library(dplyr)
+
 
 ##### MGCV ####
 # Things that are important to do now:
@@ -460,7 +464,7 @@ agoutiselect_seq <- agoutiselect_seq[, !names(agoutiselect_seq) %in% c("observat
                                                                        "sex", "behaviour", "individualID", "classificationMethod", "classifiedBy",
                                                                        "classificationTimestamp", "comments.x", "locationID", "setupBy", "cameraInterval",
                                                                        "cameraHeight", "cameraHeading", "flag", "tool_item", "normal_item", "agesexF", "bothforage", 
-                                                                       "dep_startday", "dep_endday", "dep_starttime", "dep_endtime")]
+                                                                       "dep_startday", "dep_endday", "dep_starttime", "dep_endtime", "foraging_item1", "foraging_item2")]
 
 agoutiselect_seq <- droplevels.data.frame(agoutiselect_seq)
 unique(agoutiselect_seq$uniqueloctag)
@@ -491,8 +495,9 @@ plot(testdist2)
 
 
 
-#### TOOL USE ITEMS ####
+#### FORAGING ITEMS ####
 # first consider what they forage on in generally (seasonally)
+### APPROACH 1: look only at item that is most commonly foraged on per sequence
 # for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
 # so then would have almendra, coconut, invertebrate, fruit, other. 
 ftable(agoutiselect_seq$seq_item, agoutiselect_seq$locationName)
@@ -542,7 +547,87 @@ seasonitem + labs(y = "Probability", x = "Month") + theme_bw()
 locationitem <- plot(conditional_effects(res_bm2, categorical = TRUE), plot = FALSE)[[2]]
 locationitem + labs(y = "Probability", x = "Camera location") + theme_bw()
 
-### only what they use tools on
+## APPROACH 2: Consider change in number of capuchins (or proportion of capuchins in sequence) foraging
+## on each item per sequence. 
+# need to get to long format
+longitems <- melt(agoutiselect_seq, measure.vars = c("nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate"))
+longitems$itemtype <- as.factor(longitems$variable)
+longitems$nrforagers <- longitems$value
+# might need to put sequence in as some kind of random effect? or see if you could make a data list
+# where the items type is a matrix of the values of the four different types (like Jake's data?)
+longitems$sequenceIDF <- as.factor(longitems$sequenceID)
+
+# subset to only when they foraged on something? or keep 0s in?
+#long_short <- long[!long$value == 0,]
+#long_short <- droplevels.data.frame(long_short)
+
+# do we need to subset to when there was foraging at all or can we keep in the fake 0's?
+longitems2 <- longitems[which(longitems$nrforagers >0),]
+
+#  with 0s in, modeling 0 and poisson component separately
+# but these are only 0s due to other triggers of the camera
+res_m2 <- gam(list(nrforagers ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re"), 
+                    ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re")), 
+              data = longitems, family = ziplss(), method = "REML", knots = list(month = c(0.5,12.15)))
+# saveRDS(res_m2, "tide_analysis/ModelRDS/res_m2.rds")
+# res_m2 <- readRDS("tide_analysis/ModelRDS/res_m2.rds")
+
+summary(res_m2)
+draw(res_m2)
+gam.check(res_m2)
+
+# without 0s in (in brms would do zero truncated poisson, here for now do poisson (does badly)
+res_m2t <- gam(nrforagers ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re"), 
+              data = longitems2, family = poisson(), method = "REML", knots = list(month = c(0.5,12.15)))
+
+summary(res_m2t)
+draw(res_m2t)
+gam.check(res_m2t)
+
+new_data_item1 <- tidyr::expand(longitems2, nesting(locationfactor, itemtype), month = unique(month))
+res_m2t_pred <- bind_cols(new_data_item1,
+                          as.data.frame(predict(res_m2t, newdata = new_data_item1, se.fit = TRUE)))
+
+ggplot(res_m2t_pred, aes(x = month, y = exp(fit), group = itemtype, color = itemtype)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(data = longitems2, aes(y = nrforagers), fun = mean, geom = "line", linetype = "dashed") +
+  theme_bw()
+
+## can either calculate proportion yourself beforehand, or add in number of capuchins as offset
+res_m2o <- gam(nrforagers ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re") + offset(log(n)), 
+               data = longitems2, family = poisson(), method = "REML", knots = list(month = c(0.5,12.15)))
+
+summary(res_m2o)
+draw(res_m2o)
+gam.check(res_m2o)
+
+new_data_item <- tidyr::expand(longitems2, nesting(locationfactor, itemtype), month = unique(month), n = 1)
+# need to put n to some kind of constant? 
+res_m2o_pred <- bind_cols(new_data_item,
+                           as.data.frame(predict(res_m2o, newdata = new_data_item, se.fit = TRUE)))
+
+ggplot(res_m2o_pred, aes(x = month, y = exp(fit), group = itemtype, color = itemtype)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(data = longitems2, aes(y = nrforagers), fun = mean, geom = "line", linetype = "dashed") +
+  theme_bw()
+
+## brms
+res_bm3 <- brm(nrforagers | trunc(lb=1) ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re"),
+               data = longitems2, family = poisson(), knots = list(month = c(0.5,12.5)), chains = 2, cores = 4,
+               iter = 2000, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
+
+pp_check(res_bm3)
+summary(res_bm3)
+plot(conditional_smooths(res_bm3))
+plot(conditional_effects(res_bm3))
+
+# with offset
+res_bm4 <- brm(nrforagers | trunc(lb=1) ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re") + offset(log(n)),
+               data = longitems2, family = poisson(), knots = list(month = c(0.5,12.5)), chains = 2, cores = 4,
+               iter = 2000, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
+
+### TOOL USE ITEMS #####
+### only what they use tools on (not enough data? exclude?)
 # for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
 # so then would have almendra, coconut, invertebrate, fruit, other. 
 ftable(agoutiselect_seqt$seq_toolitem)
@@ -673,7 +758,6 @@ ggplot(agoutiselect_seqt, aes(x = hour, y = tooluseduration, group = seasonF, co
 ### Tool use duration by age ###
 ## reshape to every sequence ID 3 times, one of adult, or for juvenile, one for subadult
 # have nr_toolusers and age_toolusers factor
-library(reshape2)
 long <- melt(agoutiselect_seqt, measure.vars = c("tu_nAdult", "tu_nSubadult", "tu_nJuvenile"))
 long$age <- as.factor(long$variable)
 # potentially collapse subadult with adult

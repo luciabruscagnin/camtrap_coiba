@@ -179,16 +179,7 @@ plot(testdist1.4)
 
 # Gamma is better than poisson. Or exponential
 # zero-truncated poisson?
-dtruncated_poisson <- function(x, lambda) {
-  dtrunc(x, "pois", a = 0.5, b = Inf, lambda)
-}
 
-ptruncated_poisson <- function(x, lambda) {
-  ptrunc(x, "pois", a = 0.5, b = Inf, lambda)
-}
-
-testtrunc <- fitdist(onlycap_tj$n, "truncated_poisson", start = list(lambda = 0.5))
-?fitdist
 ## could consider using sequence length as another metric of capuchin presence, but relationship might not be straightforward/linear
 ## investigate relationship number of capuchins and sequence length
 onlycap_tj$tooluseF <- as.factor(onlycap_tj$tooluse)
@@ -371,38 +362,23 @@ tm4b <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10,8)) +
             te(tidedif, distcoast, bs = c("cc", "tp"), by = interaction(seasonF, toolusers), k = c(5,4), m = 1) + toolusers + seasonF + 
             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML",
           select = TRUE, knots = list(tidedif =c(-6,6)) )
-?family.mgcv
-
-test <- gam(n ~ s(distcoast, k = 8) + s(tidedif, bs = "cc", k = 12) + te(tidedif, distcoast, bs = c("cc", "tp"), k = c(12, 8), by = interaction(seasonF, toolusers)), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif=c(-6,6)))
-gam.check(test)
 
 summary(tm4b)
 plot(tm4b, pages = 1)
 draw(tm4b)
 gam.check(tm4b) # gam check seems ok
 
-vis.gam(tm4, view = c("tidedif", "distcoast"), plot.type = "contour", too.far = 0.05, cond = list(seasonF = "Wet"))
-
-b4 <- getViz(tm4)
-# with points on
-plot(sm(b4,5), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05) 
-plot(sm(b4,4), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05) 
-plot(sm(b4,2)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 0.05)
-
-# interactive 3d plot
-plotRGL(sm(b4, 3), ylim = c(0,65), residuals = TRUE)
-
 ### BRMS
 ## Model 1: number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
-tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(5, 3), full = TRUE) +
-              t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(5, 3), m = 1) + toolusers +
+tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+              t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
               s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr")
 
 # saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_ztpois.rds")
 # tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_ztpois.rds")
 tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99)) # check spelling etc. Try reloo if moment_match doesn't work
-?add_criterion
+?add_criterion # check code for this it doesnt seem to have worked 
 # potentially try to add backend = "cmdstanr" to the add_criterion. 
 # then can do
 loo(tbm1)
@@ -413,16 +389,24 @@ loo(tbm1)
 summary(tbm1)
 plot(tbm1)
 
-plot(conditional_effects(tbm1))
-plot(conditional_smooths(tbm1))
+ce_tbm1 <- conditional_effects(tbm1)
+# saveRDS(ce_tbm1, "tide_analysis/ModelRDS/ce_tbm1.rds")
+# ce_tbm1 <- readRDS("tide_analysis/ModelRDS/ce_tbm1.rds")
+plot(ce_tbm1)
+
+cs_tbm1 <- conditional_smooths(tbm1)
+# saveRDS(cs_tbm1, "tide_analysis/ModelRDS/cs_tbm1.rds")
+# cs_tbm1 <- readRDS("tide_analysis/ModelRDS/cs_tbm1.rds")
+plot(cs_tbm1)
+
 plot(marginal_smooths(tbm1))
-pp_check(tbm1) 
+pp_check(tbm1, ndraw = 100) 
 plot(tbm1)
 pairs(tbm1)
 
-mcmc_plot(tbm1, variable = c("b_Intercept", "b_toolusers1", "bs_t2tidedifdistcoast_1", "sds_slocationfactor_1"), type = "areas")
+mcmc_plot(tbm1, variable = c("b_Intercept", "b_toolusersToolMusers", "bs_t2tidedifdistcoast_1", "sds_slocationfactor_1"), type = "areas")
 
-distcoastplot <- plot(conditional_smooths(tbm1, rug = TRUE, int_conditions = list(toolusers = 1)), plot = FALSE)[[2]]
+distcoastplot <- plot(conditional_smooths(tbm1, rug = TRUE, int_conditions = list(toolusers = "Tool-users")), plot = FALSE)[[2]]
 # saveRDS(distcoastplot, "tide_analysis/ModelRDS/distcoastplot_brms.rds")
 # distcoastplot <- readRDS("tide_analysis/ModelRDS/distcoastplot_brms.rds")
 

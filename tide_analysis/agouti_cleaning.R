@@ -173,24 +173,31 @@ agoutigross$nMales <- agoutigross$nAM + agoutigross$nSM + agoutigross$nJM + agou
 
 ##### Foraging items #####
 # what is being foraged on per sequence
+# check if one individual forages on more things
+multipleitems <- agoutigross[which(str_count(agoutigross$behaviour, "F:")> 1),]
+# not that many, and usually they eat the same thing. So I think it's fine to only record one item per individual
+# follows the order specified below
+
 # what they are foraging using tools
-agoutigross$tool_item <- ifelse(str_detect(agoutigross$behaviour, "TAF: Almendra"), "almendra", 
+agoutigross$tool_item <- ifelse(str_detect(agoutigross$behaviour, "TAF: Palm"), "palm", 
                            ifelse(str_detect(agoutigross$behaviour, "TAF: Coconut"), "coconut", 
                                   ifelse(str_detect(agoutigross$behaviour, "TAF: Embedded"), "insect",
                                          ifelse(str_detect(agoutigross$behaviour, "TAF: Halloween"), "hwcrab",
                                                 ifelse(str_detect(agoutigross$behaviour, "TAF: Hermit"), "hecrab",
                                                        ifelse(str_detect(agoutigross$behaviour, "TAF: Snail"), "snail",
-                                                              ifelse(str_detect(agoutigross$behaviour, "TAF: Palm"), "palm",
+                                                              ifelse(str_detect(agoutigross$behaviour, "TAF: Almendra"), "almendra",
                                                                      ifelse(str_detect(agoutigross$behaviour, "TAF: Other"), "other", 
                                                                             ifelse(str_detect(agoutigross$behaviour, "TAF: Unknown"), "unknown", NA)))))))))                                        
+
+
 
 ftable(agoutigross$tool_item)
 
 # what they are foraging on without tools
-agoutigross$normal_item <- ifelse(str_detect(agoutigross$behaviour, "F: Almendra flesh"), "almendra", 
+agoutigross$normal_item <- ifelse(str_detect(agoutigross$behaviour,  "F: Fruit"), "fruit", 
                                   ifelse(str_detect(agoutigross$behaviour, "F: Coco flesh|F: Coco water"), "coconut", 
                                          ifelse(str_detect(agoutigross$behaviour, "F: Insect"), "insect",
-                                                                     ifelse(str_detect(agoutigross$behaviour, "F: Fruit"), "fruit",
+                                                                     ifelse(str_detect(agoutigross$behaviour, "F: Almendra flesh"), "almendra",
                                                                             ifelse(str_detect(agoutigross$behaviour, "\\bF: Other"), "other", 
                                                                                    ifelse(str_detect(agoutigross$behaviour, "\\bF: Unknown"), "unknown", NA))))))                                      
 
@@ -249,6 +256,7 @@ agoutigross$tu_nSubadult <- agoutigross$tu_nSF + agoutigross$tu_nSM + agoutigros
 agoutigross$tu_nJuvenile <- agoutigross$tu_nJF + agoutigross$tu_nJM + agoutigross$tu_nJU
 
 ## get sequence-level variable of what is mostly being processed in that sequence
+# also get number of capuchins consuming each item per sequence 
 # tool items
 tool_items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$tool_item)))
 # set unknown tool use to 1 for all rows, so that when there are two things being processed (e.g. one unknown, one almendra) you keep the almendra
@@ -257,9 +265,9 @@ tool_items$unknown <- 1
 tool_items$seq_toolitem <- colnames(tool_items)[max.col(tool_items,ties.method="first")]  
 # now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
 tool_items$sequenceID <- rownames(tool_items)
-tool_items <- tool_items[,c("sequenceID", "seq_toolitem")]
+tool_items2 <- tool_items[,c("sequenceID", "seq_toolitem")]
 
-agoutigross <- left_join(agoutigross, tool_items, "sequenceID")
+agoutigross <- left_join(agoutigross, tool_items2, "sequenceID")
 
 # normal items
 agoutigross_foraging <- agoutigross[str_detect(agoutigross$behaviour, "\\bF:"),]
@@ -270,9 +278,9 @@ normal_items$unknown <- 1
 normal_items$seq_normalitem <- colnames(normal_items)[max.col(normal_items,ties.method="first")]  
 # now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
 normal_items$sequenceID <- rownames(normal_items)
-normal_items <- normal_items[,c("sequenceID", "seq_normalitem")]
+normal_items2 <- normal_items[,c("sequenceID", "seq_normalitem")]
 
-agoutigross <- left_join(agoutigross, normal_items, "sequenceID")
+agoutigross <- left_join(agoutigross, normal_items2, "sequenceID")
 
 # see whether they both forage with and without tools and create variable with most information
 # so what's being foraged irrespective of with or without tools
@@ -290,6 +298,46 @@ agoutigross$seq_item <- ifelse(agoutigross$bothforage == 0 & is.na(agoutigross$s
 # simplify to categories that overlap
 agoutigross$seq_item <- ifelse(str_detect(agoutigross$seq_item, "crab"), "crab", agoutigross$seq_item)
 
+### other approach: get number of capuchins foraging certain resource per sequence for each itemtype
+# see how useful tool_item and normal_item we used before is
+# for how many capuchins are normal item and tool item the same?
+agoutigross[which(agoutigross$normal_item == agoutigross$tool_item),]
+# wouldn't want to inflate this
+agoutigross$foraging_item1 <- agoutigross$normal_item
+agoutigross$foraging_item2 <- agoutigross$tool_item
+agoutigross$foraging_item2[which(agoutigross$normal_item == agoutigross$tool_item)] <- NA
+
+
+agoutigross[which(is.na(agoutigross$foraging_item1) == FALSE & is.na(agoutigross$foraging_item2) == FALSE),]
+
+# combine both tool_items and normal_items (if they are not the same)
+# sum normal and tool items. This means that if a capuchin eats two different things they are counted twice
+# so if 4 out of 5 capuchins eat insects in a sequence, still 3 could be eating almendras (cause they eat several things at once)
+# this seems fair. Can also do this otherwise. 
+
+agoutigross_allforaging <- agoutigross[str_detect(agoutigross$behaviour, "F:"),]
+
+d1 <- as.data.frame(as.matrix(ftable(agoutigross_allforaging$sequenceID, agoutigross_allforaging$foraging_item1)))
+d2 <- as.data.frame(as.matrix(ftable(agoutigross_allforaging$sequenceID, agoutigross_allforaging$foraging_item2)))
+d1$sequenceID <- rownames(d1)
+d2$sequenceID <- rownames(d2)
+
+all_items <- full_join(d1, d2, by = "sequenceID")
+
+# only make the four categories now
+all_items$nr_almendra <- all_items$almendra.x + all_items$almendra.y
+all_items$nr_coconut <- all_items$coconut.x + all_items$coconut.y
+all_items$nr_fruit <- all_items$fruit.x + all_items$fruit.y + all_items$palm
+all_items$nr_invertebrate <- all_items$hecrab + all_items$hwcrab + all_items$insect.x + 
+  all_items$insect.y + all_items$snail.x + all_items$snail.y
+all_items$nr_other <- all_items$other.x + all_items$other.y
+all_items$nr_unknown <- all_items$unknown.x + all_items$unknown.y
+
+all_items2 <- all_items[,c("sequenceID", "nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate",
+                          "nr_other", "nr_unknown")]
+
+agoutigross <- left_join(agoutigross, all_items2, "sequenceID")
+
 #### Cleaning ##### 
 
 # create column to flag the timelapse triggers at 12:00:00 and 00:00:00
@@ -300,7 +348,8 @@ agoutigross$uncoded <- ifelse(agoutigross$observationType == "unclassified" & ag
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
 agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
-                                            "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item")]
+                                            "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item", "foraging_item1", "foraging_item2",
+                                            "countNew", "cameraHeading")]
 
 #### FORMAT: ONE ROW PER SEQUENCE ####
 # drop duplicated sequences, necessary form for tidal analyses and data exploration
