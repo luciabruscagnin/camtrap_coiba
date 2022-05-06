@@ -553,21 +553,26 @@ locationitem + labs(y = "Probability", x = "Camera location") + theme_bw()
 longitems <- melt(agoutiselect_seq, measure.vars = c("nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate"))
 longitems$itemtype <- as.factor(longitems$variable)
 longitems$nrforagers <- longitems$value
+longitems$propforagers <- longitems$nrforagers/longitems$n
 # might need to put sequence in as some kind of random effect? or see if you could make a data list
 # where the items type is a matrix of the values of the four different types (like Jake's data?)
 longitems$sequenceIDF <- as.factor(longitems$sequenceID)
 
 # subset to only when they foraged on something? or keep 0s in?
+# NOTE could consider working with this on day level?? 
 #long_short <- long[!long$value == 0,]
 #long_short <- droplevels.data.frame(long_short)
 
 # do we need to subset to when there was foraging at all or can we keep in the fake 0's?
+longitems$n[is.na(longitems$n)] = 0
+longitems$nrforagers[is.na(longitems$nrforagers)] = 0
 longitems2 <- longitems[which(longitems$nrforagers >0),]
 
 #  with 0s in, modeling 0 and poisson component separately
-# but these are only 0s due to other triggers of the camera
-res_m2 <- gam(list(nrforagers ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re"), 
-                    ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re")), 
+# with offset of number of capuchins in the sequence
+# but these are only 0s due to other triggers of the camera when there was no foraging
+res_m2 <- gam(list(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype)+ itemtype + s(locationfactor, bs = "re"), 
+                    ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n))), 
               data = longitems, family = ziplss(), method = "REML", knots = list(month = c(0.5,12.15)))
 # saveRDS(res_m2, "tide_analysis/ModelRDS/res_m2.rds")
 # res_m2 <- readRDS("tide_analysis/ModelRDS/res_m2.rds")
@@ -576,53 +581,47 @@ summary(res_m2)
 draw(res_m2)
 gam.check(res_m2)
 
-# without 0s in (in brms would do zero truncated poisson, here for now do poisson (does badly)
-res_m2t <- gam(nrforagers ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re"), 
-              data = longitems2, family = poisson(), method = "REML", knots = list(month = c(0.5,12.15)))
+## trying regular poisson
+res_m2p <- gam(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)), 
+              data = longitems, family = poisson(), method = "REML", knots = list(month = c(0.5,12.15)))
+# saveRDS(res_m2p, "tide_analysis/ModelRDS/res_m2p.rds")
+# res_m2p <- readRDS("tide_analysis/ModelRDS/res_m2p.rds")
 
-summary(res_m2t)
-draw(res_m2t)
-gam.check(res_m2t)
+summary(res_m2p)
+draw(res_m2p)
+gam.check(res_m2p)
 
-new_data_item1 <- tidyr::expand(longitems2, nesting(locationfactor, itemtype), month = unique(month))
-res_m2t_pred <- bind_cols(new_data_item1,
-                          as.data.frame(predict(res_m2t, newdata = new_data_item1, se.fit = TRUE)))
-
-ggplot(res_m2t_pred, aes(x = month, y = exp(fit), group = itemtype, color = itemtype)) +
-  stat_summary(fun = mean, geom = "line") +
-  stat_summary(data = longitems2, aes(y = nrforagers), fun = mean, geom = "line", linetype = "dashed") +
-  theme_bw()
-
-## can either calculate proportion yourself beforehand, or add in number of capuchins as offset
-res_m2o <- gam(nrforagers ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re") + offset(log(n)), 
+## without 0s
+## so only sequences in which there was foraging
+res_m2o <- gam(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)), 
                data = longitems2, family = poisson(), method = "REML", knots = list(month = c(0.5,12.15)))
 
 summary(res_m2o)
 draw(res_m2o)
 gam.check(res_m2o)
 
-new_data_item <- tidyr::expand(longitems2, nesting(locationfactor, itemtype), month = unique(month), n = 1)
+new_data_item <- tidyr::expand(longitems2, nesting(locationfactor, itemtype), yrday = unique(yrday), n = 1)
 # need to put n to some kind of constant? 
 res_m2o_pred <- bind_cols(new_data_item,
                            as.data.frame(predict(res_m2o, newdata = new_data_item, se.fit = TRUE)))
 
-ggplot(res_m2o_pred, aes(x = month, y = exp(fit), group = itemtype, color = itemtype)) +
+ggplot(res_m2o_pred, aes(x = yrday, y = exp(fit), group = itemtype, color = itemtype)) +
   stat_summary(fun = mean, geom = "line") +
-  stat_summary(data = longitems2, aes(y = nrforagers), fun = mean, geom = "line", linetype = "dashed") +
-  theme_bw()
+  stat_summary_bin(data = longitems2, aes(y = nrforagers/n), fun = mean, geom = "line", linetype = "dashed") +
+  theme_bw() + facet_wrap( ~ itemtype)
+## so see reflected here the PROPORTION of capuchins eating a certain resource 
+# but only when there is foraging at all (as I removed the 0s)
+# and how this fluctuates seasonally
+
+## NOTES: 
+# How to measure RATE of consumption? Maybe have number of sequences per day in which they eat it for each thing?
+# need to have the 0s in I think.... now it's only the proportion of capuchins eating e.g. coconuts when foraging
+# but we are not certain about all the absences, right? 
+# so then aggregate to for instance the day-level 
+# add in the 0's, and per day get something like average proportion per itemtype or something
 
 ## brms
-res_bm3 <- brm(nrforagers | trunc(lb=1) ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re"),
-               data = longitems2, family = poisson(), knots = list(month = c(0.5,12.5)), chains = 2, cores = 4,
-               iter = 2000, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
-
-pp_check(res_bm3)
-summary(res_bm3)
-plot(conditional_smooths(res_bm3))
-plot(conditional_effects(res_bm3))
-
-# with offset
-res_bm4 <- brm(nrforagers | trunc(lb=1) ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re") + offset(log(n)),
+res_bm3 <- brm(nrforagers | trunc(lb=1) ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re") + offset(n),
                data = longitems2, family = poisson(), knots = list(month = c(0.5,12.5)), chains = 2, cores = 4,
                iter = 2000, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
 
