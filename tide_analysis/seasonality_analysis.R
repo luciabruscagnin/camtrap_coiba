@@ -4,8 +4,8 @@
 ## STEP 1: Run "agouti_cleaning.R" script and its dependencies (1. "exiftempseq_cleaning.R" 2. "tide_cleaning.R")
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
-# for the seasonality analysis, we consider a subset of the data at repeat locations across seasons. 
 # Aggregate to the day level per camera
+# for the seasonality analysis, then consider a subset of the data at repeat locations across seasons. 
 # potentially for activity patterns on the day can work with same script but on all cameras
 
 # call packages
@@ -17,43 +17,32 @@ library(tidyr)
 library(tidymv)
 library(ggplot2)
 library(dplyr)
+library(lubridate)
 
-## EXPOSURE
-# how long the camera was running on a day
-## NOTE: in later deployments (R10 on) to conserve batteries we have cameras on a schedule to be off at night, but before run for 24 hours
-# extract the day of the sequence and also the day of the deployment start and end
-# if day of sequence is in day of deployment start or end, then it's time for that. otherwise it's 24 hours
-agoutisequence$dep_startday <- format(agoutisequence$dep_start, "%Y-%m-%d")
-agoutisequence$dep_endday <- format(agoutisequence$dep_end, "%Y-%m-%d")
-agoutisequence$seq_startday <- format(agoutisequence$seq_start, "%Y-%m-%d")
-agoutisequence$dep_starttime <- hour(agoutisequence$dep_start)
-agoutisequence$dep_endtime <- hour(agoutisequence$dep_end)
-
-# maybe too coarse, only on level of hours now 
-agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$dep_startday, 
-                                  24-agoutisequence$dep_starttime, 
-                                  ifelse(agoutisequence$seq_startday == agoutisequence$dep_endday,
-                                         24 - agoutisequence$dep_endtime, 24))
-
-##### TOOL USE #####
-# filter dataset down to cameras that were deployed in the Jicaron tool using groups range
-agoutisequence_jt <- agoutisequence[which(agoutisequence$tool_site == 1 & agoutisequence$island == "Jicaron"),]
+##### SEASONALITY (OF TOOL USE) ANALYSIS #####
+# filter only fully coded dataset down to cameras that were deployed in the Jicaron tool using groups range
+agoutisequence_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron"),]
 
 # if tool use in sequence, then sequence duration is tool use duration
 agoutisequence_jt$tooluseduration <- ifelse(agoutisequence_jt$tooluse == TRUE, agoutisequence_jt$seq_length, 0)
 ## need to pay attention here, because if seq_length is not available yet (due to exifdata not being pulled) then it will look the same as when there's no tool use. 
-# currently everything up to and including R5 has seq_length available
+# currently everything up to and including R6 has seq_length available
 
+#### Going to per-day instead of per-sequence format ####
 # aggregate per day & deployment-location (uniqueloctag), summing all the tool use durations
+# also summing the number of capuchins foraging on each of the four types, and the total number of capuchins in sequences, to get average proportion per day
 # NOTE: would also need to aggregate temperature per day etc if we already jump to this format. Haven't done that yet
-agoutiday <- aggregate(agoutisequence_jt$tooluseduration, by = list(seq_startday = agoutisequence_jt$seq_startday, uniqueloctag = agoutisequence_jt$uniqueloctag), FUN = sum)
-names(agoutiday)[names(agoutiday) == "x"] <- "toolusedurationday"
+agoutiday <- aggregate(list(toolusedurationday = agoutisequence_jt$tooluseduration, nr_almendraday = agoutisequence_jt$nr_almendra, nr_coconutday = agoutisequence_jt$nr_coconut,  
+                            nr_fruitday = agoutisequence_jt$nr_fruit, nr_invertebrateday = agoutisequence_jt$nr_invertebrate, nr_otherday = agoutisequence_jt$nr_other, 
+                            nr_unknownday = agoutisequence_jt$nr_unknown, nday = agoutisequence_jt$n),
+                       by = list(seq_startday = agoutisequence_jt$seq_startday, uniqueloctag = agoutisequence_jt$uniqueloctag), FUN = sum)
+
 agoutiday2 <- left_join(agoutiday, agoutisequence_jt, by = c("seq_startday", "uniqueloctag"))
 ## need unique identifier for what we want to get down to per row, which is per day per location per deployment
 agoutiday2$identifier <- paste(agoutiday2$seq_startday, agoutiday2$uniqueloctag, sep = "-")
 agoutiday2 <- agoutiday2[!duplicated(agoutiday2$identifier),]
 
-### DEPLOYMENT DAYS WITHOUT TRIGGERS
+#### Adding deployment days without triggers ####
 ## can miss days 1. because camera wasn't deployed or 2. because camera was deployed but not triggered (or sequence was blank and thus not in this output)
 ## need to add all the days that fall under category 2, as these are also absence of tool use at this location
 
@@ -88,58 +77,67 @@ for (i in 2:nrow(locations)) {
 sum((depldays$seqday[depldays$uniqueloctag == locations$uniqueloctag[1]] %in% agoutiday2$seqday[agoutiday2$uniqueloctag == locations$uniqueloctag[1]])==FALSE)
 
 ## I would add this only at the stage of the "agoutiselect" dataframe, as you only want to do this for deployments that have fully been coded
-# REPRESENTATIVE SAMPLE SELECTION
-# exclude CEBUS-03 (as CEBUS-02 and CEBUS-03 are on the same anvil)
-# exclude one-off surveys ("SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5", # "SURVEY-CEBUS-17-03-R4") 
-# SURVEY-CEBUS-24-01 is basically CEBUS-04 anvil (leaving out for now, include with "SURVEY-CEBUS-24-01-R4", "SURVEY-CEBUS-24-01-R5")
-# manually identify deployments that have been fully coded
-codeddeployments <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-01-R6",
-                      "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5", "CEBUS-02-R6",
-                      "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-05-R6", 
-                      "CEBUS-06-R4", "CEBUS-06-R5", "CEBUS-06-R6",
-                      "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", 
-                      "CEBUS-09-R2", "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
-agoutiselect <- agoutiday2[agoutiday2$uniqueloctag %in% codeddeployments,]
+
+#### Select a representative sample (day-level dataset) ####
+
+# 1. For seasonality of what they forage on
+# 2. For seasonality of tool using
+# For both 1 and 2 exclude CEBUS-03 (as CEBUS-02 and CEBUS-03 are on the same anvil)
+# For 2. exclude one-off surveys ("SURVEY-CEBUS-07-03-R3", "SURVEY-CEBUS-15-04-R5", # "SURVEY-CEBUS-17-03-R4") 
+# so first to make the bigger one (option 1)
+agoutiselect_full <- agoutiday2[which(agoutiday2$locationName != "CEBUS-03"),]
 
 ## for these deployments, add in the days that the camera was running but not triggered (and flag these)
-agoutiselect <- left_join(depldays[depldays$uniqueloctag %in% agoutiselect$uniqueloctag,], agoutiselect, by = c("uniqueloctag", "seqday"))
-agoutiselect$noanimal <- ifelse(is.na(agoutiselect$sequenceID), 1, 0)
+agoutiselect_full <- left_join(depldays[depldays$uniqueloctag %in% agoutiselect_full$uniqueloctag,], agoutiselect_full, by = c("uniqueloctag", "seqday"))
+agoutiselect_full$noanimal <- ifelse(is.na(agoutiselect_full$sequenceID), 1, 0)
 
 ## make sure these rows have all the variables they need for analyses 
 # I think easiest way to fill up the NAs is by having a metadata frame to pull info from
-metadata <- agoutiselect[!duplicated(agoutiselect$uniqueloctag), c("uniqueloctag", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours",
+metadata <- agoutiselect_full[!duplicated(agoutiselect_full$uniqueloctag), c("uniqueloctag", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours",
                                                                      "island", "tool_anvil", "identifier")]
 
-for (i in 1:nrow(agoutiselect)) {
-  if (agoutiselect$noanimal[i] == 1) {
-    agoutiselect$locationName[i] <- metadata$locationName[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
-    agoutiselect$tags[i] <- metadata$tags[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
-    agoutiselect$dep_start[i] <- metadata$dep_start[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
-    agoutiselect$dep_end[i] <- metadata$dep_end[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
-    agoutiselect$dep_length_hours[i] <- metadata$dep_length_hours[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
-    agoutiselect$island[i] <- metadata$island[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]] 
-    agoutiselect$tool_anvil[i] <- metadata$tool_anvil[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
-    agoutiselect$deploymentID[i] <- metadata$deploymentID[metadata$uniqueloctag == agoutiselect$uniqueloctag[i]]
+for (i in 1:nrow(agoutiselect_full)) {
+  if (agoutiselect_full$noanimal[i] == 1) {
+    agoutiselect_full$locationName[i] <- metadata$locationName[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]]
+    agoutiselect_full$tags[i] <- metadata$tags[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]]
+    agoutiselect_full$dep_start[i] <- metadata$dep_start[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]] 
+    agoutiselect_full$dep_end[i] <- metadata$dep_end[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]] 
+    agoutiselect_full$dep_length_hours[i] <- metadata$dep_length_hours[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]] 
+    agoutiselect_full$island[i] <- metadata$island[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]] 
+    agoutiselect_full$tool_anvil[i] <- metadata$tool_anvil[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]]
+    agoutiselect_full$deploymentID[i] <- metadata$deploymentID[metadata$uniqueloctag == agoutiselect_full$uniqueloctag[i]]
   }
 }
 
-agoutiselect$toolusedurationday <- ifelse(agoutiselect$noanimal == 1, 0, agoutiselect$toolusedurationday)
-agoutiselect$toolusedurationday[agoutiselect$noanimal == 1] <- 0
 # for now just set exposure on these days to 24, assuming they dont occur on pick up or deployment days
-agoutiselect$exposure[agoutiselect$noanimal == 1] <- 24
+agoutiselect_full$exposure[agoutiselect_full$noanimal == 1] <- 24
 # add month and season
-agoutiselect$month[agoutiselect$noanimal == 1] <- month(agoutiselect$seqday[agoutiselect$noanimal == 1])
-agoutiselect$season <- ifelse(agoutiselect$month == 12 | agoutiselect$month == 1 | agoutiselect$month == 2 | agoutiselect$month == 3 | 
-                                agoutiselect$month == 4, "Dry", "Wet") 
+agoutiselect_full$month[agoutiselect_full$noanimal == 1] <- month(agoutiselect_full$seqday[agoutiselect_full$noanimal == 1])
+agoutiselect_full$season <- ifelse(agoutiselect_full$month == 12 | agoutiselect_full$month == 1 | agoutiselect_full$month == 2 | agoutiselect_full$month == 3 | 
+                                agoutiselect_full$month == 4, "Dry", "Wet") 
 
 # add time variable for different years. So is the date as a numerical variable to look for trend or between-year variation
-agoutiselect$time <- as.numeric(agoutiselect$seqday)
+agoutiselect_full$time <- as.numeric(agoutiselect_full$seqday)
 # make a numerical variable of the day of the year (so from 1-365 which day of the year it is)
-agoutiselect$yrday <- yday(agoutiselect$seqday)
+agoutiselect_full$yrday <- yday(agoutiselect_full$seqday)
 # make location a factor
-agoutiselect$locationfactor <- as.factor(agoutiselect$locationName)
+agoutiselect_full$locationfactor <- as.factor(agoutiselect_full$locationName)
 # add the year
-agoutiselect$year <- year(agoutiselect$seqday)
+agoutiselect_full$year <- year(agoutiselect_full$seqday)
+
+#set the NAs in the relevant columns to 0s
+agoutiselect_full <- agoutiselect_full %>%
+  mutate_at(vars("toolusedurationday", "nr_almendraday", "nr_coconutday", "nr_fruitday", "nr_invertebrateday", "nr_otherday", 
+                 "nr_unknownday", "nday"), ~replace_na(.,0))
+
+selection_seasontools <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-01-R6",
+                           "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5", "CEBUS-02-R6",
+                           "CEBUS-04-R4", "CEBUS-04-R5", "CEBUS-04-R6",
+                           "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-05-R6", 
+                           "CEBUS-06-R4", "CEBUS-06-R5", "CEBUS-06-R6",
+                           "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", 
+                           "CEBUS-09-R2", "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
+agoutiselect <- agoutiselect_full[agoutiselect_full$uniqueloctag %in% selection_seasontools,]
 
 ## exclude deployment start and end days as our presence and setting up/picking up cameras may have affected the animals' behavior
 agoutiselect <- agoutiselect[agoutiselect$exposure == 24, ]
@@ -403,7 +401,8 @@ seasonsplit_bm + facet_wrap("locationfactor") +
 # https://gatesdupontvignettes.com/2019/05/29/Auto-Nested-Mod.html
 # https://fromthebottomoftheheap.net/2017/05/04/compare-mgcv-with-glmmtmb/
 # https://stats.stackexchange.com/questions/560656/residuals-of-gam-models-not-improving-with-poisson-or-ziplss-but-better-with-ne
-
+## hurdle models
+# https://www.andrewheiss.com/blog/2022/05/09/hurdle-lognormal-gaussian-brms/
 
 ## BRMS
 # https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html#zero-inflated-models
@@ -493,11 +492,12 @@ plot(testdist2)
 # first have to get out the crazy values (e.g. 56 degrees)
 # ?
 
-
-
-#### FORAGING ITEMS ####
+#### FORAGING ITEMS (PER SEQUENCE) ####
 # first consider what they forage on in generally (seasonally)
-### APPROACH 1: look only at item that is most commonly foraged on per sequence
+
+####
+### APPROACH 1: look only at item that is most commonly foraged on per sequence #####
+####
 # for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
 # so then would have almendra, coconut, invertebrate, fruit, other. 
 ftable(agoutiselect_seq$seq_item, agoutiselect_seq$locationName)
@@ -547,10 +547,14 @@ seasonitem + labs(y = "Probability", x = "Month") + theme_bw()
 locationitem <- plot(conditional_effects(res_bm2, categorical = TRUE), plot = FALSE)[[2]]
 locationitem + labs(y = "Probability", x = "Camera location") + theme_bw()
 
-## APPROACH 2: Consider change in number of capuchins (or proportion of capuchins in sequence) foraging
+####
+## APPROACH 2: Consider change in number of capuchins (or proportion of capuchins in sequence) foraging ####
+####
 ## on each item per sequence. 
+# consider only sequences in which capuchins were present (because there is no proportion of capuchins foraging on anything if there are no cpauchins)
 # need to get to long format
 longitems <- melt(agoutiselect_seq, measure.vars = c("nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate"))
+longitems <- longitems[which(longitems$n > 0),]
 longitems$itemtype <- as.factor(longitems$variable)
 longitems$nrforagers <- longitems$value
 longitems$propforagers <- longitems$nrforagers/longitems$n
@@ -558,114 +562,111 @@ longitems$propforagers <- longitems$nrforagers/longitems$n
 # where the items type is a matrix of the values of the four different types (like Jake's data?)
 longitems$sequenceIDF <- as.factor(longitems$sequenceID)
 
-# subset to only when they foraged on something? or keep 0s in?
-# NOTE could consider working with this on day level?? 
-#long_short <- long[!long$value == 0,]
-#long_short <- droplevels.data.frame(long_short)
-
-# do we need to subset to when there was foraging at all or can we keep in the fake 0's?
-longitems$n[is.na(longitems$n)] = 0
-longitems$nrforagers[is.na(longitems$nrforagers)] = 0
+# subset to when there was foraging at all (because our 0s are biased (detections of capuchins) rather than 'true' zeros)
 longitems2 <- longitems[which(longitems$nrforagers >0),]
 
-#  with 0s in, modeling 0 and poisson component separately
-# with offset of number of capuchins in the sequence
-# but these are only 0s due to other triggers of the camera when there was no foraging
-res_m2 <- gam(list(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype)+ itemtype + s(locationfactor, bs = "re"), 
-                    ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n))), 
-              data = longitems, family = ziplss(), method = "REML", knots = list(month = c(0.5,12.15)))
-# saveRDS(res_m2, "tide_analysis/ModelRDS/res_m2.rds")
-# res_m2 <- readRDS("tide_analysis/ModelRDS/res_m2.rds")
+## Model 1: Only sequences in which there was FORAGING
+# poisson is not entirely right family as we don't have 0s, need zero-truncated poisson
+resfor_m1 <- gam(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)), 
+               data = longitems2, family = poisson(), method = "REML", knots = list(yrday = c(0.5, 366.5)))
 
-summary(res_m2)
-draw(res_m2)
-gam.check(res_m2)
-
-## trying regular poisson
-res_m2p <- gam(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)), 
-              data = longitems, family = poisson(), method = "REML", knots = list(month = c(0.5,12.15)))
-# saveRDS(res_m2p, "tide_analysis/ModelRDS/res_m2p.rds")
-# res_m2p <- readRDS("tide_analysis/ModelRDS/res_m2p.rds")
-
-summary(res_m2p)
-draw(res_m2p)
-gam.check(res_m2p)
-
-## without 0s
-## so only sequences in which there was foraging
-res_m2o <- gam(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)), 
-               data = longitems2, family = poisson(), method = "REML", knots = list(month = c(0.5,12.15)))
-
-summary(res_m2o)
-draw(res_m2o)
-gam.check(res_m2o)
+summary(resfor_m1)
+draw(resfor_m1)
+gam.check(resfor_m1)
 
 new_data_item <- tidyr::expand(longitems2, nesting(locationfactor, itemtype), yrday = unique(yrday), n = 1)
 # need to put n to some kind of constant? 
-res_m2o_pred <- bind_cols(new_data_item,
-                           as.data.frame(predict(res_m2o, newdata = new_data_item, se.fit = TRUE)))
+resfor_m1_pred <- bind_cols(new_data_item,
+                           as.data.frame(predict(resfor_m1, newdata = new_data_item, se.fit = TRUE)))
 
-ggplot(res_m2o_pred, aes(x = yrday, y = exp(fit), group = itemtype, color = itemtype)) +
+ggplot(resfor_m1_pred, aes(x = yrday, y = exp(fit), group = itemtype, color = itemtype)) +
   stat_summary(fun = mean, geom = "line") +
   stat_summary_bin(data = longitems2, aes(y = nrforagers/n), fun = mean, geom = "line", linetype = "dashed") +
   theme_bw() + facet_wrap( ~ itemtype)
 ## so see reflected here the PROPORTION of capuchins eating a certain resource 
-# but only when there is foraging at all (as I removed the 0s)
+# but only when there is foraging at all 
 # and how this fluctuates seasonally
 
-## NOTES: 
-# How to measure RATE of consumption? Maybe have number of sequences per day in which they eat it for each thing?
-# need to have the 0s in I think.... now it's only the proportion of capuchins eating e.g. coconuts when foraging
-# but we are not certain about all the absences, right? 
-# so then aggregate to for instance the day-level 
-# add in the 0's, and per day get something like average proportion per itemtype or something
+## Model 2: Only sequences in which there were CAPUCHINS (foraging or not)
+resfor_m2 <- gam(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)), 
+               data = longitems, family = poisson(), method = "REML", knots = list(yrday = c(0.5,366.5)))
+
+summary(resfor_m2)
+draw(resfor_m2)
+gam.check(resfor_m2)
+
+new_data_item2 <- tidyr::expand(longitems, nesting(locationfactor, itemtype), yrday = unique(yrday), n = 1)
+# need to put n to some kind of constant? 
+resfor_m2_pred <- bind_cols(new_data_item2,
+                          as.data.frame(predict(resfor_m2, newdata = new_data_item2, se.fit = TRUE)))
+
+ggplot(resfor_m2_pred, aes(x = yrday, y = exp(fit), group = itemtype, color = itemtype)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary_bin(data = longitems, aes(y = nrforagers/n), fun = mean, geom = "line", linetype = "dashed") +
+  theme_bw() + facet_wrap( ~ itemtype)
+## so see reflected here the PROPORTION of capuchins eating a certain resource 
+# but only when there are capuchins
 
 ## brms
-res_bm3 <- brm(nrforagers | trunc(lb=1) ~ s(month, bs = "cc", k = 12, by = itemtype) + s(locationfactor, bs = "re") + offset(n),
-               data = longitems2, family = poisson(), knots = list(month = c(0.5,12.5)), chains = 2, cores = 4,
-               iter = 2000, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
 
-### TOOL USE ITEMS #####
-### only what they use tools on (not enough data? exclude?)
-# for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
-# so then would have almendra, coconut, invertebrate, fruit, other. 
-ftable(agoutiselect_seqt$seq_toolitem)
-agoutiselect_seqt$seq_toolitem <- as.character(agoutiselect_seqt$seq_toolitem)
-agoutiselect_seqt$item <- as.factor(ifelse(str_detect(agoutiselect_seqt$seq_toolitem, "crab") | agoutiselect_seqt$seq_item == "insect" | agoutiselect_seqt$seq_toolitem == "snail", "invertebrate",
-                                          ifelse(agoutiselect_seqt$seq_toolitem == "palm" | agoutiselect_seqt$seq_toolitem == "fruit", "fruit", 
-                                                 ifelse(agoutiselect_seqt$seq_toolitem == "unknown" | agoutiselect_seqt$seq_toolitem == "other", NA, agoutiselect_seqt$seq_toolitem))))
-ftable(agoutiselect_seqt$item)
+## set prior
+get_prior(nrforagers ~ s(yrday, bs = "cc", k = 13, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)),
+              data = longitems, family = poisson(), knots = list(yrday = c(0.5,366.5)))
 
-# mgcv
-# set reference category as almendras
-agoutiselect_seqt$item <- relevel(agoutiselect_seqt$item, ref = "almendra")
-agoutiselect_seqt$item2 <- as.numeric(agoutiselect_seqt$item) -1
+# still reconsider this. This is just initial idea. 
+bm3_prior <- c(prior(normal(0,4), class = b),
+               prior(normal(0,4), class = sds))
 
-tres_m <- gam(list(item2 ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"),~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re"),
-                  ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re")), 
-             data=agoutiselect_seqt, family=multinom(K=3), method = "REML", knots = list(month = c(0.5,12.5)))
+res_bm3_prior <- brm(nrforagers ~ s(yrday, bs = "cc", k = 13, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)),
+               data = longitems, family = poisson(), knots = list(yrday = c(0.5,366.5)), chains = 2, cores = 4,
+               iter = 2000, backend = "cmdstanr", control = list(adapt_delta = 0.99), sample_prior = "only", prior = bm3_prior)
 
-summary(tres_m)
-draw(tres_m)
-gam.check(tres_m)
+prior_summary(res_bm3_prior)
+plot(res_bm3_prior)
+summary(res_bm3_prior)
 
-# brms
-# just glm approach
-tres_bm <- brm(item ~ month, data = agoutiselect_seqt, family = "categorical", chains = 2, cores = 2, iter = 3000)
+## run model with priors
+res_bm3 <- brm(nrforagers ~ s(yrday, bs = "cc", k = 13, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)),
+               data = longitems, family = poisson(), knots = list(yrday = c(0.5,366.5)), chains = 2, cores = 4,
+               iter = 5000, backend = "cmdstanr", control = list(adapt_delta = 0.99, max_treedepth = 12), save_pars = save_pars(all = TRUE), prior = bm3_prior)
 
-summary(tres_bm)
-plot(tres_bm)
-plot(conditional_effects(tres_bm, categorical = TRUE))
+#saveRDS(res_bm3, "tide_analysis/ModelRDS/res_bm3.rds")
+# res_bm3 <- readRDS("tide_analysis/ModelRDS/res_bm3.rds")
 
-# smooth version / gam approach
-tres_bm2 <- brm(item ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"), data=agoutiselect_seqt, family="categorical", 
-               knots = list(month = c(0.5,12.5)), chains=2, cores = 2, 
-               iter = 2000)
+summary(res_bm3)
+plot(conditional_effects(res_bm3))
+plot(conditional_smooths(res_bm3))
 
-summary(tres_bm2)
-plot(tres_bm2)
-plot(conditional_smooths(tres_bm2, categorical = TRUE))
-plot(conditional_effects(tres_bm2, categorical = TRUE))
+#### FORAGING ITEMS (PER DAY) #####
+# difference is that now I've added in the zeros, so we could conceivably look at both the absence/presence of foraging on an item
+# and how it fluctuates when they do forage on it. 
+# use agoutiselect_full dataset
+head(agoutiselect_full)
+
+# go to long format
+longitemsday <- melt(agoutiselect_full, measure.vars = c("nr_almendraday", "nr_coconutday", "nr_fruitday", "nr_invertebrateday"))
+
+longitemsday$itemtype <- as.factor(longitemsday$variable)
+longitemsday$nrforagers <- longitemsday$value
+# might need to put sequence in as some kind of random effect? or see if you could make a data list
+longitemsday$sequenceIDF <- as.factor(longitemsday$sequenceID)
+
+# Can have number of capuchins seen foraging on item at 
+# or have the raw number and the total number per day as an offset. 
+hist(longitemsday$nrforagers)
+descdist(longitemsday$nrforagers)
+plot(fitdist(longitemsday$nrforagers, "pois"))
+
+### Model 1: Raw number of foragers with total number of capuchins as offset, two-stage poisson
+# model 0 as dependent on all the normal predictions
+# and when 1 also with the offset of nday 
+resday_m1 <- gam(list(nrforagers ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") , 
+                      ~ s(yrday, bs = "cc", k = 15, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(nday))), 
+               data = longitemsday, family = ziplss(), method = "REML", knots = list(yrday = c(0.5,366.5)))
+
+summary(resday_m1)
+draw(resday_m1)
+gam.check(resday_m1)
 
 #### TOOL USE AND TIME OF DAY & LOCATIONS #####
 

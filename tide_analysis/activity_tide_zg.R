@@ -18,18 +18,7 @@ require(viridis)
 require(truncdist)
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
-str(agoutisequence)
-
-# need to filter out deployments that are not fully coded
-# have a lot of unclassified sequences in --> these seem to largely be the 00:00:00 automated timecapture moments, that weren't coded
-# so have two variables for this, whether a sequence is a timelapse sequence (1 yes, 0 no) and whether it is uncoded (1 yes, 0 no)
-# want to exclude deployments that have uncoded sequences
-# can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
-cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
-codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5]) # deployments that miss less than 5 sequences
-
-# subset only fully coded deployments 
-agoutisequence_c <- agoutisequence[(agoutisequence$uniqueloctag %in% codeddeployments_total),]
+# and subsetted to only coded deployments
 agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
 agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users"))
 agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)

@@ -5,6 +5,7 @@ require(stringr)
 require(ggplot2)
 require(DescTools)
 require(magrittr)
+library(tidyverse)
 
 # check if working directory is set okay
 setwd("~/Git/camtrap_coiba")
@@ -24,30 +25,25 @@ setwd("~/Git/camtrap_coiba")
 #   then see if you have activity at several camera traps within the same hour (hour might be too large of a timescale). Need spatial depth for this. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20220421141457/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20220509075813/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20220421141457/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20220509075813/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
 depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
-
-# match deployment IDS in keys to observations
 agoutigross <- left_join(agoutigross, depl_keys, "deploymentID")
-
-# filter out deployments we're not using
 agoutigross <- agoutigross[agoutigross$flag == 0,]
 
 #### Timestamps & Sequence Info #####
-# turn sequence start time into POSIXct format
-# replace T with a space
+# turn sequence start time into POSIXct format and replace T with a space
 agoutigross$time <- str_replace(agoutigross$timestamp, "T", " ")
 agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20220421141457/media.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20220509075813/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -66,14 +62,14 @@ multimedia$time_file <- as.POSIXct(multimedia$time_file, tz = "America/Panama", 
 multimedia$timeflag <- ifelse(multimedia$time == multimedia$time_file, 0, 1)
 ftable(multimedia$deploymentID, multimedia$timeflag)
 
-# the file time is always correct, so can just use that one for the one's that are flagged
+# the file time is (nearly) always correct, so can just use that one for the one's that are flagged
 # covers both the entry mistakes and the ones that drifted 5 hours
 # create timestamp_correct 
 multimedia$timestamp_correct <- multimedia$timestamp
 multimedia$timestamp_correct[which(multimedia$timeflag == 1)] <- as.character(multimedia$time_file[which(multimedia$timeflag == 1)])
 
-# NOT ALWAYS! In at least one deployment (CEBUS-09-R3 the filetime is one year off, I think.. Also R9 deployment)
-# deployment key: 09bcd191-78ec-4ded-a438-cffaa14fa55a. Fix this
+# EXCEPTION: In at least one deployment (CEBUS-09-R3) the filetime is one year off. Also the R9 deployment has this consistently
+# deployment key of CEBUS-09-R3: 09bcd191-78ec-4ded-a438-cffaa14fa55a. Fix this
 multimedia$timestamp_correct[which(multimedia$deploymentID == "09bcd191-78ec-4ded-a438-cffaa14fa55a")] <- gsub("2017", "2018", multimedia$timestamp_correct[which(multimedia$deploymentID == "09bcd191-78ec-4ded-a438-cffaa14fa55a")]) 
 multimedia$timestamp_correct <- multimedia$timestamp_correct %>%
   as.character(.) %>%
@@ -88,7 +84,7 @@ multimedia <- left_join(multimedia, startseq, "sequenceID")
 multimedia <- left_join(multimedia, endseq, "sequenceID")
 multimedia$seq_lengthstill <-as.numeric(difftime(multimedia$seq_end,multimedia$seq_start,units="secs"))
 
-#### Add temperature and video sequence length
+#### Add temperature and video sequence length ####
 # first run script "exiftempseq_cleaning.R" in the exiftool_metadata folder
 ## clean filename in multimedia agouti (take off the upload time, which is always 15 characters)
 multimedia$FileName <- substring(multimedia$fileName, 16)
@@ -122,7 +118,6 @@ agoutigross$season <- ifelse(agoutigross$month == 12 | agoutigross$month == 1 | 
                          agoutigross$month == 4, "Dry", "Wet") 
 
 # pull island location and tool use/non tool use from coiba_camtrap_ids_gps.csv
-setwd("~/Git/camtrap_coiba")
 deployment_info <- read.csv("coiba_camtrap_ids_gps.csv")
 deployment_info$locationName <- deployment_info$camera_id
 
@@ -255,7 +250,7 @@ agoutigross$tu_nAdult <- agoutigross$tu_nAF + agoutigross$tu_nAM + agoutigross$t
 agoutigross$tu_nSubadult <- agoutigross$tu_nSF + agoutigross$tu_nSM + agoutigross$tu_nSU
 agoutigross$tu_nJuvenile <- agoutigross$tu_nJF + agoutigross$tu_nJM + agoutigross$tu_nJU
 
-## get sequence-level variable of what is mostly being processed in that sequence
+### APPROACH 1: get sequence-level variable of what is mostly being processed in that sequence
 # also get number of capuchins consuming each item per sequence 
 # tool items
 tool_items <- as.data.frame(as.matrix(ftable(agoutigross_tools$sequenceID, agoutigross_tools$tool_item)))
@@ -298,15 +293,13 @@ agoutigross$seq_item <- ifelse(agoutigross$bothforage == 0 & is.na(agoutigross$s
 # simplify to categories that overlap
 agoutigross$seq_item <- ifelse(str_detect(agoutigross$seq_item, "crab"), "crab", agoutigross$seq_item)
 
-### other approach: get number of capuchins foraging certain resource per sequence for each itemtype
-# see how useful tool_item and normal_item we used before is
+### APPROACH 2: get number of capuchins foraging certain resource per sequence for each itemtype
 # for how many capuchins are normal item and tool item the same?
 agoutigross[which(agoutigross$normal_item == agoutigross$tool_item),]
 # wouldn't want to inflate this
 agoutigross$foraging_item1 <- agoutigross$normal_item
 agoutigross$foraging_item2 <- agoutigross$tool_item
 agoutigross$foraging_item2[which(agoutigross$normal_item == agoutigross$tool_item)] <- NA
-
 
 agoutigross[which(is.na(agoutigross$foraging_item1) == FALSE & is.na(agoutigross$foraging_item2) == FALSE),]
 
@@ -338,12 +331,18 @@ all_items2 <- all_items[,c("sequenceID", "nr_almendra", "nr_coconut", "nr_fruit"
 
 agoutigross <- left_join(agoutigross, all_items2, "sequenceID")
 
-#### Cleaning ##### 
-
+#### Cleaning and to sequence-level ##### 
 # create column to flag the timelapse triggers at 12:00:00 and 00:00:00
 agoutigross$timelapse <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$classificationTimestamp == "" & str_detect(agoutigross$seq_start, "00:00") == "TRUE", 1, 0)
 # flag the uncoded sequences in here
 agoutigross$uncoded <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$cameraSetup == "False" & agoutigross$classificationTimestamp == "" & agoutigross$timelapse == 0, 1, 0)
+
+# set all NAs to 0 except for categorical variables
+agoutigross <- agoutigross %>%
+  mutate_at(vars("n", "nAF", "nAM", "nAU", "nJF", "nJM", "nJU", "nSF", "nSM", "nSU", "nUF", "nUM", "nUU", "nAdult",
+                 "nSubadult", "nJuvenile", "nFemales", "nMales", "tu_nAF", "tu_nAM", "tu_nAU", "tu_nJF", "tu_nJM", 
+                 "tu_nJU", "tu_nSF", "tu_nSM", "tu_nSU", "tu_nUF", "tu_nUM", "tu_nUU", "tu_nAdult", "tu_nSubadult", 
+                 "tu_nJuvenile", "nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate", "nr_other", "nr_unknown"), ~replace_na(.,0))
 
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
@@ -351,19 +350,13 @@ agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","mediaID", "
                                             "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item", "foraging_item1", "foraging_item2",
                                             "countNew", "cameraHeading")]
 
-#### FORMAT: ONE ROW PER SEQUENCE ####
 # drop duplicated sequences, necessary form for tidal analyses and data exploration
 # lose individual info etc so to analyze like that need to use agoutigross
 agoutisequence <- agouticlean[!duplicated(agouticlean$sequenceID),]
 agoutisequence$tooluse <- agoutisequence$n_tooluse > 0
 length(unique(agoutisequence$sequenceID)) 
 
-# NOTE: this dataframe also contains not fully coded deployments, it seems as if it contains all the uncoded sequences (which will be blank?)
-# as far as I can tell there's no way to differentiate whether a deployment has been fully coded or not
-# for analyses need to only consider the fully coded deployments, or we inflate
-# can also filter out the cameraSetup sequences (using that variable)
-
-## TIDAL
+#### Add tide times ####
 # Run tide_cleaning.R script first!!
 
 # for each sequence get time to nearest low tide (need to match day and get low tide times then)
@@ -377,7 +370,7 @@ for (i in 1:nrow(agoutisequence)) {
   agoutisequence$tidedifabs[i] <- min(abs(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
 }
 
-hist(agoutisequence$tidedifabs)  # going wrong now because we haven't scraped all tide data 
+hist(agoutisequence$tidedifabs) 
 plot(agoutisequence$tidedifabs, agoutisequence$count)
 
 # Both positive and negative
@@ -398,7 +391,9 @@ for (i in 1:nrow(agoutisequence)) {
   agoutisequence$tidedif2[i] <- Closest((as.vector(difftime(agoutisequence$seq_start[i], TidesHigh$TIDE_TIME,   units = "hours"))), 0)
 }
 
-## PREP
+#### Further prep and filter uncoded out #####
+# rename SURVEY-CEBUS-24-01 to CEBUS-04
+agoutisequence$locationName[which(agoutisequence$locationName == "SURVEY-CEBUS-24-01")] <- "CEBUS-04"
 # create unique variable (like deployment ID) that is location name + tag
 agoutisequence$uniqueloctag <- paste(agoutisequence$locationName, agoutisequence$tag, sep = "-")
 # make temperature numerical
@@ -406,185 +401,31 @@ agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
 # add seqday variable (RDate format)
 agoutisequence$seqday <- as.Date(format(agoutisequence$seq_start, "%Y-%m-%d"))
 
-### EXPLORING DATA ####
-# below is just me attempting many things
+## EXPOSURE
+# how long the camera was running on a day
+## NOTE: in later deployments (R10 on) to conserve batteries we have cameras on a schedule to be off at night, but before run for 24 hours
+# extract the day of the sequence and also the day of the deployment start and end
+# if day of sequence is in day of deployment start or end, then it's time for that. otherwise it's 24 hours
+agoutisequence$dep_startday <- format(agoutisequence$dep_start, "%Y-%m-%d")
+agoutisequence$dep_endday <- format(agoutisequence$dep_end, "%Y-%m-%d")
+agoutisequence$seq_startday <- format(agoutisequence$seq_start, "%Y-%m-%d")
+agoutisequence$dep_starttime <- hour(agoutisequence$dep_start)
+agoutisequence$dep_endtime <- hour(agoutisequence$dep_end)
 
-### NOTES
-# could make on sequence level variable that says how many males, how many females, how many adults, how many juveniles, how many unclassified (?)
-# can look at individuals that are IDed where they show up the most 
+# maybe too coarse, only on level of hours now 
+agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$dep_startday, 
+                                  24-agoutisequence$dep_starttime, 
+                                  ifelse(agoutisequence$seq_startday == agoutisequence$dep_endday,
+                                         24 - agoutisequence$dep_endtime, 24))
 
+# need to filter out deployments that are not fully coded
+# have a lot of unclassified sequences in --> these seem to largely be the 00:00:00 automated timecapture moments, that weren't coded
+# so have two variables for this, whether a sequence is a timelapse sequence (1 yes, 0 no) and whether it is uncoded (1 yes, 0 no)
+# want to exclude deployments that have uncoded sequences
+# can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
+cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
+codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5]) # deployments that miss less than 5 sequences
 
-#### ACTIVITY PER HOUR (many histograms)
-
-hist(hour(agoutisequence$seq_start[agoutisequence$capuchin == 1]), xlab = "Time of Day", ylab = "Number of Sequences with Capuchins", main = "Capuchin Detections Across All Locations")
-## Per location
-
-# loop over camera ID, density plot for each camera when capuchins are present
-# use location name (where the camera is, can have separate deployments on that location)
-# number of sequences per location name
-aggregate(agoutisequence$sequenceID, by = list(locationName = agoutisequence$locationName), FUN = length)
-
-# filter out when capuchins weren't present
-onlycap <- subset(agoutisequence, agoutisequence$capuchin == 1)
-onlycap$hour <- hour(onlycap$seq_start)
-
-locations <- unique(onlycap$locationName)
-table(agoutisequence$locationName, agoutisequence$capuchin ) # nr of sequences per location with and without capuchins
-
-# to get pdf of output
-# pdf("tide_analysis/camera_traps_density.pdf", width = 9, height = 11)
-# par(mfrow=c(4,3)) #sets number of rows and columns per page, could also change margins
-# par(cex = 0.5)
-
-for (l in 1:length(locations)) {
-  hist(onlycap$hour[onlycap$locationName == locations[l]], main = locations[l], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
-}
-
-# dev.off()
-
-# add dry vs wet season comparison
-season <- c("Dry", "Wet")
-
-# pdf("tide_analysis/camera_traps_density_season.pdf", width = 9, height = 11)
-# par(mfrow=c(4,2)) #sets number of rows and columns per page, could also change margins
-# par(cex = 0.5)
-
-# sort order you want (by island, tool use non tool use, location). Can plot over that
-
-for (l in 1:length(locations)) {
-  for (s in 1:length(season)) {
-  hist(onlycap$hour[onlycap$locationName == locations[l] & onlycap$season == season[s]], main = paste(locations[l], season[s]), breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), xlab = "Time of Day", ylab = "Nr of sequences with capuchins")
-  }
-} 
-
-# dev.off()
-
-table(onlycap$locationName, onlycap$season) # see how many observations of capuchins per season
-# also still need to look into how many deployment days per season 
-
-## Mean number of capuchins per sequence
-
-# to get PDF, the par doesn't work for ggplot
-# can't really find how to do this in base r with barplot() 
-
-# pdf("tide_analysis/camera_traps_counts.pdf", width = 9, height = 11)
-# par(mfrow=c(4,3)) #sets number of rows and columns per page, could also change margins
-# par(cex = 0.5)
-
-for (l in 1:length(locations)) {
-  dora_l <- subset(onlycap, onlycap$locationName == locations[l])
-  print(ggplot(dora_l) + geom_bar(aes(x = hour, y = n), stat = "summary", fun = "mean") + xlab("Time of Day") + ylab("Average Number of Capuchins per Sequence") + xlim(0, 24) + labs(title = locations[l]))
-}
-
-# dev.off()
-
-### Histogram time
-
-# colors for two histograms in one
-c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
-c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
-
-### Tool users vs non tool users
-histtool <- hist(onlycap$hour[onlycap$tool_site == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-histnotool <- hist(onlycap$hour[onlycap$tool_site == 0], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-
-plot(histnotool, col = c2, freq = FALSE, main = "Tool users (blue) vs non-tool users (red)", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins")
-plot(histtool, col = c1, freq = FALSE, add = TRUE)
-
-### considering presence of tool use
-ftable(onlycap$tooluse)
-# mostly see tool-using of one individual in a sequence, not of more
-ftable(onlycap$n_tooluse)
-
-# more individuals, more tool using?
-plot(onlycap$n_tooluse, onlycap$n)
-
-# how many locations in the tool using range show tool use and how much (of the sequences with capuchins in them)?
-ftable(onlycap$locationName[onlycap$tool_site == 1], onlycap$tooluse[onlycap$tool_site == 1])
-ftable(onlycap$tool_site)
-
-ftable(onlycap$island)
-
-### Wet vs Dry
-# occurrence of capuchins in general
-histwet <- hist(onlycap$hour[onlycap$season == "Wet"], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-histdry <- hist(onlycap$hour[onlycap$season == "Dry"], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-
-plot(histwet, col = c1, freq = FALSE, main = "Wet (blue) vs dry (red) season", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins")
-plot(histdry, col = c2, freq = FALSE, add = TRUE)
-
-# occurrence of tool use
-histwett <- hist(onlycap$hour[onlycap$season == "Wet" & onlycap$tooluse == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-histdryt <- hist(onlycap$hour[onlycap$season == "Dry" & onlycap$tooluse == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-
-plot(histwett, col = c1, freq = FALSE, main = "Wet (blue) vs dry (red) season", xlab = "Time of Day", ylab = "Proportion of sequences with tool use")
-plot(histdryt, col = c2, freq = FALSE, add = TRUE)
-
-# compare tool users within each season
-# wet
-histwettool <- hist(onlycap$hour[onlycap$season == "Wet" & onlycap$tool_site == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-histwetnotool <- hist(onlycap$hour[onlycap$season == "Wet" & onlycap$tool_site == FALSE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-
-plot(histwetnotool, col = c2, freq = FALSE, main = "Tool using (blue) vs non-tool using (red) capuchins: Wet Season", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins")
-plot(histwettool, col = c1, freq = FALSE, add = TRUE)
-
-# dry
-histdrytool <- hist(onlycap$hour[onlycap$season == "Dry" & onlycap$tool_site == TRUE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24),  freq = FALSE)
-histdrynotool <- hist(onlycap$hour[onlycap$season == "Dry" & onlycap$tool_site == FALSE], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-
-plot(histdrynotool, col = c2, freq = FALSE, main = "Tool using (blue) vs non-tool using (red) capuchins: Dry Season", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins")
-plot(histdrytool, col = c1, freq = FALSE, add = TRUE)
-
-# is there more tool use in the dry or wet season?
-table(onlycap$tooluse, onlycap$season)
-
-#### Late night parties
-# can select all sequences with time > sunset (or 8 pm or something) and then try to extract the behaviors? Will have to come from the agouticlean dataset, not agoutisequences
-agouticlean$hour <- hour(agouticlean$seq_start)
-
-latenight <- subset(agouticlean, agouticlean$hour > 20 & agouticlean$capuchin == 1)
-# drop down to sequences level
-latenightsequence <- latenight[!duplicated(latenight$sequenceID),]
-
-ftable(latenightsequence$hour)
-# are they using tools?
-ftable(latenightsequence$tooluse)
-# is this the tool using pop or the non toolusers
-ftable(latenightsequence$tool_site)
-# which sites?
-ftable(latenightsequence$locationName)
-
-# how many capuchins are spotted?
-ftable(latenightsequence$n)
-
-sum(str_detect(latenight$behaviour, "Infant"))
-
-## TIDAL
-
-
-
-# only sequences with capuchins
-hist(agoutisequence$tidedif[agoutisequence$capuchin == 1])
-
-# per location 
-# pdf("tide_analysis/tidediff_capuchin.pdf", width = 9, height = 11)
-# par(mfrow=c(4,3)) #sets number of rows and columns per page, could also change margins
-# par(cex = 0.5)
-
-for (l in 1:length(locations)) {
-hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$locationName == locations[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
-}
-
-# dev.off()
-
-# looking at tool using specifically
-hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 & agoutisequence$tooluse == TRUE])
-
-# below doesn't work because some locations don't have tool use and it tries to do those. FIX THIS. 
-locations_toolsites <- deployment_info$locationName[deployment_info$tool_site == 1]
-
-for (l in 1:length(locations_toolsites)) {
-  hist(agoutisequence$tidedif[agoutisequence$capuchin == 1 && agoutisequence$locationName == locations_toolsites[l]], xlab = "Hours from Low Tide", ylab = "Number of Sequences with Capuchins", main = locations[l])
-}
-
-# for each camera trap add get distance from coast
+# subset only fully coded deployments 
+agoutisequence_c <- agoutisequence[(agoutisequence$uniqueloctag %in% codeddeployments_total),]
+agoutisequence_c <- droplevels.data.frame(agoutisequence_c)
