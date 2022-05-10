@@ -529,8 +529,8 @@ plot(conditional_effects(res_bm, categorical = TRUE))
 
 # smooth version 
 res_bm2 <- brm(item ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"), data=agoutiselect_seq, family="categorical", 
-              knots = list(month = c(0.5,12.5)), chains=2, cores = 4, 
-          iter = 3000)
+              knots = list(month = c(0.5,12.5)), chains=2, cores = 4, backend = "cmdstanr", save_pars = save_pars(all = TRUE),
+          iter = 3000, seed = 2222)
 
 # saveRDS(res_bm2, file = "tide_analysis/ModelRDS/res_bm2.rds")
 # res_bm2 <- readRDS("tide_analysis/ModelRDS/res_bm2.rds")
@@ -627,8 +627,8 @@ summary(res_bm3_prior)
 
 ## run model with priors
 res_bm3 <- brm(nrforagers ~ s(yrday, bs = "cc", k = 13, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)),
-               data = longitems, family = poisson(), knots = list(yrday = c(0.5,366.5)), chains = 2, cores = 4,
-               iter = 5000, backend = "cmdstanr", control = list(adapt_delta = 0.99, max_treedepth = 12), save_pars = save_pars(all = TRUE), prior = bm3_prior)
+               data = longitems, family = poisson(), knots = list(yrday = c(0.5,366.5)), chains = 3, cores = 4, seed = 1234, init = "0",
+               iter = 1000, backend = "cmdstanr", save_pars = save_pars(all = TRUE), prior = bm3_prior, control = list(adapt_delta = 0.99))
 
 #saveRDS(res_bm3, "tide_analysis/ModelRDS/res_bm3.rds")
 # res_bm3 <- readRDS("tide_analysis/ModelRDS/res_bm3.rds")

@@ -16,6 +16,7 @@ require(rgl)
 require(ggthemes)
 require(viridis)
 require(truncdist)
+require(tidybayes)
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
 # and subsetted to only coded deployments
@@ -289,7 +290,7 @@ onlycap_tj$seasonF <- as.factor(onlycap_tj$season)
 # tool using group
 tm3 <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
             te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
-            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 1,], method = "REML",
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], method = "REML",
           select = TRUE, knots = list(tidedif =c(-6,6)) )
 # saveRDS(tm3, "tide_analysis/ModelRDS/tm3.rds")
 # tm3 <- readRDS("tide_analysis/ModelRDS/tm3.rds")
@@ -301,6 +302,7 @@ gam.check(tm3)
 concurvity(tm3)
 
 b3 <- getViz(tm3)
+plot(sm(b3, 2)) + l_fitRaster() + l_fitContour() + l_rug(alpha=0.05)
 plot(sm(b3, 3)) + l_fitRaster() + l_fitContour() + l_rug(alpha=0.05)
 # interactive 3d plot
 plotRGL(sm(b3, 3), ylim = c(0,65), residuals = TRUE)
@@ -308,7 +310,7 @@ plotRGL(sm(b3, 3), ylim = c(0,65), residuals = TRUE)
 # looking at non tool users
 tm3b <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
             te(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
-            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == 0,], method = "REML",
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], method = "REML",
           select = TRUE, knots = list(tidedif =c(-6,6)) )
 # saveRDS(tm3b, "tide_analysis/ModelRDS/tm3b.rds")
 # tm3b <- readRDS("tide_analysis/ModelRDS/tm3b.rds")
@@ -361,19 +363,17 @@ gam.check(tm4b) # gam check seems ok
 ## Model 1: number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
 tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
-              s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr")
 
+#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) # check spelling etc. Try reloo if moment_match doesn't work
 # saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_ztpois.rds")
 # tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_ztpois.rds")
-tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99)) # check spelling etc. Try reloo if moment_match doesn't work
-?add_criterion # check code for this it doesnt seem to have worked 
-# potentially try to add backend = "cmdstanr" to the add_criterion. 
 # then can do
 loo(tbm1)
+loo_R2(tbm1)
+bayes_R2(tbm1)
 # loo r squared etc 
-
-
 
 summary(tbm1)
 plot(tbm1)
@@ -407,48 +407,49 @@ ggplot(distcoastplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + ge
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", title = "Tool users", fill = "Change in number of capuchins per sequence") +
   geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), inherit.aes = FALSE) 
 
+# or can compute posterior predictions with posterior_epred
+# and plot contourplot from that
+# THIS IS CURRENTLY WRONG
+newdata_tbm1 <- expand_grid(tidedif = -6:6,
+                            toolusers = "Tool-users",
+                            locationfactor = unique(onlycap_tj$locationfactor[onlycap_tj$toolusers == 1]))
+newdata_tbm1$distcoast <- NA
+for (i in 1:nrow(newdata_tbm1)) {
+    newdata_tbm1$distcoast[i] <- dist2coast$distcoast[which(newdata_tbm1$locationfactor[i] == dist2coast$locationfactor)]
+} 
+
+tidy_pred_tbm1 <- tbm1 %>%
+  epred_draws(newdata = newdata_tbm1)
+str(tidy_pred_tbm1)
+
+mean(tidy_pred_tbm1$.epred)
+tidy_pred_tbm1$zscore <- (tidy_pred_tbm1$.epred - mean(tidy_pred_tbm1$.epred)) / sd(tidy_pred_tbm1$.epred)
+
+ggplot(tidy_pred_tbm1, aes(x = tidedif, y = distcoast, z = zscore)) + geom_contour_filled() + ylim(0,60) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  theme_bw() + theme(panel.grid = element_blank()) + 
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", title = "Tool users", fill = "Change in number of capuchins per sequence") +
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), inherit.aes = FALSE) 
+
+
 #tidedif by tool users vs non tool users
 tidalcapstu <- plot(conditional_effects(tbm1), plot = FALSE)[[5]]
 tidalcapstu + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
   stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedif, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
 
-## Model 1A: with absolute tide difference
-# number of capuchins by tidedif (absolute) and split by toolusers, with locationfactor as random effect
-tbm1a <- gam(n ~ te(tidedifabs, distcoast, bs = c("tp", "tp"), k = c(10, 6)) +
-               te(tidedifabs, distcoast, bs = c("tp", "tp"), by = toolusers, k = c(10,6), m = 1) + toolusers +
-               s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, chain = 2, core = 2, iter = 4000, 
-               control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr")
+### Model 2: Adding season but split by tool use/non tool use
+# tool users
+tbm2 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+            t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+            s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
+          knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 2000, save_pars = save_pars(all = TRUE),
+          control = list(adapt_delta = 0.99), backend = "cmdstanr" )
 
-#saveRDS(tbm1a, "tide_analysis/ModelRDS/tbm1a_distcoast.rds")
-# tbm1a <- readRDS("tide_analysis/ModelRDS/tbm1a.rds")
-
-summary(tbm1a)
-plot(tbm1a)
-
-plot(conditional_effects(tbm1a))
-plot(conditional_smooths(tbm1a))
-pp_check(tbm1a) 
-plot(tbm1a)
-pairs(tbm1a)
-
-# plot with actual data
-# number of capuchins per sequence tool use vs not tool use
-ncap <- plot(conditional_effects(tbm1a), plot = FALSE)[[1]]
-ncap + labs(y = "Average number of capuchins per sequence", x = "Tool Using Group Yes(1)/No(0)") + theme_bw()
-
-#tidedifabs by tool users vs non tool users
-abstu <- plot(conditional_effects(tbm1a), plot = FALSE)[[3]]
-abstu + labs(y = "Average number of capuchins per sequence", x = "Hours to nearest low tide (absolute)") + theme_bw() +
-  stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedifabs, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
-
-# number of capuchins per locations
-# give colors to tool users vs non tool users locations
-ncaploc <- plot(conditional_effects(tbm1a), plot = FALSE)[[4]]
-ncaploc + labs(y = "Average number of capuchins per sequence", x = "Camera locations", color = "Tool users") + theme_bw() +
-  stat_summary(data = onlycap_tj, aes(y = n, x = locationfactor, color = toolusers), geom = "point", fun = mean, inherit.aes = FALSE)
-
-## STILL DO: seasonality model (either 4 way interaction or two split ones, or both) in brms
-
+# non tool users
+tbm2a <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+               t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+               s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
+             knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 2000, save_pars = save_pars(all = TRUE),
+             control = list(adapt_delta = 0.99), backend = "cmdstanr" )
 
 ###############################################################################
 
