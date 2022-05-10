@@ -626,9 +626,9 @@ plot(res_bm3_prior)
 summary(res_bm3_prior)
 
 ## run model with priors
-res_bm3 <- brm(nrforagers ~ s(yrday, bs = "cc", k = 13, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)),
+res_bm3 <- brm(bf(nrforagers ~ s(yrday, bs = "cc", k = 13, by = itemtype) + itemtype + s(locationfactor, bs = "re") + offset(log(n)), decomp = "QR"),
                data = longitems, family = poisson(), knots = list(yrday = c(0.5,366.5)), chains = 3, cores = 4, seed = 1234, init = "0",
-               iter = 1000, backend = "cmdstanr", save_pars = save_pars(all = TRUE), prior = bm3_prior, control = list(adapt_delta = 0.99))
+               iter = 1000, backend = "cmdstanr", save_pars = save_pars(all = TRUE), control = list(adapt_delta = 0.99))
 
 #saveRDS(res_bm3, "tide_analysis/ModelRDS/res_bm3.rds")
 # res_bm3 <- readRDS("tide_analysis/ModelRDS/res_bm3.rds")

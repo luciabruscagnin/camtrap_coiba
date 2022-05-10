@@ -363,7 +363,7 @@ gam.check(tm4b) # gam check seems ok
 ## Model 1: number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
 tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
-              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 2000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr")
 
 #tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) # check spelling etc. Try reloo if moment_match doesn't work
@@ -417,6 +417,8 @@ newdata_tbm1$distcoast <- NA
 for (i in 1:nrow(newdata_tbm1)) {
     newdata_tbm1$distcoast[i] <- dist2coast$distcoast[which(newdata_tbm1$locationfactor[i] == dist2coast$locationfactor)]
 } 
+
+posterior_smooths(tbm1, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)', newdata_tbm1)
 
 tidy_pred_tbm1 <- tbm1 %>%
   epred_draws(newdata = newdata_tbm1)
