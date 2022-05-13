@@ -21,6 +21,7 @@ library(akima)
 library(reshape2)
 library(matrixStats)
 
+### Prepare dataframe tidal analyses ####
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
 # and subsetted to only coded deployments
@@ -29,8 +30,6 @@ agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1)
 agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
 
 unique(agoutisequence_c$locationfactor)
-
-### select #####
 
 # Could add in the hours that the cameras werent triggered but were deployed (see bottom of script)
 # If this is done, then don't run following line
@@ -47,7 +46,7 @@ agoutiselect2 <- agoutiselect2[c("deploymentID", "sequenceID", "scientificName",
                                                                "season", "island", "tool_anvil", "tool_site", "streambed", "capuchin", "n", "tooluse", "tidedifabs", 
                                                                "tidedif", "tidedif2", "uniqueloctag", "seqday", "hour", "toolusers",  "picksetup", "dataorigin")] # add "noanimal if you added 0's)
 
-#### Adding Claudio's non tool use data for tidal questions ######
+#### Adding Claudio's non tool use data ######
 cldata <- read.csv("tide_analysis/coiba-bioblitz_observations_2018-06-03_06-58-00..csv")
 
 # exclude CBA-0 deployment in 2011
@@ -130,8 +129,6 @@ agoutiselect_t$locationfactor <- as.factor(agoutiselect_t$locationName)
 # so for hourlevel question this means adding a 0 for each day-hour combination within each deployment length
 onlycap_t <- agoutiselect_t[agoutiselect_t$capuchin == 1,]
 
-##### TIDAL #####
-
 ## make only Jicaron dataset initially
 onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & onlycap_t$locationfactor != "CEBUS-03",]
 
@@ -195,7 +192,7 @@ hist(onlycap_tj$n[onlycap_tj$toolusers == "Tool-users"], breaks = 100)
 
 # so might not be converging line of evidence/useful metric of capuchin activity, because it differs so much between tool use and non tool use sequences
 
-## GAMs
+#### TIDAL GAMS ####
 ## outcome variable:
 # number of capuchins per sequence
 # only Jicaron
@@ -205,7 +202,10 @@ hist(onlycap_tj$n[onlycap_tj$toolusers == "Tool-users"], breaks = 100)
 # - tool users 1/0, tool using group on Jicaron/Coiba vs not tool using groups
 # - location factor, factor for each location
 
+#### MGCV #### 
+
 ## Model 1: Effect of time to nearest low tide on number of capuchins, split for tool using and non tool using groups and with locationfactor as random effect
+###
 # non-absolute time to low tide (-6 hours to +6 hours, where 0 is low tide)
 tm1 <- gam(n ~ s(tidedif, bs = "cc", by = toolusers, k = 10) + toolusers + 
                s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, method = "REML", knots = list(tidedif =c(-6,6)) )
@@ -236,6 +236,7 @@ draw(tm1high)
 gam.check(tm1high) 
 
 ## Model 2: Including distance to coast in model 1
+###
 # distance in meters for each camera (see dist2coast.R script for how it was calculated)
 
 # non-absolute tide difference
@@ -287,6 +288,7 @@ plot(sm(b2,3), ylim = c(0,65)) + l_fitRaster() + l_fitContour() + l_rug(alpha = 
 plotRGL(sm(b2, 3), ylim = c(0,65), residuals = TRUE)
 
 ### Model 3: Including seasonality
+###
 # Two approaches, can either look at a split model (one for tool users, one for non tool users) or a combined one with a 4-way interaction
 
 ## Option A: Split models for tool use and non tool use
@@ -362,14 +364,77 @@ plot(tm4b, pages = 1)
 draw(tm4b)
 gam.check(tm4b) # gam check seems ok
 
-### BRMS
+###
+## Model 5: Comparing hot and cold low tides to look at temperature 
+###
+
+str(onlycap_tj)
+
+str(TidesLow)
+TidesLow$Temp <- ifelse(hour(TidesLow$TIDE_TIME) < 12 | hour(TidesLow$TIDE_TIME) > 17 , "Cold", "Hot")
+
+onlycap_tj$tidecold <- NA
+for (i in 1:nrow(onlycap_tj)) {
+  onlycap_tj$tidecold[i] <- Closest((as.vector(difftime(onlycap_tj$seq_start[i], TidesLow$TIDE_TIME[which(TidesLow$Temp == "Cold")],   units = "hours"))), 0)
+}
+
+onlycap_tj$tidetemp <- ifelse(onlycap_tj$tidedif == onlycap_tj$tidecold, "Cold", "Hot")
+onlycap_tj$tidetemp <- as.factor(onlycap_tj$tidetemp)
+
+## Split models for tool use and non tool use
+# tool using group
+tm5 <- gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+            te(tidedif, distcoast, bs = c("cc", "tp"), by = interaction(seasonF, tidetemp), k = c(10,6), m = 1) + seasonF + tidetemp +
+            s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], method = "REML",
+          select = TRUE, knots = list(tidedif =c(-6,6)) )
+#saveRDS(tm5, "tide_analysis/ModelRDS/tm5.rds")
+#tm5 <- readRDS("tide_analysis/ModelRDS/tm5.rds")
+
+summary(tm5)
+plot(tm5, pages = 1)
+draw(tm5)
+gam.check(tm5) 
+concurvity(tm5)
+
+# looking at non tool users
+tm5b <-gam(n ~ te(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6)) +
+             te(tidedif, distcoast, bs = c("cc", "tp"), by = interaction(seasonF, tidetemp), k = c(10,6), m = 1) + seasonF + tidetemp +
+             s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], method = "REML",
+           select = TRUE, knots = list(tidedif =c(-6,6)) )
+# saveRDS(tm5b, "tide_analysis/ModelRDS/tm5b.rds")
+# tm5b <- readRDS("tide_analysis/ModelRDS/tm5b.rds")
+
+summary(tm5b)
+plot(tm5b, pages = 1)
+draw(tm5b)
+gam.check(tm5b) 
+concurvity(tm5b)
+
+#### BRMS ####
+
+# priors for tidal models
+tidal_prior <- c(prior(normal(1, 2), class = Intercept, lb = 1),
+               prior(normal(0,2), class = b),
+               prior(normal(0,2), class = sds))
+
+# prior simulation
+tbm1_prior <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+              t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
+              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 2000,
+              prior = tidal_prior, sample_prior = "only", backend = "cmdstanr")
+
+summary(tbm1_prior)
+prior_summary(tbm1_prior)
+plot(tbm1_prior)
+
 ## Model 1: number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
+####
 tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
-              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 4000, save_pars = save_pars(all = TRUE),
-            control = list(adapt_delta = 0.99), backend = "cmdstanr")
+              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
-#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) # check spelling etc. Try reloo if moment_match doesn't work
+#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 # saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_ztpois.rds")
 # tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_ztpois.rds")
 # then can do
@@ -377,7 +442,7 @@ loo(tbm1)
 loo_R2(tbm1)
 bayes_R2(tbm1)
 # loo r squared etc 
-
+prior_summary(tbm1)
 summary(tbm1)
 plot(tbm1)
 
@@ -487,19 +552,18 @@ ggplot(newdata_tbm1_f) + geom_line(aes(x = tidedif, y = exp(fit_tooltide), group
   labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() + facet_wrap(~toolusers)
 
 
-
-
 ### Model 2: Adding season but split by tool use/non tool use
+####
 # tool users
 tbm2 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
             t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
             s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
           knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
-          control = list(adapt_delta = 0.99), backend = "cmdstanr" )
+          control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 #tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 #saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_11052022.rds")
-#tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_11052022.rds")
+# tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_11052022.rds")
 
 loo(tbm2)
 loo_R2(tbm2)
@@ -597,12 +661,33 @@ ggplot(data = d2, aes(x = tidedif, y = distcoast, z = fit)) +
 tbm2a <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
-             knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 2000, save_pars = save_pars(all = TRUE),
-             control = list(adapt_delta = 0.99), backend = "cmdstanr" )
+             knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
-###############################################################################
+# tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+# saveRDS(tbm2a, "tide_analysis/ModelRDS/tbm2a_12052022.rds")
+# tbm2a <- readRDS("tide_analysis/ModelRDS/tbm2a_12052022.rds")
 
+summary(tbm2a)
+plot(conditional_smooths(tbm2a))
+plot(conditional_effects(tbm2a))
+
+nontoolusersplot <- plot(conditional_smooths(tbm2a, rug = TRUE), plot = FALSE)[[2]]
+
+## contourplots for non tool users for wet and dry season
+# png("tide_analysis/ModelRDS/nontoolusersplot.png", width = 12, height = 6, units = 'in', res = 300)
+# setEPS(postscript(file = "tide_analysis/ModelRDS/nontoolusersplot.png", width = 12, height = 6))
+ggplot(nontoolusersplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + facet_wrap(~seasonF) +
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =20))
+# dev.off()
+
+
+####
 #### ACTIVITY TOOL USERS VS NON TOOL USERS ####
+####
 # decide if only Jicaron or both islands
 # preliminary, better for this would be grid data if we get it
 

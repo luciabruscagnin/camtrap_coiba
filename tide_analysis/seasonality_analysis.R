@@ -495,42 +495,36 @@ plot(testdist2)
 #### FORAGING ITEMS (PER SEQUENCE) ####
 # first consider what they forage on in generally (seasonally)
 
-####
-### APPROACH 1: look only at item that is most commonly foraged on per sequence #####
-####
-# for looking at items, exclude unknown ones and collapse crabs, insects and snails into invertebrates??
-# so then would have almendra, coconut, invertebrate, fruit, other. 
-ftable(agoutiselect_seq$seq_item, agoutiselect_seq$locationName)
-agoutiselect_seq$item <- as.factor(ifelse(agoutiselect_seq$seq_item == "crab" | agoutiselect_seq$seq_item == "insect" | agoutiselect_seq$seq_item == "snail", "invertebrate",
-                                          ifelse(agoutiselect_seq$seq_item == "palm" | agoutiselect_seq$seq_item == "fruit", "fruit", 
-                                                ifelse(agoutiselect_seq$seq_item == "unknown" | agoutiselect_seq$seq_item == "other", NA, agoutiselect_seq$seq_item))))
-ftable(agoutiselect_seq$item)
+## multinomial with more information
+multifor <- melt(agoutiselect_seq, measure.vars = c("nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate"))
 
+# go from count for each type to number of rows for that type
+multifor <- multifor %>%
+  uncount(value)
+
+# set reference category as almendras
+multifor$itemtype <- multifor$variable
+# in format for mgcv 
+multifor$itemtype2 <- as.numeric(multifor$itemtype) - 1
+multifor$sequenceIDF <- as.factor(multifor$sequenceID)
+str(multifor)
 # mgcv
 # see this https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/multinom.html
-# set reference category as almendras
-agoutiselect_seq$item <- relevel(agoutiselect_seq$item, ref = "almendra")
-agoutiselect_seq$item2 <- as.numeric(agoutiselect_seq$item) -1
 
-res_m <- gam(list(item2 ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"),~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re"),
-                  ~ s(month, bs = "cc", k = 12) + s(locationfactor, bs = "re")), 
-             data=agoutiselect_seq, family=multinom(K=3), method = "REML", knots = list(month = c(0.5,12.5)))
+res_m <- gam(list(itemtype2 ~ s(month, bs ="cc", k = 8) + s(sequenceIDF, bs = "re")  +  s(locationfactor, bs = "re"),
+                  ~ s(month, bs = "cc", k = 11) + s(sequenceIDF, bs = "re")  + s(locationfactor, bs = "re"),
+                  ~ s(month, bs = "cc", k = 11) + s(sequenceIDF, bs = "re") + s(locationfactor, bs = "re")), 
+             data=multifor, family=multinom(K=3), method = "REML", knots = list(month = c(0.5,12.5)))
 
 summary(res_m)
 draw(res_m)
 gam.check(res_m)
 
 # brms
-res_bm <- brm(item ~ month, data = agoutiselect_seq, family = "categorical", chains = 2, cores = 2, iter = 3000)
-
-summary(res_bm)
-plot(res_bm)
-plot(conditional_effects(res_bm, categorical = TRUE))
-
 # smooth version 
-res_bm2 <- brm(item ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re"), data=agoutiselect_seq, family="categorical", 
+res_bm2 <- brm(itemtype ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re") + (1|sequenceIDF), data=multifor, family="categorical", 
               knots = list(month = c(0.5,12.5)), chains=2, cores = 4, backend = "cmdstanr", save_pars = save_pars(all = TRUE),
-          iter = 3000, seed = 2222)
+          iter = 1000, seed = 2222)
 
 # saveRDS(res_bm2, file = "tide_analysis/ModelRDS/res_bm2.rds")
 # res_bm2 <- readRDS("tide_analysis/ModelRDS/res_bm2.rds")
