@@ -685,6 +685,65 @@ ggplot(nontoolusersplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) +
 # dev.off()
 
 
+## practicing determining derivatives
+# tool users only
+test_tm <- brm(n ~ s(tidedif, bs = "cc", k = 10) + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
+               knots = list(tidedif =c(-6,6)), backend = "cmdstanr", core = 2, chain = 2, iter = 2000 )
+
+summary(test_tm)
+plot(test_tm)
+plot(conditional_effects(test_tm))
+plot(conditional_smooths(test_tm))
+
+# non tool users only
+test_tm2 <- brm(n ~ s(tidedif, bs = "cc", k = 10) + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
+               knots = list(tidedif =c(-6,6)), backend = "cmdstanr", core = 2, chain = 2, iter = 2000 )
+
+summary(test_tm2)
+plot(test_tm2)
+plot(conditional_effects(test_tm2))
+plot(conditional_smooths(test_tm2))
+
+## with by-smooth
+test_tm3 <- brm(n ~ s(tidedif, bs = "cc", k = 10, by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, 
+                knots = list(tidedif =c(-6,6)), backend = "cmdstanr", core = 2, chain = 2, iter = 2000 )
+
+summary(test_tm3)
+plot(conditional_effects(test_tm3))
+plot(conditional_smooths(test_tm3))
+
+# run gam first derivative plot function code from Shauhin to get functions
+deriv_plot(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif", 0.1, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 95, "testplot") 
+deriv_plot(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif", 0.1, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 95, "testplot2") 
+  ###model must be a brms model object
+  ###term is a character string of the smooth term, same syntax as used in the model
+  ###main is a character string of the predictor variable, must not be wrapped in a smooth function
+  ###eps is the amount to offset the original data, to be differenced from original to calculate slope
+  ###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
+  ###confidence is the confidence level used to calculate the posterior intervals
+  ###The desired name of the resulting ggplot object 
+
+deriv_plot2(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif",  0.1, response = NULL, confidence = 95, "testplotderiv")
+deriv_plot2(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif",  0.1, response = NULL, confidence = 95, "testplotderiv2")
+  ###model must be a brms model object
+  ###term is a character string of the smooth term, same syntax as used in the model
+  ###main is a character string of the predictor variable, must not be wrapped in a smooth function
+  ###eps is the amount to offset the original data, to be differenced from original to calculate slope
+  ###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
+  ###confidence is the confidence level used to calculate the posterior intervals
+  ###The desired name of the resulting ggplot object 
+
+# can't get by interaction to work yet
+species_interact_deriv(test_tm3, 's(tidedif, bs = "cc", k = 10, by = toolusers)', 'tidedif', 0.01, confidence = 95, "testplot3")
+###model must be a brms model object
+###term is a character string of the smooth term, same syntax as used in the model
+###main is a character string of the predictor variable, must not be wrapped in a smooth function
+###eps is the amount to offset the original data, to be differenced from original to calculate slope
+###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
+###confidence is the confidence level used to calculate the posterior intervals
+###The desired name of the resulting ggplot object 
+
+
 ####
 #### ACTIVITY TOOL USERS VS NON TOOL USERS ####
 ####

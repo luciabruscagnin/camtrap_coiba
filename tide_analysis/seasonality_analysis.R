@@ -524,10 +524,10 @@ gam.check(res_m)
 # smooth version 
 res_bm2 <- brm(itemtype ~ s(month, bs ="cc", k = 12) + s(locationfactor, bs = "re") + (1|sequenceIDF), data=multifor, family="categorical", 
               knots = list(month = c(0.5,12.5)), chains=2, cores = 4, backend = "cmdstanr", save_pars = save_pars(all = TRUE),
-          iter = 1000, seed = 2222)
+          iter = 5000, seed = 2222, control = list(adapt_delta = 0.99))
 
-# saveRDS(res_bm2, file = "tide_analysis/ModelRDS/res_bm2.rds")
-# res_bm2 <- readRDS("tide_analysis/ModelRDS/res_bm2.rds")
+# saveRDS(res_bm2, file = "tide_analysis/ModelRDS/res_bm2_13052022.rds")
+# res_bm2 <- readRDS("tide_analysis/ModelRDS/res_bm2_13052022.rds")
 
 summary(res_bm2)
 plot(res_bm2)
