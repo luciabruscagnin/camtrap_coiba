@@ -551,6 +551,42 @@ ggplot(newdata_tbm1_f) + geom_smooth(method = "gam", aes(x = tidedif, y = exp(fi
 ggplot(newdata_tbm1_f) + geom_line(aes(x = tidedif, y = exp(fit_tooltide), group = distcoast, color = distcoast)) +
   labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() + facet_wrap(~toolusers)
 
+## contourplot like below for seasons
+predict_tbm1_p <- posterior_smooths(tbm1, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
+# mean of each column is what I'm looking for
+tbm1$data$fit_tooltide <- as.numeric(colMeans(predict_tbm1_p))
+
+d1_tu <- with(tbm1$data[tbm1$data$toolusers == "Tool-users",], interp(x = tidedif, y = distcoast, z = fit_tooltide, duplicate = "mean"))
+d1_ntu <-  with(tbm1$data[tbm1$data$toolusers == "Non-tool-users",], interp(x = tidedif, y = distcoast, z = fit_tooltide, duplicate = "mean"))
+
+d2_tu <- melt(d1_tu$z, na.rm = TRUE)
+names(d2_tu) <- c("x", "y", "fit")
+d2_tu$tidedif <- d1_tu$x[d2_tu$x]
+d2_tu$distcoast <- d1_tu$y[d2_tu$y]
+
+d2_ntu <- melt(d1_ntu$z, na.rm = TRUE)
+names(d2_ntu) <- c("x", "y", "fit")
+d2_ntu$tidedif <- d1_ntu$x[d2_ntu$x]
+d2_ntu$distcoast <- d1_ntu$y[d2_ntu$y]
+
+d2_tu$toolusers <- "Tool-users"
+d2_ntu$toolusers <- "Non-tool-users"
+
+d2_t <- rbind(d2_tu, d2_ntu)
+d2_t$toolusers <- as.factor(d2_t$toolusers)
+
+# on real scale
+# png("tide_analysis/ModelRDS/tuvsntu_pred.png", width = 12, height = 6, units = 'in', res = 300)
+# setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
+ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = exp(fit))) +
+  geom_contour_filled(bins = 11) + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Number of capuchins") +
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
+  facet_wrap(~toolusers, scales = "free")
+# dev.off()
+
+
 
 ### Model 2: Adding season but split by tool use/non tool use
 ####
@@ -615,7 +651,7 @@ ggplot(toolusersseason$data) + geom_line(aes(x = tidedif, y = estimate__-1, grou
   stat_summary_bin(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(y = n, x = tidedif, group = seasonF, color = seasonF), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
 
 predict_tbm2 <- posterior_smooths(tbm2, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
-# mean of each row is what I'm looking for
+# mean of each column is what I'm looking for
 tbm2$data$fit_seasontide <- as.numeric(colMeans(predict_tbm2))
 
 d1_wet <- with(tbm2$data[tbm2$data$seasonF == "Wet",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
@@ -677,12 +713,49 @@ nontoolusersplot <- plot(conditional_smooths(tbm2a, rug = TRUE), plot = FALSE)[[
 ## contourplots for non tool users for wet and dry season
 # png("tide_analysis/ModelRDS/nontoolusersplot.png", width = 12, height = 6, units = 'in', res = 300)
 # setEPS(postscript(file = "tide_analysis/ModelRDS/nontoolusersplot.png", width = 12, height = 6))
-ggplot(nontoolusersplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+ggplot(nontoolusersplot$data, aes(x = tidedif, y = distcoast, z = exp(estimate__))) + geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) +
   theme_bw() + theme(panel.grid = element_blank()) +  
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Number of capuchins") +
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + facet_wrap(~seasonF) +
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =20))
 # dev.off()
+
+predict_tbm2a <- posterior_smooths(tbm2a, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
+# mean of each column is what I'm looking for
+tbm2a$data$fit_seasontide <- as.numeric(colMeans(predict_tbm2a))
+
+d1a_wet <- with(tbm2a$data[tbm2a$data$seasonF == "Wet",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
+d1a_dry <-  with(tbm2a$data[tbm2a$data$seasonF == "Dry",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
+
+d2a_wet <- melt(d1a_wet$z, na.rm = TRUE)
+names(d2a_wet) <- c("x", "y", "fit")
+d2a_wet$tidedif <- d1a_wet$x[d2a_wet$x]
+d2a_wet$distcoast <- d1a_wet$y[d2a_wet$y]
+
+d2a_dry <- melt(d1a_dry$z, na.rm = TRUE)
+names(d2a_dry) <- c("x", "y", "fit")
+d2a_dry$tidedif <- d1a_dry$x[d2a_dry$x]
+d2a_dry$distcoast <- d1a_dry$y[d2a_dry$y]
+
+d2a_dry$seasonF <- "Dry"
+d2a_wet$seasonF <- "Wet"
+
+d2a <- rbind(d2a_dry, d2a_wet)
+d2a$seasonF <- as.factor(d2a$seasonF)
+
+# on real scale
+# png("tide_analysis/ModelRDS/nontoolusersplot_pred.png", width = 12, height = 6, units = 'in', res = 300)
+# setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
+ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = exp(fit))) +
+  geom_contour_filled(bins = 11) + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Number of capuchins") +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
+  facet_wrap(~seasonF)
+# dev.off()
+
+
+
 
 
 ## practicing determining derivatives
@@ -712,9 +785,24 @@ summary(test_tm3)
 plot(conditional_effects(test_tm3))
 plot(conditional_smooths(test_tm3))
 
+
+#tbm2 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+#              t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+#              s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
+#            knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+#            control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+
+
+deriv_plot(tbm1, dimensions = 2, term = 't2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE)', main = c("tidedif", "distcoast"),
+           eps = 0.01, confidence = 90, "testplotderiv_tbm1")
+
+
+
+
+
 # run gam first derivative plot function code from Shauhin to get functions
-deriv_plot(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif", 0.1, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 95, "testplot") 
-deriv_plot(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif", 0.1, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 95, "testplot2") 
+deriv_plot(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif", 0.01, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 90, "testplot") 
+deriv_plot(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif", 0.01, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 90, "testplot2") 
   ###model must be a brms model object
   ###term is a character string of the smooth term, same syntax as used in the model
   ###main is a character string of the predictor variable, must not be wrapped in a smooth function
@@ -723,8 +811,8 @@ deriv_plot(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif", 0.1, response = NULL,
   ###confidence is the confidence level used to calculate the posterior intervals
   ###The desired name of the resulting ggplot object 
 
-deriv_plot2(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif",  0.1, response = NULL, confidence = 95, "testplotderiv")
-deriv_plot2(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif",  0.1, response = NULL, confidence = 95, "testplotderiv2")
+deriv_plot2(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif",  0.01, response = NULL, confidence = 95, "testplotderiv")
+deriv_plot2(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif",  0.01, response = NULL, confidence = 95, "testplotderiv2")
   ###model must be a brms model object
   ###term is a character string of the smooth term, same syntax as used in the model
   ###main is a character string of the predictor variable, must not be wrapped in a smooth function
@@ -743,6 +831,43 @@ species_interact_deriv(test_tm3, 's(tidedif, bs = "cc", k = 10, by = toolusers)'
 ###confidence is the confidence level used to calculate the posterior intervals
 ###The desired name of the resulting ggplot object 
 
+#### Descriptives for presentation ####
+# How many camera trapping days
+# need to add in the zero's
+
+tidaldays <- onlycap_tj
+tidaldays$dayloc <- paste(tidaldays$locationfactor, tidaldays$seqday, sep = " ")
+tidaldays2 <- tidaldays[!duplicated(tidaldays$dayloc),]
+
+# make overview of deployments we have and their start and end days
+locations_t <- data.frame(uniqueloctag = unique(onlycap_tj$uniqueloctag)) 
+locations_t <- left_join(locations_t, onlycap_tj[,c("uniqueloctag", "dep_start", "dep_end", "locationfactor", "toolusers")], by = "uniqueloctag")
+locations_t <- locations_t[!duplicated(locations_t$uniqueloctag),]
+# take time off and keep just date variable
+locations_t$dep_startday <- as.Date(format(locations_t$dep_start, "%Y-%m-%d"))
+locations_t$dep_endday <- as.Date(format(locations_t$dep_end, "%Y-%m-%d"))
+# calculate days in each deployment (round up)
+locations_t$dep_days <- ceiling(difftime(locations_t$dep_end, locations_t$dep_start, units = c("days")))
+# number of rows in the tidaldays2 dataframe (so how many days we have)
+for (i in 1:nrow(locations_t)) {
+  locations_t$nrow[i] <- nrow(tidaldays2[tidaldays2$uniqueloctag == locations_t$uniqueloctag[i],])
+}
+
+locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, toolusers = locations_t$toolusers), FUN = sum)
+
+sum(locations_t$dep_days[locations_t$toolusers == "Tool-users"])
+sum(locations_t2$x)
+
+# How many locations
+nrow(locations_t2)
+ftable(locations_t2$toolusers)
+# Average number of trapping days per location
+summary(as.numeric(locations_t2$x))
+# average number of trapping days per deployment
+summary(as.numeric(locations_t$dep_days))
+# number of deployments per location
+max(as.matrix(ftable(locations_t$locationfactor)))
+mean(as.matrix(ftable(locations_t$locationfactor)))
 
 ####
 #### ACTIVITY TOOL USERS VS NON TOOL USERS ####
