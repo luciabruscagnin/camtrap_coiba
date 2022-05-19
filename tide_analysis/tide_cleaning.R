@@ -211,6 +211,21 @@ TidesHigh <- subset(TidesF, TidesF$HIGH == TRUE)
 h.lub <- hour(TidesLow$TIDE_TIME)
 hist(h.lub)
 
+## plot showing how tide time varies between days
+TidesLow$LTIDE_NR <- ave(TidesLow$DATE, TidesLow$DATE, FUN = seq_along)
+TidesHigh$HTIDE_NR <- ave(TidesHigh$DATE, TidesHigh$DATE, FUN = seq_along)
+
+par(mar=c(5.1, 5.1, 4.1, 8.1), xpd=TRUE)
+plot(day(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == " 2019" & TidesLow$MONTH == "May")]), 
+     hour(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == " 2019" & TidesLow$MONTH == "May")]),
+     col = "#FC4E07", bty = 'L', xlab = "Day of the Month", ylab = "Time of Tide", main ="May 2019",
+     cex.lab = 2, cex.main = 2, pch = 19)
+points(day(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == " 2019" & TidesHigh$MONTH == "May")]), 
+        hour(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == " 2019" & TidesHigh$MONTH == "May")]),
+        col = "#00AFBB", pch = 19) 
+legend("topright", inset=c(-0.35,0), legend = c("Low Tide", "High Tide"), 
+         col = c("#FC4E07", "#00AFBB"), pch = 19)
+
 ###### WORKING CODE TO CLEAN ONE CSV ######
 # I used this a lot for troubleshooting
 ## still have problem with some that apparently have less white lines in the top? So can't do skip = 9 (which works for some)

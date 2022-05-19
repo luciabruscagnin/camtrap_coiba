@@ -434,7 +434,7 @@ tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(1
               s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
-#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 2000) 
 # saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_ztpois.rds")
 # tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_ztpois.rds")
 # then can do
@@ -491,8 +491,6 @@ tidalcapstu + labs(y = "Average number of capuchins per sequence", x = "Hours be
 newdata_tbm1 <- expand_grid(tidedif = -6:6,
                             toolusers = c("Tool-users", "Non-tool-users"),
                             distcoast = c(1,20, 40))
-
-
 
 # use posterior smooth to get estimated respones 
 predict_tbm1 <- posterior_smooths(tbm1, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)', newdata_tbm1)
@@ -597,8 +595,8 @@ tbm2 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(1
           knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
           control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
-#tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
-#saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_11052022.rds")
+# tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+# saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_prior.rds")
 # tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_11052022.rds")
 
 loo(tbm2)
@@ -684,7 +682,7 @@ ggplot(data = d2, aes(x = tidedif, y = distcoast, z = exp(fit))) +
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
   facet_wrap(~seasonF)
-# dev.off()
+ dev.off()
 
 # on log scale
 ggplot(data = d2, aes(x = tidedif, y = distcoast, z = fit)) +
@@ -700,8 +698,9 @@ tbm2a <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(
              knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
              control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
-# tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
-# saveRDS(tbm2a, "tide_analysis/ModelRDS/tbm2a_12052022.rds")
+# tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+# check add criterion, gives error longer object length is not a multiple of shorter object length
+# saveRDS(tbm2a, "tide_analysis/ModelRDS/tbm2a_prior.rds")
 # tbm2a <- readRDS("tide_analysis/ModelRDS/tbm2a_12052022.rds")
 
 summary(tbm2a)
@@ -745,7 +744,7 @@ d2a$seasonF <- as.factor(d2a$seasonF)
 
 # on real scale
 # png("tide_analysis/ModelRDS/nontoolusersplot_pred.png", width = 12, height = 6, units = 'in', res = 300)
-# setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
+# setEPS(postscript(file = "tide_analysis/ModelRDS/nontoolusersplot_pred.png", width = 12, height = 6))
 ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = exp(fit))) +
   geom_contour_filled(bins = 11) + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Number of capuchins") +
