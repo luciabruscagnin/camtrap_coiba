@@ -457,50 +457,41 @@ summary(tbm1_prior)
 prior_summary(tbm1_prior)
 plot(tbm1_prior)
 
-## Model 1: number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
+##### MODEL 1: TU AND NTU TOGETHER, NO SEASON ######
+## Number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
 ####
-tbm1 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+tbm1 <- brm(n  ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
               s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
 #tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 2000) 
-# saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_prior.rds")
-# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_prior.rds")
-# then can do
-loo(tbm1)
-loo_R2(tbm1)
-bayes_R2(tbm1)
-# loo r squared etc 
-prior_summary(tbm1)
+#saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_pois.rds")
+# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_pois.rds")
+
 summary(tbm1)
 plot(tbm1)
 
-# ce_tbm1 <- conditional_effects(tbm1)
-# saveRDS(ce_tbm1, "tide_analysis/ModelRDS/ce_tbm1_prior.rds")
-# ce_tbm1 <- readRDS("tide_analysis/ModelRDS/ce_tbm1_prior.rds")
-plot(ce_tbm1)
+# ce_tbm1 <- readRDS("tide_analysis/ModelRDS/ce_tbm1_prior.rds") # prior for truncated one, poisson for non truncated one
+plot(conditional_effects(tbm1))
 
-# cs_tbm1 <- conditional_smooths(tbm1)
-# saveRDS(cs_tbm1, "tide_analysis/ModelRDS/cs_tbm1_prior.rds")
 # cs_tbm1 <- readRDS("tide_analysis/ModelRDS/cs_tbm1_prior.rds")
-plot(cs_tbm1)
+plot(conditional_smooths(tbm1))
 
 plot(conditional_effects(tbm1, effects = "tidedif:toolusers", spaghetti = TRUE, ndraws = 200))
-plot(conditional_effects(tbm1, spaghetti = TRUE, ndraws = 200, int_conditions = list(toolusers = "Non-tool-users")))
-unique(onlycap_tj$distcoast[onlycap_tj$toolusers == "Non-tool-users"],)
 
-
-plot(marginal_smooths(tbm1))
+## Checks
 pp_check(tbm1, ndraw = 100) 
-plot(tbm1)
 pairs(tbm1)
-
+loo(tbm1)
+loo_R2(tbm1)
+bayes_R2(tbm1)
 mcmc_plot(tbm1, variable = c("b_Intercept", "b_toolusersToolMusers", "bs_t2tidedifdistcoast_1", "sds_slocationfactor_1"), type = "areas")
 
+## Visualizing
+# Option 1: Using conditional_smooths and effects
 distcoastplot <- plot(conditional_smooths(tbm1, rug = TRUE, int_conditions = list(toolusers = "Tool-users")), plot = FALSE)[[2]]
-# saveRDS(distcoastplot, "tide_analysis/ModelRDS/distcoastplot_brms_prior.rds")
-# distcoastplot <- readRDS("tide_analysis/ModelRDS/distcoastplot_brms_prior.rds")
+# distcoastplot <- readRDS("tide_analysis/ModelRDS/distcoastplot_brms_prior.rds") # zero-truncated one
 
 distcoastplot + ggplot2::ylim(0, 65) + theme_bw() + theme(panel.grid = element_blank()) +  labs(x = "Hours to nearest low tide (0)", y = "Distance to coast (m)", title = "Tool users") +
   guides(color=guide_legend(title="Change in number of capuchins per sequence"))
@@ -515,24 +506,56 @@ ggplot(distcoastplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + ge
 coastdist <- unique(onlycap_tj$distcoast[which(onlycap_tj$distcoast < 50)])
 
 tidalcapstu <- plot(conditional_effects(tbm1), plot = FALSE)[[5]]
-tidalcapstu + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
-  stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedif, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
+#png("tide_analysis/ModelRDS/tidedifdistcoast.png", width = 10, height = 6, units = 'in', res = 300)
+tidalcapstu_pois + labs(y = "Number of capuchins", x = "Hours until and after nearest low tide (=0)") + theme_bw() +
+  stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedif, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE) + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =20), axis.text = element_text(size = 14))
+# dev.off()
 
-ggplot(tidalcapstu$data) + geom_line(aes(x = tidedif, y = estimate__-1, group = toolusers, color = toolusers)) +
-  geom_ribbon(aes(x = tidedif, y = estimate__-1, group = toolusers, fill = toolusers, ymin=lower__-1, ymax = upper__-1), alpha = 0.2) + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
-  stat_summary_bin(data = onlycap_tj, aes(y = n, x = tidedif, group = toolusers, color = toolusers), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
+# Option 2: Compute posterior predictions with posterior_epred and plot contourplot from that
 
-summary(tbm1)
+## Contourplot like below for seasons
+predict_tbm1_p <- posterior_smooths(tbm1, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
 
-# or can compute posterior predictions with posterior_epred
-# and plot contourplot from that
+# mean of each column is what I'm looking for
+tbm1$data$fit_tooltide <- as.numeric(colMedians(predict_tbm1_p))
 
-## predicting fictional cameras distances to coast
+d1_tu <- with(tbm1$data[tbm1$data$toolusers == "Tool-users",], interp(x = tidedif, y = distcoast, z = fit_tooltide, duplicate = "mean"))
+d1_ntu <-  with(tbm1$data[tbm1$data$toolusers == "Non-tool-users",], interp(x = tidedif, y = distcoast, z = fit_tooltide, duplicate = "mean"))
+
+d2_tu <- melt(d1_tu$z, na.rm = TRUE)
+names(d2_tu) <- c("x", "y", "fit")
+d2_tu$tidedif <- d1_tu$x[d2_tu$x]
+d2_tu$distcoast <- d1_tu$y[d2_tu$y]
+
+d2_ntu <- melt(d1_ntu$z, na.rm = TRUE)
+names(d2_ntu) <- c("x", "y", "fit")
+d2_ntu$tidedif <- d1_ntu$x[d2_ntu$x]
+d2_ntu$distcoast <- d1_ntu$y[d2_ntu$y]
+
+d2_tu$toolusers <- "Tool-users"
+d2_ntu$toolusers <- "Non-tool-users"
+
+d2_t <- rbind(d2_tu, d2_ntu)
+d2_t$toolusers <- as.factor(d2_t$toolusers)
+
+# png("tide_analysis/ModelRDS/tuvsntu_pred.png", width = 12, height = 6, units = 'in', res = 300)
+# setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
+ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
+  geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16), axis.text = element_text(size = 14)) +
+  facet_wrap(~toolusers, scales = "free")
+# dev.off()
+
+## Option 2A: predicting fictional cameras distances to coast
+# is not taking locationfactor random effect into account
 newdata_tbm1 <- expand_grid(tidedif = -6:6,
                             toolusers = c("Tool-users", "Non-tool-users"),
                             distcoast = c(1,20, 40))
 
-# use posterior smooth to get estimated respones 
+# use posterior smooth to get estimated responses 
 predict_tbm1 <- posterior_smooths(tbm1, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)', newdata_tbm1)
 
 # mean of each row is what I'm looking for
@@ -545,8 +568,7 @@ ggplot(newdata_tbm1) + geom_line(aes(x = tidedif, y = fit_tooltide, group = dist
   geom_ribbon(aes(x = tidedif, y = fit_tooltide, group = distcoastF, fill = distcoastF, ymin=min, ymax = max), alpha = 0.2) + 
   labs(y = "Change in capuchin activity", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() + facet_wrap(~toolusers)
 
-
-## predicting on existing data
+## Option 2B: predicting on existing data
 newdata_tbm1_tu <- expand_grid(tidedif = -6:6,
                                toolusers = c("Tool-users"),
                                locationfactor = unique(onlycap_tj$locationfactor[which(onlycap_tj$toolusers == "Tool-users")]))
@@ -582,13 +604,9 @@ newdata_tbm1_f$fit_tooltide <- as.numeric(colMeans(predict_tbm1_f))
 newdata_tbm1_f$min <- colQuantiles(predict_tbm1_f, prob = c(0.025))
 newdata_tbm1_f$max <- colQuantiles(predict_tbm1_f, prob = c(0.975))
 
-ggplot(newdata_tbm1_f) + geom_smooth(method = "gam", aes(x = tidedif, y = fit_tooltide, group = toolusers, color = toolusers), se = FALSE) +
-  labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() 
-
 # with different lines for different distances to coast
 ggplot(newdata_tbm1_f) + geom_line(aes(x = tidedif, y = fit_tooltide, group = distcoast, color = distcoast)) +
   labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() + facet_wrap(~toolusers)
-
 
 newdata_tbm1_f$distance <- ifelse(newdata_tbm1_f$distcoast < 10, "<10", ifelse(newdata_tbm1_f$distcoast > 10 & newdata_tbm1_f$distcoast < 30, "10-30", "30-50"))
 # for distcoast below 50 and with uncertainty
@@ -596,92 +614,43 @@ ggplot(newdata_tbm1_f[newdata_tbm1_f$distcoast < 50,]) +   geom_ribbon(aes(x = t
   geom_line(aes(x = tidedif, y = fit_tooltide, group = distcoast, color = distance)) +
   labs(y = "Change in capuchin activity", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() + facet_wrap(~toolusers)
 
-## contourplot like below for seasons
-predict_tbm1_p <- posterior_smooths(tbm1, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
-
-# mean of each column is what I'm looking for
-tbm1$data$fit_tooltide <- as.numeric(colMedians(predict_tbm1_p))
-
-d1_tu <- with(tbm1$data[tbm1$data$toolusers == "Tool-users",], interp(x = tidedif, y = distcoast, z = fit_tooltide, duplicate = "mean"))
-d1_ntu <-  with(tbm1$data[tbm1$data$toolusers == "Non-tool-users",], interp(x = tidedif, y = distcoast, z = fit_tooltide, duplicate = "mean"))
-
-d2_tu <- melt(d1_tu$z, na.rm = TRUE)
-names(d2_tu) <- c("x", "y", "fit")
-d2_tu$tidedif <- d1_tu$x[d2_tu$x]
-d2_tu$distcoast <- d1_tu$y[d2_tu$y]
-
-d2_ntu <- melt(d1_ntu$z, na.rm = TRUE)
-names(d2_ntu) <- c("x", "y", "fit")
-d2_ntu$tidedif <- d1_ntu$x[d2_ntu$x]
-d2_ntu$distcoast <- d1_ntu$y[d2_ntu$y]
-
-d2_tu$toolusers <- "Tool-users"
-d2_ntu$toolusers <- "Non-tool-users"
-
-d2_t <- rbind(d2_tu, d2_ntu)
-d2_t$toolusers <- as.factor(d2_t$toolusers)
-
-# on real scale
-# png("tide_analysis/ModelRDS/tuvsntu_pred.png", width = 12, height = 6, units = 'in', res = 300)
-# setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
-ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
-  geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Number of capuchins") +
-  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
-  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
-  facet_wrap(~toolusers, scales = "free")
-# dev.off()
-
-
-ggplot(data = d2_tu, aes(x = tidedif, y = distcoast, z = exp(fit))) +
-  geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Number of capuchins") + 
-    geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
-  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16))
-# dev.off()
-
-### Model 2: Adding season but split by tool use/non tool use
+##### MODEL 2 AND 2A: ADDING SEASON, SPLIT BY TU/NTU
 ####
 # tool users
-tbm2 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+tbm2 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
             t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
             s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
           knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
           control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
-# saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_prior.rds")
-# tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_prior.rds")
-
-loo(tbm2)
-loo_R2(tbm2)
-bayes_R2(tbm2)
+#saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_poisson.rds")
+# tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_poisson.rds")
 
 summary(tbm2)
 plot(tbm2)
 
-ce_tbm2 <- conditional_effects(tbm2)
-# saveRDS(ce_tbm2, "tide_analysis/ModelRDS/ce_tbm2.rds")
-# ce_tbm2 <- readRDS("tide_analysis/ModelRDS/ce_tbm2.rds")
-plot(ce_tbm2)
+# ce_tbm2 <- readRDS("tide_analysis/ModelRDS/ce_tbm2_prior.rds")
+plot(conditional_effects(tbm2))
 
-
-cs_tbm2 <- conditional_smooths(tbm2)
-# saveRDS(cs_tbm2, "tide_analysis/ModelRDS/cs_tbm2.rds")
-# cs_tbm2 <- readRDS("tide_analysis/ModelRDS/cs_tbm2.rds")
-plot(cs_tbm2)
+# cs_tbm2 <- readRDS("tide_analysis/ModelRDS/cs_tbm2_prior.rds")
+plot(conditional_smooths(tbm2))
 
 plot(conditional_smooths(tbm2))
 
+## Checks
 pp_check(tbm2, ndraw = 100) 
-summary(tbm2)
 mcmc_plot(tbm2, variable = c("b_Intercept", "b_seasonFWet", "bs_t2tidedifdistcoast_1", "sds_slocationfactor_1"), type = "areas")
+loo(tbm2)
+loo_R2(tbm2)
+bayes_R2(tbm2)
+
+## Visualizing
+## Option 1: Conditional_smooths and effects
 
 toolusersplot <- plot(conditional_smooths(tbm2, rug = TRUE), plot = FALSE)[[2]]
-# saveRDS(toolusersplot, "tide_analysis/ModelRDS/toolusersplot_brms.rds")
 # toolusersplot <- readRDS("tide_analysis/ModelRDS/toolusersplot_brms.rds")
 
-## contourplots for tool users for wet and dry season
 # png("tide_analysis/ModelRDS/toolusersplot.png", width = 12, height = 6, units = 'in', res = 300)
 # setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot.png", width = 12, height = 6))
 ggplot(toolusersplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) +
@@ -691,17 +660,11 @@ ggplot(toolusersplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + ge
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =20))
 # dev.off()
 
-toolusersseason <- plot(ce_tbm2, plot = FALSE)[[5]]
+toolusersseason <- plot(conditional_effects(tbm2), plot = FALSE)[[5]]
 toolusersseason + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
   stat_summary_bin(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(y = n, x = tidedif, group = seasonF, color = seasonF), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
 
-ggplot(toolusersseason$data) + geom_smooth(method = "gam", se = TRUE, formula = y ~ s(x, bs = "cc"), aes(x = tidedif, y = estimate__-1, group = seasonF, color = seasonF)) + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
-  stat_summary_bin(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(y = n, x = tidedif, group = seasonF, color = seasonF), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
-
-ggplot(toolusersseason$data) + geom_line(aes(x = tidedif, y = estimate__-1, group = seasonF, color = seasonF)) +
-  geom_ribbon(aes(x = tidedif, y = estimate__-1, group = seasonF, fill = seasonF, ymin=lower__-1, ymax = upper__-1), alpha = 0.2) + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
-  stat_summary_bin(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(y = n, x = tidedif, group = seasonF, color = seasonF), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
-
+## Option 2: Predicting data
 predict_tbm2 <- posterior_smooths(tbm2, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
 # mean of each column is what I'm looking for
 tbm2$data$fit_seasontide <- as.numeric(colMeans(predict_tbm2))
@@ -725,28 +688,19 @@ d2_wet$seasonF <- "Wet"
 d2 <- rbind(d2_dry, d2_wet)
 d2$seasonF <- as.factor(d2$seasonF)
 
-#saveRDS(d2, "tide_analysis/ModelRDS/d2_contourtoolsonly.RDS")
-
-# on real scale
 # png("tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6, units = 'in', res = 300)
 # setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
-ggplot(data = d2, aes(x = tidedif, y = distcoast, z = exp(fit))) +
-  geom_contour_filled(bins = 10) + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Number of capuchins") +
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
-  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
-  facet_wrap(~seasonF)
- dev.off()
-
-# on log scale
 ggplot(data = d2, aes(x = tidedif, y = distcoast, z = fit)) +
   geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
-  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16), axis.text = element_text(size=14)) +
   facet_wrap(~seasonF)
+# dev.off()
 
-# non tool users
-tbm2a <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+
+### non tool users
+tbm2a <- brm(n  ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
              knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
@@ -754,8 +708,8 @@ tbm2a <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(
 
 # tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 # check add criterion, gives error longer object length is not a multiple of shorter object length
-# saveRDS(tbm2a, "tide_analysis/ModelRDS/tbm2a_prior.rds")
-# tbm2a <- readRDS("tide_analysis/ModelRDS/tbm2a_12052022.rds")
+# saveRDS(tbm2a, "tide_analysis/ModelRDS/tbm2a_poisson.rds")
+# tbm2a <- readRDS("tide_analysis/ModelRDS/tbm2a_poisson.rds")
 
 summary(tbm2a)
 plot(conditional_smooths(tbm2a))
@@ -763,7 +717,6 @@ plot(conditional_effects(tbm2a))
 
 nontoolusersplot <- plot(conditional_smooths(tbm2a, rug = TRUE), plot = FALSE)[[2]]
 
-## contourplots for non tool users for wet and dry season
 # png("tide_analysis/ModelRDS/nontoolusersplot.png", width = 12, height = 6, units = 'in', res = 300)
 # setEPS(postscript(file = "tide_analysis/ModelRDS/nontoolusersplot.png", width = 12, height = 6))
 ggplot(nontoolusersplot$data, aes(x = tidedif, y = distcoast, z = exp(estimate__))) + geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) +
@@ -772,6 +725,10 @@ ggplot(nontoolusersplot$data, aes(x = tidedif, y = distcoast, z = exp(estimate__
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + facet_wrap(~seasonF) +
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =20))
 # dev.off()
+
+ntoolusersseason <- plot(conditional_effects(tbm2a), plot = FALSE)[[5]]
+ntoolusersseason + labs(y = "Average number of capuchins per sequence", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() +
+  stat_summary_bin(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(y = n, x = tidedif, group = seasonF, color = seasonF), bins = 12, fun = mean, geom = "point", inherit.aes =  FALSE)
 
 predict_tbm2a <- posterior_smooths(tbm2a, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
 # mean of each column is what I'm looking for
@@ -800,17 +757,17 @@ d2a$seasonF <- as.factor(d2a$seasonF)
 # setEPS(postscript(file = "tide_analysis/ModelRDS/nontoolusersplot_pred.png", width = 12, height = 6))
 ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = fit)) +
   geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in capuchin activity") +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
   facet_wrap(~seasonF)
 # dev.off()
 
 
-
-
+########### DERIVATIVES OF GAMS #########
 
 ## practicing determining derivatives
+## First run code from Shauhin
 # tool users only
 test_tm <- brm(n ~ s(tidedif, bs = "cc", k = 10) + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
                knots = list(tidedif =c(-6,6)), backend = "cmdstanr", core = 2, chain = 2, iter = 2000 )
