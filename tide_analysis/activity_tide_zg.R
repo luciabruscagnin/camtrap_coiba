@@ -667,7 +667,7 @@ toolusersseason + labs(y = "Average number of capuchins per sequence", x = "Hour
 ## Option 2: Predicting data
 predict_tbm2 <- posterior_smooths(tbm2, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
 # mean of each column is what I'm looking for
-tbm2$data$fit_seasontide <- as.numeric(colMeans(predict_tbm2))
+tbm2$data$fit_seasontide <- as.numeric(colMedians(predict_tbm2))
 
 d1_wet <- with(tbm2$data[tbm2$data$seasonF == "Wet",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
 d1_dry <-  with(tbm2$data[tbm2$data$seasonF == "Dry",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
@@ -732,7 +732,7 @@ ntoolusersseason + labs(y = "Average number of capuchins per sequence", x = "Hou
 
 predict_tbm2a <- posterior_smooths(tbm2a, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
 # mean of each column is what I'm looking for
-tbm2a$data$fit_seasontide <- as.numeric(colMeans(predict_tbm2a))
+tbm2a$data$fit_seasontide <- as.numeric(colMedians(predict_tbm2a))
 
 d1a_wet <- with(tbm2a$data[tbm2a$data$seasonF == "Wet",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
 d1a_dry <-  with(tbm2a$data[tbm2a$data$seasonF == "Dry",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
@@ -761,7 +761,7 @@ ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = fit)) +
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
   facet_wrap(~seasonF)
-# dev.off()
+#dev.off()
 
 
 ########### DERIVATIVES OF GAMS #########
