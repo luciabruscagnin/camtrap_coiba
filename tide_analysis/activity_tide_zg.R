@@ -490,16 +490,23 @@ mcmc_plot(tbm1, variable = c("b_Intercept", "b_toolusersToolMusers", "bs_t2tided
 
 ## Visualizing
 # Option 1: Using conditional_smooths and effects
-distcoastplot <- plot(conditional_smooths(tbm1, rug = TRUE, int_conditions = list(toolusers = "Tool-users")), plot = FALSE)[[2]]
+distcoastplot <- plot(conditional_smooths(tbm1, rug = TRUE), plot = FALSE)[[2]]
 # distcoastplot <- readRDS("tide_analysis/ModelRDS/distcoastplot_brms_prior.rds") # zero-truncated one
 
-distcoastplot + ggplot2::ylim(0, 65) + theme_bw() + theme(panel.grid = element_blank()) +  labs(x = "Hours to nearest low tide (0)", y = "Distance to coast (m)", title = "Tool users") +
+distcoastplot + ggplot2::ylim(0, 50) + theme_bw() + theme(panel.grid = element_blank()) +  labs(x = "Hours to nearest low tide (0)", y = "Distance to coast (m)", title = "Tool users") +
   guides(color=guide_legend(title="Change in number of capuchins per sequence"))
 # if we want to fill it etc we need to predict or get fit out of brms object and make it ourselves with geom_contour
-ggplot(distcoastplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + geom_contour_filled() + ylim(0,65) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+
+distcoastplot$data$toolusers <- relevel(distcoastplot$data$toolusers, ref = "Tool-users")
+
+# png("tide_analysis/ModelRDS/tuvsntu_50.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot(distcoastplot$data, aes(x = tidedif, y = distcoast, z = estimate__)) + geom_contour_filled() + ylim(0,50) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
   theme_bw() + theme(panel.grid = element_blank()) + 
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", title = "Tool users", fill = "Change in number of capuchins per sequence") +
-  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), inherit.aes = FALSE) 
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins per sequence") +
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), inherit.aes = FALSE)  +
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16), axis.text = element_text(size = 14)) +
+  facet_wrap(~toolusers)
+#dev.off()
 
 #tidedif by tool users vs non tool users
 # distances below 50 meters
@@ -538,6 +545,7 @@ d2_ntu$toolusers <- "Non-tool-users"
 
 d2_t <- rbind(d2_tu, d2_ntu)
 d2_t$toolusers <- as.factor(d2_t$toolusers)
+d2_t$toolusers <- relevel(d2_t$toolusers, ref = "Tool-users")
 
 # png("tide_analysis/ModelRDS/tuvsntu_pred.png", width = 12, height = 6, units = 'in', res = 300)
 # setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
