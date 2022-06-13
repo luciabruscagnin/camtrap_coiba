@@ -32,7 +32,7 @@ depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20220509075813
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
-depl_keys$flag <- ifelse(grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
+depl_keys$flag <- ifelse(grepl("Flag", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
 agoutigross <- left_join(agoutigross, depl_keys, "deploymentID")
 agoutigross <- agoutigross[agoutigross$flag == 0,]
 

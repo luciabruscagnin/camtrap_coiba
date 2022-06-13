@@ -772,6 +772,104 @@ ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = fit)) +
 #dev.off()
 
 
+########## TEMPERATURE ########
+# First need to identify cameras that are definitely wrong
+# per deployment, plot temperature per hour of the day with color of the camera location
+str(onlycap_tj)
+plot(onlycap_tj$seq_start, onlycap_tj$temperature)
+
+ggplot(data = onlycap_tj[str_detect(onlycap_tj$uniqueloctag, "R6") == TRUE,], aes(x = seq_start, y = temperature, group = locationfactor, color = locationfactor)) +
+  geom_point()
+# in R1: Survey CEBUS-01-01 pops out with very high values (~45 degrees)
+# in R2: Everything seems alright and pretty consistent
+# in R3: Also seems alright and consistent
+# in R4: CEBUS-09 goes up to 50 degrees a few times, also SURVEY-CEBUS-15-04 goes up a few times
+# in R5: CEBUS-01 seems broken (goes up to 50 degrees). CEBUS-04 has spike in 50's once.
+# in R6: CEBUS-04 goes above 40 a few times, but not very far
+
+# variation in cameras within one day
+ggplot(data = onlycap_tj[onlycap_tj$seqday == "2018-02-18",], aes(x = hour, y = temperature, group = locationfactor, color = locationfactor)) +
+  geom_point()
+
+# does distance to coast matter a lot?
+# consider temperature  vs distance to coast (see if it changes within hour)
+ggplot(data = onlycap_tj[onlycap_tj$seqday == "2018-02-18",], aes(x = hour, y = temperature, color = distcoast)) +
+  geom_point()
+ggplot(data = onlycap_tj[str_detect(onlycap_tj$uniqueloctag, "R1") == TRUE,], aes(x = hour, y = temperature, color = distcoast)) +
+  geom_point()
+# doesn't seem to matter that much
+
+# difference jicaron tool use and non tool use
+ggplot(data = onlycap_tj[str_detect(onlycap_tj$uniqueloctag, "R6") == TRUE,], aes(x = hour, y = temperature, color = toolusers)) +
+  geom_point()
+
+## Filter out wrong ones, then get to average temperature per seqday per hour (for sequences that are present)
+# R1
+onlycap_tj[onlycap_tj$uniqueloctag == "SURVEY-CEBUS-01-01-R1", c("seqday","hour", "temperature")]
+ggplot(data = onlycap_tj[onlycap_tj$uniqueloctag == "SURVEY-CEBUS-01-01-R1",], aes(x = hour, y = temperature)) +  geom_point()
+# is likely due to camera being in the direct sun, is at hotter part of the day
+# but 2017-06-01  at  7 being 37 degrees is likely wrong 
+
+# R4
+onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-09-R4",c("hour", "temperature")]
+ggplot(data = onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-09-R4",], aes(x = hour, y = temperature)) +  geom_point()
+onlycap_tj[onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4",c("seqday", "hour", "temperature")]
+ggplot(data = onlycap_tj[onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4",], aes(x = hour, y = temperature)) +  geom_point()
+# seems to be that at 2018-07-05 at 8 AM the estimates are all very high (although at 7 they are around 26 degrees, now suddenly around 30-40). Take average of 7 AM?
+
+# R5
+onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-01-R5", c("seqday", "hour", "temperature")]
+ggplot(data = onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-01-R5",], aes(x = hour, y = temperature)) +  geom_point()
+# seems that on 2018-09-07 have many of the over 40 values, also in the 50s. Fix by setting over 40's to NA?
+
+onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-04-R5", c("seqday", "hour", "temperature")]
+ggplot(data = onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-04-R5",], aes(x = hour, y = temperature)) +  geom_point()
+
+# R6
+onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-04-R6", c("seqday", "hour", "temperature")]
+ggplot(data = onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-04-R6",], aes(x = hour, y = temperature)) +  geom_point()
+
+### Filter out obviously wrong ones
+
+# create new temperature variable, set wrong cameras to NA and wrong temperatures (>40) to NA
+onlycap_tj$temp <- ifelse(onlycap_tj$temperature > 40, NA, onlycap_tj$temperature)
+onlycap_tj$temp[onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlycap_tj$seqday == "2018-07-05" & hour == "8",]
+# correct the time at 2018-07-05 in SURVEY-CEBUS-15-04-R4
+onlycap_tj$temp[which(onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlycap_tj$seqday == "2018-07-05" & onlycap_tj$hour == 8)] <-
+  median(onlycap_tj$temp[which(onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlycap_tj$seqday == "2018-07-05" & onlycap_tj$hour == 7)])
+
+### OPTION 1: Run in this form (or impute data). Keep variation
+tidetemp_m1 <- gam(n ~ te(tidedif, distcoast, bs = c("tp", "tp"), k = c(10, 6)) +
+                te(tidedif, distcoast, temp, bs = c("tp", "tp"), k = c(10,6), m = 1) +
+                s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], method = "REML",
+              select = TRUE)
+
+summary(tidetemp_m1)
+draw(tidetemp_m1)
+
+### OPTION 2: Take average temperature of all cameras active at that date and hour (lose variation)
+
+
+# aggregate by seqday, hour, temperature (mean)
+
+
+# replace NA's with temp at same hour on previous day
+
+# how to deal with Claudio's data? 
+
+# add temp2 to dataframe by leftjoining on seqday + hour
+
+
+
+
+
+
+
+
+
+# standardize within cameras vs get average per region (e.g. tool users) or whole island even?
+
+
 ########### DERIVATIVES OF GAMS #########
 
 ## practicing determining derivatives
