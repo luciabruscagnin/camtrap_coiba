@@ -622,7 +622,7 @@ ggplot(newdata_tbm1_f[newdata_tbm1_f$distcoast < 50,]) +   geom_ribbon(aes(x = t
   geom_line(aes(x = tidedif, y = fit_tooltide, group = distcoast, color = distance)) +
   labs(y = "Change in capuchin activity", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() + facet_wrap(~toolusers)
 
-##### MODEL 2 AND 2A: ADDING SEASON, SPLIT BY TU/NTU
+##### MODEL 2 AND 2A: ADDING SEASON, SPLIT BY TU/NTU #########
 ####
 # tool users
 tbm2 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
@@ -633,7 +633,7 @@ tbm2 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = 
 
 # tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 #saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_poisson.rds")
-# tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_poisson.rds")
+#tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_poisson.rds")
 
 summary(tbm2)
 plot(tbm2)
@@ -771,6 +771,29 @@ ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = fit)) +
   facet_wrap(~seasonF)
 #dev.off()
 
+###### TIME OF DAY ######
+# tool users
+tbm2_h <- brm(n ~ t2(hour, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+              t2(hour, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+              s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
+            knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+
+# tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+#saveRDS(tbm2_h, "tide_analysis/ModelRDS/tbm2_h.rds")
+# tbm2_h <- readRDS("tide_analysis/ModelRDS/tbm2_h.rds")
+
+# tool users
+tbm2a_h <- brm(n ~ t2(hour, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+                t2(hour, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+                s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
+              knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+              control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+
+# tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+#saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_h.rds")
+# tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_h.rds")
+
 
 ########## TEMPERATURE ########
 # First need to identify cameras that are definitely wrong
@@ -833,7 +856,7 @@ ggplot(data = onlycap_tj[onlycap_tj$uniqueloctag == "CEBUS-04-R6",], aes(x = hou
 
 # create new temperature variable, set wrong cameras to NA and wrong temperatures (>40) to NA
 onlycap_tj$temp <- ifelse(onlycap_tj$temperature > 40, NA, onlycap_tj$temperature)
-onlycap_tj$temp[onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlycap_tj$seqday == "2018-07-05" & hour == "8",]
+onlycap_tj$temp[onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlycap_tj$seqday == "2018-07-05" & hour == 8,]
 # correct the time at 2018-07-05 in SURVEY-CEBUS-15-04-R4
 onlycap_tj$temp[which(onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlycap_tj$seqday == "2018-07-05" & onlycap_tj$hour == 8)] <-
   median(onlycap_tj$temp[which(onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlycap_tj$seqday == "2018-07-05" & onlycap_tj$hour == 7)])
