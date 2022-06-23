@@ -773,26 +773,447 @@ ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = fit)) +
 
 ###### TIME OF DAY ######
 # tool users
-tbm2_h <- brm(n ~ t2(hour, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
-              t2(hour, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+tbm2_h <- brm(n ~ t2(hour, distcoast, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
+              t2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
               s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-            knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 #saveRDS(tbm2_h, "tide_analysis/ModelRDS/tbm2_h.rds")
 # tbm2_h <- readRDS("tide_analysis/ModelRDS/tbm2_h.rds")
 
-# tool users
-tbm2a_h <- brm(n ~ t2(hour, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
-                t2(hour, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+summary(tbm2_h)
+plot(conditional_effects(tbm2_h))
+plot(conditional_smooths(tbm2_h))
+
+# non tool users
+tbm2a_h <- brm(n ~ t2(hour, distcoast, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
+                t2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                 s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
-              knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+              chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
               control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 #saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_h.rds")
 # tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_h.rds")
+
+
+########### DERIVATIVES OF GAMS #########
+
+## run function below (now copied from Shauhin's script on 23.06.2022)
+deriv_plot <- function (model, dimensions = 1, by = FALSE, term, main, eps, response = NULL, spaghetti=FALSE, rug = TRUE, confidence=95,output){
+  require(dplyr)
+  require(ggplot2)
+  require(plotly)
+  require(brms)
+  
+  ###model must be a brms model object
+  ###dimensions should be the number of variables in your spline
+  ###term is a character string of the smooth term, same syntax as used in the model
+  ###main is a character string (or vector of characters equal to dimensions) of the predictor variable, must not be wrapped in a smooth function
+  ###eps is the amount to offset the original data (or a vector of offsets equal to dimensions), to be differenced from original to calculate slope
+  ###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
+  ###confidence is the confidence level used to calculate the posterior intervals
+  ###The desired name of the resulting ggplot object 
+  Response=response
+  if(is.null(Response)){
+    Response=model$formula$resp
+  }
+  
+  if(length(names(model$data))>6){
+    model$data=model$data[,c(1:6)]
+  }
+  
+  upper=(50+(confidence/2))/100
+  lower=(50-(confidence/2))/100
+  
+  newdat=model$data
+  newdat_b=model$data
+  newdat_c=model$data
+  newdat_d=model$data
+  
+  ##for 2D smooth finite difference aprox something like this
+  ##fxy(x,y)~(f(x+eps_h,y+eps_k)-f(x+eps_h,y-eps_k)-f(x-eps_h,y+eps_k)+f(x-eps_h,y-eps_k))/(4*eps_h*eps*k)
+  if(dimensions > 1) {
+    if(length(eps)==1){
+      eps[2]=eps[1]
+    }
+    for(i in 1:dimensions) {
+      newdat[,which(names(newdat)==main[i])]=newdat[,which(names(newdat)==main[i])]+eps[i] # h + K
+      newdat_b[,which(names(newdat_b)==main[i])]=newdat_b[,which(names(newdat_b)==main[i])]-eps[i] # -h - K
+      
+    }
+    
+    
+    #h - k
+    newdat_c[,which(names(newdat_c)==main[1])]=newdat_c[,which(names(newdat_c)==main[1])]+eps[1] 
+    newdat_c[,which(names(newdat_c)==main[2])]=newdat_c[,which(names(newdat_c)==main[2])]-eps[2] 
+    
+    #-h + k
+    newdat_d[,which(names(newdat_d)==main[1])]=newdat_d[,which(names(newdat_d)==main[1])]-eps[1]  
+    newdat_d[,which(names(newdat_d)==main[2])]=newdat_d[,which(names(newdat_d)==main[2])]+eps[2] 
+    
+    
+  } else{
+    newdat[,which(names(newdat)==main)]=newdat[,which(names(newdat)==main)]+eps
+  } 
+  
+  if(dimensions > 1){
+    #dir=posterior_smooths(model, smooth = term, resp=response)
+    dir2=posterior_smooths(model, smooth = term, resp=response, newdata = newdat)
+    dir2_b=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_b)
+    dir2_c=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_c)
+    dir2_d=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_d)
+    
+    dir_model=(dir2-dir2_c-dir2_d+dir2_b)/(4*prod(eps))
+    
+    mean_der <- apply(dir_model,MARGIN = 2,FUN = mean)
+    lower_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = lower)
+    upper_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = upper)
+    
+    
+    der_data = cbind(mean_der, lower_der, upper_der)
+    
+    for(i in 1:length(main)) {
+      der_data = cbind(der_data, model$data[,which(names(model$data)==main[i])])
+    }
+    der_data <- as.data.frame(der_data)
+    
+    colnames(der_data)=c("mean","lower","upper", main[1:length(main)])
+    
+    if(is.null(by)==TRUE) {
+      interpdat <- with(der_data, akima::interp(x = der_data[,4], y = der_data[,5], z = mean, duplicate = "mean"))
+      interpdat2 <- reshape2::melt(interpdat$z, na.rm = TRUE)
+      names(interpdat2) <- c("x", "y", "dir")
+      interpdat2$main1 <- interpdat$x[interpdat2$x]
+      interpdat2$main2 <- interpdat$y[interpdat2$y]
+      interpdat_low <- with(der_data, akima::interp(x = der_data[,4], y = der_data[,5], z = lower, duplicate = "mean"))
+      interpdat2_low <- reshape2::melt(interpdat_low$z, na.rm = TRUE)
+      names(interpdat2_low) <- c("x", "y", "dir")
+      interpdat2_low$main1 <- interpdat_low$x[interpdat2_low$x]
+      interpdat2_low$main2 <- interpdat_low$y[interpdat2_low$y]
+      interpdat_high <- with(der_data, akima::interp(x = der_data[,4], y = der_data[,5], z = upper, duplicate = "mean"))
+      interpdat2_high <- reshape2::melt(interpdat_high$z, na.rm = TRUE)
+      names(interpdat2_high) <- c("x", "y", "dir")
+      interpdat2_high$main1 <- interpdat_high$x[interpdat2_high$x]
+      interpdat2_high$main2 <- interpdat_high$y[interpdat2_high$y]
+      interpdat2$upper=interpdat2_high$dir
+      interpdat2$lower=interpdat2_low$dir
+      interpdat2$threshold=0
+    } else {
+      # add by column to der_data
+      # for now only set up for by variable with TWO LEVELS and in quite explicit/roundabout way
+      der_data = cbind(der_data, model$data[,which(names(model$data)==by)])
+      colnames(der_data)=c("mean","lower","upper", main[1:length(main)], by)
+      
+      # factor level 1
+      der_data_by1 <- der_data[which(der_data[,6] == levels(der_data[,6])[1]),]
+      interpdat_a <- with(der_data_by1, akima::interp(x = der_data_by1[,4], y = der_data_by1[,5], z = mean, duplicate = "mean"))
+      interpdat_a2 <- reshape2::melt(interpdat_a$z, na.rm = TRUE)
+      names(interpdat_a2) <- c("x", "y", "dir")
+      interpdat_a2$main1 <- interpdat_a$x[interpdat_a2$x]
+      interpdat_a2$main2 <- interpdat_a$y[interpdat_a2$y]
+      interpdat_a_low <- with(der_data_by1, akima::interp(x = der_data_by1[,4], y = der_data_by1[,5], z = lower, duplicate = "mean"))
+      interpdat_a2_low <- reshape2::melt(interpdat_a_low$z, na.rm = TRUE)
+      names(interpdat_a2_low) <- c("x", "y", "dir")
+      interpdat_a2_low$main1 <- interpdat_a_low$x[interpdat_a2_low$x]
+      interpdat_a2_low$main2 <- interpdat_a_low$y[interpdat_a2_low$y]
+      interpdat_a_high <- with(der_data_by1, akima::interp(x = der_data_by1[,4], y = der_data_by1[,5], z = upper, duplicate = "mean"))
+      interpdat_a2_high <- reshape2::melt(interpdat_a_high$z, na.rm = TRUE)
+      names(interpdat_a2_high) <- c("x", "y", "dir")
+      interpdat_a2_high$main1 <- interpdat_a_high$x[interpdat_a2_high$x]
+      interpdat_a2_high$main2 <- interpdat_a_high$y[interpdat_a2_high$y]
+      interpdat_a2$upper=interpdat_a2_high$dir
+      interpdat_a2$lower=interpdat_a2_low$dir
+      interpdat_a2$threshold=0
+      
+      # factor level 2
+      der_data_by2 <- der_data[which(der_data[,6] == levels(der_data[,6])[2]),]
+      interpdat_b <- with(der_data_by2, akima::interp(x = der_data_by2[,4], y = der_data_by2[,5], z = mean, duplicate = "mean"))
+      interpdat_b2 <- reshape2::melt(interpdat_b$z, na.rm = TRUE)
+      names(interpdat_b2) <- c("x", "y", "dir")
+      interpdat_b2$main1 <- interpdat_b$x[interpdat_b2$x]
+      interpdat_b2$main2 <- interpdat_b$y[interpdat_b2$y]
+      interpdat_b_low <- with(der_data_by2, akima::interp(x = der_data_by2[,4], y = der_data_by2[,5], z = lower, duplicate = "mean"))
+      interpdat_b2_low <- reshape2::melt(interpdat_b_low$z, na.rm = TRUE)
+      names(interpdat_b2_low) <- c("x", "y", "dir")
+      interpdat_b2_low$main1 <- interpdat_b_low$x[interpdat_b2_low$x]
+      interpdat_b2_low$main2 <- interpdat_b_low$y[interpdat_b2_low$y]
+      interpdat_b_high <- with(der_data_by2, akima::interp(x = der_data_by2[,4], y = der_data_by2[,5], z = upper, duplicate = "mean"))
+      interpdat_b2_high <- reshape2::melt(interpdat_b_high$z, na.rm = TRUE)
+      names(interpdat_b2_high) <- c("x", "y", "dir")
+      interpdat_b2_high$main1 <- interpdat_b_high$x[interpdat_b2_high$x]
+      interpdat_b2_high$main2 <- interpdat_b_high$y[interpdat_b2_high$y]
+      interpdat_b2$upper=interpdat_b2_high$dir
+      interpdat_b2$lower=interpdat_b2_low$dir
+      interpdat_b2$threshold=0
+    }
+    
+    if(is.null(by)==TRUE){
+      axx <- list(
+        title = names(model$data)[3]
+      )
+      
+      axy <- list(
+        title = names(model$data)[4]
+      )
+      
+      
+      p <- plot_ly(interpdat2, x=~main1, y=~main2, 
+                   z=~dir, intensity = ~dir,type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p=p%>% hide_colorbar()
+      p <- p %>% layout(title = "Derivative",
+                        scene = list(xaxis=axx, yaxis=axy,
+                                     aspectmode='cube'))
+      assign(output,p, envir = parent.frame())
+      return(p)
+    } else{ 
+      axx <- list(
+        title = names(model$data)[3]
+      )
+      
+      axy <- list(
+        title = names(model$data)[4]
+      )
+      
+      p1 <- plot_ly(interpdat_a2, x=~main1, y=~main2, 
+                    z=~dir, intensity = ~dir, scene= 'scene1', type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p1=p1%>% hide_colorbar()
+      p1 <- p1 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[1], sep = ": "),
+                                             showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
+      
+      p2 <- plot_ly(interpdat_b2, x=~main1, y=~main2, 
+                    z=~dir, intensity = ~dir, scene= 'scene2', type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p2=p2%>% hide_colorbar()
+      p2 <- p2 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[2], sep = ": "),
+                                             showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
+      
+      pp <- subplot(p1, p2)
+      pp <- pp %>% layout(title = paste("Derivative at confidence", confidence, sep = " "),
+                          scene = list(xaxis=axx, yaxis=axy,
+                                       aspectmode='cube'),
+                          scene2 = list(xaxis=axx, yaxis=axy,
+                                        aspectmode='cube'))
+      assign(output,pp, envir = parent.frame())
+      return(pp) 
+    }
+    
+    
+    
+  } else{
+    newdat=model$data
+    newdat[,which(names(newdat)==main)]=newdat[,which(names(newdat)==main)]+eps
+    dir=posterior_smooths(model, smooth = term, resp=response)
+    dir2=posterior_smooths(model, smooth = term, resp=response, newdata = newdat)
+    
+    dir_model=(dir2-dir)/eps
+    
+    mean_der <- apply(dir_model,MARGIN = 2,FUN = mean)
+    lower_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = lower)
+    upper_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = upper)
+    
+    der_data=data.frame(mean_der) %>%
+      cbind(lower_der) %>%
+      cbind(upper_der) %>%
+      cbind(model$data[,which(names(model$data)==main)])
+    colnames(der_data)=c("mean","lower","upper","main")
+    
+    
+    der_data$Significance=NA
+    der_data$Significance[which(sign(der_data$lower)<0&sign(der_data$upper)<0)]="Significant"
+    der_data$Significance[which(sign(der_data$lower)>0&sign(der_data$upper)>0)]="Significant"
+    der_data$Significance[which(sign(der_data$lower)!=sign(der_data$upper))]="Not Significant"
+    #sigranges=tapply(der_data$main,as.factor(der_data$Significance),range)
+    
+    der_data$Significance=NA
+    der_data$Significance[which(sign(der_data$lower)<0&sign(der_data$upper)<0)]=-1
+    der_data$Significance[which(sign(der_data$lower)>0&sign(der_data$upper)>0)]=1
+    der_data$Significance[which(sign(der_data$lower)!=sign(der_data$upper))]=0
+    #der_data=der_data[with(der_data, order(der_data[,4], der_data[,5])),]
+    der_data$siglab <- with(rle(der_data$Significance), rep(cumsum(lengths >= 1),lengths))
+    
+    
+    if(length(which(der_data$Significance!=0))==0){
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)
+      if(is.null(response)){
+        index=which(names(model_plot)==paste(main,sep=""))
+      }else{
+        index=which(names(model_plot)==paste(response,".",response,"_",main,sep=""))
+      }    
+      model_est <- as.data.frame(model_plot[[index]][[1]])
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)[[index]]
+      
+      index2=which(names(model_est)==main)
+      colnames(model_est)[index2]="Main"
+      
+      model_plot2=model_plot+
+        geom_line(data=model_est,aes(Main,estimate__,color=I("black")),size=1)+
+        ylab(Response)+xlab(main)+
+        theme_classic()+ guides(color="none")
+      assign(output,model_plot2, envir = parent.frame())
+      return(model_plot2)
+      
+    } else{
+      der_data_SIG=der_data[which(der_data$Significance!=0),]
+      
+      sigranges=tapply(der_data_SIG$main,as.factor(der_data_SIG$siglab),range, na.rm=T)
+      
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)
+      if(is.null(response)){
+        index=which(names(model_plot)==paste(main,sep=""))
+      }else{
+        index=which(names(model_plot)==paste(response,".",response,"_",main,sep=""))
+      }    
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug, errorbar_args = list(alpha=0.1),plot=FALSE)[[index]]
+      
+      model_est <- as.data.frame(model_plot[[1]])
+      model_est$Sig=NA
+      model_est$Sig2=NA
+      model_est$Sig2[which(model_est$Sig==0)]=.8
+      model_est$Sig2[which(model_est$Sig==1)]=1.5
+      index2=which(names(model_est)==main)
+      colnames(model_est)[index2]="Main"
+      
+      
+      for(i in 1:nrow(model_est)){
+        for(j in 1:length(sigranges)){
+          if(model_est$Main[i]>=sigranges[[j]][1] & model_est$Main[i]<sigranges[[j]][2]){
+            model_est$Sig[i]=1
+          }
+        }
+        
+        
+      }
+      model_est$Sig[-which(model_est$Sig==1)]=0
+      if(length(which(model_est$Sig==1))==0){
+        model_est$Sig=0
+      }
+      model_plot2=model_plot+ 
+        geom_line(data=model_est,aes(Main,estimate__,color=(Sig)),size=1)+
+        scale_color_gradient2(low="black", mid="black",high="cyan" )+
+        ylab(Response)+xlab(main)+
+        theme_classic()+ guides(color="none")
+      
+      assign(output,model_plot2, envir = parent.frame())
+      output2=gsub("_plot", "", output)
+      output2=paste("VOI",output2,sep="_")
+      if(length(which(model_est$Sig==1))>0){
+        VOIdat=model_est[which(model_est$Sig==1),]
+        assign(output2,VOIdat, envir = parent.frame())
+      }
+    }
+    return(model_plot2)
+    
+  }
+  
+}
+
+##### Time to low tide
+
+### tool users vs non tool users
+## 50 confidence
+deriv_plot(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', main = c("tidedif", "distcoast"),
+           eps = 0.01, confidence = 50, output = "derivplot_tbm1_50")
+
+## no regions that are reliably on one side of 0, already at such low confidence, so no need to proceed
+# means that the effect is not really supported
+
+### tool users: dry vs wet season
+## 50 confidence
+deriv_plot(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif", "distcoast"), eps = 0.01, confidence = 50, output = "derivplot_tbm2season_50")
+
+## 70 confidence
+deriv_plot(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif", "distcoast"), eps = 0.01, confidence = 70, output = "derivplot_tbm2season_70")
+
+## 90 confidence
+deriv_plot(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif", "distcoast"), eps = 0.01, confidence = 90, output = "derivplot_tbm2season_90")
+
+### non tool users: dry vs wet season
+## 50 confidence
+deriv_plot(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif", "distcoast"), eps = 0.01, confidence = 50, output = "derivplot_tbm2aseason_50")
+
+### no regions that are reliably on one side of 0, already at such low confidence, so no need to proceed
+# means that the effect is not really supported
+
+##### Hour of the day
+
+### tool users: dry vs wet season
+
+
+
+### non tool users: general
+### non tool users: dry vs wet season
+
+
+
+
+
+
+deriv_plot(tbm2, dimensions = 2, term = 't2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif", "distcoast"), by = c("seasonF"), eps = 0.05, confidence = 80, output = "derivplot_tbm2season")
+
+
+#### Descriptives for presentation ####
+# How many camera trapping days
+# need to add in the zero's
+
+tidaldays <- onlycap_tj
+tidaldays$dayloc <- paste(tidaldays$locationfactor, tidaldays$seqday, sep = " ")
+tidaldays2 <- tidaldays[!duplicated(tidaldays$dayloc),]
+
+# make overview of deployments we have and their start and end days
+locations_t <- data.frame(uniqueloctag = unique(onlycap_tj$uniqueloctag)) 
+locations_t <- left_join(locations_t, onlycap_tj[,c("uniqueloctag", "dep_start", "dep_end", "locationfactor", "toolusers")], by = "uniqueloctag")
+locations_t <- locations_t[!duplicated(locations_t$uniqueloctag),]
+# take time off and keep just date variable
+locations_t$dep_startday <- as.Date(format(locations_t$dep_start, "%Y-%m-%d"))
+locations_t$dep_endday <- as.Date(format(locations_t$dep_end, "%Y-%m-%d"))
+# calculate days in each deployment (round up)
+locations_t$dep_days <- ceiling(difftime(locations_t$dep_end, locations_t$dep_start, units = c("days")))
+# number of rows in the tidaldays2 dataframe (so how many days we have)
+for (i in 1:nrow(locations_t)) {
+  locations_t$nrow[i] <- nrow(tidaldays2[tidaldays2$uniqueloctag == locations_t$uniqueloctag[i],])
+}
+
+locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, toolusers = locations_t$toolusers), FUN = sum)
+
+sum(locations_t$dep_days[locations_t$toolusers == "Tool-users"])
+sum(locations_t2$x)
+
+# How many locations
+nrow(locations_t2)
+ftable(locations_t2$toolusers)
+# Average number of trapping days per location
+summary(as.numeric(locations_t2$x))
+# average number of trapping days per deployment
+summary(as.numeric(locations_t$dep_days))
+# number of deployments per location
+max(as.matrix(ftable(locations_t$locationfactor)))
+mean(as.matrix(ftable(locations_t$locationfactor)))
+
 
 
 ########## TEMPERATURE ########
@@ -863,9 +1284,9 @@ onlycap_tj$temp[which(onlycap_tj$uniqueloctag == "SURVEY-CEBUS-15-04-R4" & onlyc
 
 ### OPTION 1: Run in this form (or impute data). Keep variation
 tidetemp_m1 <- gam(n ~ te(tidedif, distcoast, bs = c("tp", "tp"), k = c(10, 6)) +
-                te(tidedif, distcoast, temp, bs = c("tp", "tp"), k = c(10,6), m = 1) +
-                s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], method = "REML",
-              select = TRUE)
+                     te(tidedif, distcoast, temp, bs = c("tp", "tp"), k = c(10,6), m = 1) +
+                     s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], method = "REML",
+                   select = TRUE)
 
 summary(tidetemp_m1)
 draw(tidetemp_m1)
@@ -893,119 +1314,8 @@ draw(tidetemp_m1)
 # standardize within cameras vs get average per region (e.g. tool users) or whole island even?
 
 
-########### DERIVATIVES OF GAMS #########
-
-## practicing determining derivatives
-## First run code from Shauhin
-# tool users only
-test_tm <- brm(n ~ s(tidedif, bs = "cc", k = 10) + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-               knots = list(tidedif =c(-6,6)), backend = "cmdstanr", core = 2, chain = 2, iter = 2000 )
-
-summary(test_tm)
-plot(test_tm)
-plot(conditional_effects(test_tm))
-plot(conditional_smooths(test_tm))
-
-# non tool users only
-test_tm2 <- brm(n ~ s(tidedif, bs = "cc", k = 10) + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
-               knots = list(tidedif =c(-6,6)), backend = "cmdstanr", core = 2, chain = 2, iter = 2000 )
-
-summary(test_tm2)
-plot(test_tm2)
-plot(conditional_effects(test_tm2))
-plot(conditional_smooths(test_tm2))
-
-## with by-smooth
-test_tm3 <- brm(n ~ s(tidedif, bs = "cc", k = 10, by = toolusers) + toolusers + s(locationfactor, bs = "re"), family = poisson, data = onlycap_tj, 
-                knots = list(tidedif =c(-6,6)), backend = "cmdstanr", core = 2, chain = 2, iter = 2000 )
-
-summary(test_tm3)
-plot(conditional_effects(test_tm3))
-plot(conditional_smooths(test_tm3))
 
 
-#tbm2 <- brm(n | trunc(lb=1) ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
-#              t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
-#              s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-#            knots = list(tidedif =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
-#            control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
-
-
-deriv_plot(tbm1, dimensions = 2, term = 't2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE)', main = c("tidedif", "distcoast"),
-           eps = 0.01, confidence = 90, "testplotderiv_tbm1")
-
-
-
-
-
-# run gam first derivative plot function code from Shauhin to get functions
-deriv_plot(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif", 0.01, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 90, "testplot") 
-deriv_plot(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif", 0.01, response = NULL, spaghetti=FALSE, rug = TRUE, confidence = 90, "testplot2") 
-  ###model must be a brms model object
-  ###term is a character string of the smooth term, same syntax as used in the model
-  ###main is a character string of the predictor variable, must not be wrapped in a smooth function
-  ###eps is the amount to offset the original data, to be differenced from original to calculate slope
-  ###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
-  ###confidence is the confidence level used to calculate the posterior intervals
-  ###The desired name of the resulting ggplot object 
-
-deriv_plot2(test_tm, 's(tidedif,bs="cc",k=10)', "tidedif",  0.01, response = NULL, confidence = 95, "testplotderiv")
-deriv_plot2(test_tm2, 's(tidedif,bs="cc",k=10)', "tidedif",  0.01, response = NULL, confidence = 95, "testplotderiv2")
-  ###model must be a brms model object
-  ###term is a character string of the smooth term, same syntax as used in the model
-  ###main is a character string of the predictor variable, must not be wrapped in a smooth function
-  ###eps is the amount to offset the original data, to be differenced from original to calculate slope
-  ###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
-  ###confidence is the confidence level used to calculate the posterior intervals
-  ###The desired name of the resulting ggplot object 
-
-# can't get by interaction to work yet
-species_interact_deriv(test_tm3, 's(tidedif, bs = "cc", k = 10, by = toolusers)', 'tidedif', 0.01, confidence = 95, "testplot3")
-###model must be a brms model object
-###term is a character string of the smooth term, same syntax as used in the model
-###main is a character string of the predictor variable, must not be wrapped in a smooth function
-###eps is the amount to offset the original data, to be differenced from original to calculate slope
-###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
-###confidence is the confidence level used to calculate the posterior intervals
-###The desired name of the resulting ggplot object 
-
-#### Descriptives for presentation ####
-# How many camera trapping days
-# need to add in the zero's
-
-tidaldays <- onlycap_tj
-tidaldays$dayloc <- paste(tidaldays$locationfactor, tidaldays$seqday, sep = " ")
-tidaldays2 <- tidaldays[!duplicated(tidaldays$dayloc),]
-
-# make overview of deployments we have and their start and end days
-locations_t <- data.frame(uniqueloctag = unique(onlycap_tj$uniqueloctag)) 
-locations_t <- left_join(locations_t, onlycap_tj[,c("uniqueloctag", "dep_start", "dep_end", "locationfactor", "toolusers")], by = "uniqueloctag")
-locations_t <- locations_t[!duplicated(locations_t$uniqueloctag),]
-# take time off and keep just date variable
-locations_t$dep_startday <- as.Date(format(locations_t$dep_start, "%Y-%m-%d"))
-locations_t$dep_endday <- as.Date(format(locations_t$dep_end, "%Y-%m-%d"))
-# calculate days in each deployment (round up)
-locations_t$dep_days <- ceiling(difftime(locations_t$dep_end, locations_t$dep_start, units = c("days")))
-# number of rows in the tidaldays2 dataframe (so how many days we have)
-for (i in 1:nrow(locations_t)) {
-  locations_t$nrow[i] <- nrow(tidaldays2[tidaldays2$uniqueloctag == locations_t$uniqueloctag[i],])
-}
-
-locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, toolusers = locations_t$toolusers), FUN = sum)
-
-sum(locations_t$dep_days[locations_t$toolusers == "Tool-users"])
-sum(locations_t2$x)
-
-# How many locations
-nrow(locations_t2)
-ftable(locations_t2$toolusers)
-# Average number of trapping days per location
-summary(as.numeric(locations_t2$x))
-# average number of trapping days per deployment
-summary(as.numeric(locations_t$dep_days))
-# number of deployments per location
-max(as.matrix(ftable(locations_t$locationfactor)))
-mean(as.matrix(ftable(locations_t$locationfactor)))
 
 ####
 #### ACTIVITY TOOL USERS VS NON TOOL USERS ####
