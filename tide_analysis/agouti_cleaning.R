@@ -142,7 +142,7 @@ agoutigross$agesexF <- as.factor(agoutigross$agesex)
 
 agoutigross_cap <- agoutigross[agoutigross$capuchin == 1, ]
 cap_numbers <- agoutigross_cap %>%
-  count(sequenceID)
+  dplyr::count(sequenceID)
 
 agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
 # replace NAs with 0 for the capuchin count
@@ -222,7 +222,7 @@ agoutigross$tooluse <- str_detect(agoutigross$behaviour, "TAF") # now just takes
 agoutigross_tools <- agoutigross[agoutigross$tooluse == TRUE,]
 # amount of individuals using tools per sequence
 tooluse_count <- agoutigross_tools %>%
-  count(sequenceID)
+  dplyr::count(sequenceID)
 colnames(tooluse_count)[2] <- "n_tooluse"
 
 agoutigross <- left_join(agoutigross, tooluse_count, "sequenceID")

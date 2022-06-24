@@ -787,6 +787,16 @@ summary(tbm2_h)
 plot(conditional_effects(tbm2_h))
 plot(conditional_smooths(tbm2_h))
 
+toolusersplot_hour <- plot(conditional_smooths(tbm2_h, rug = TRUE), plot = FALSE)[[2]]
+#saveRDS(toolusersplot_hour, "tide_analysis/ModelRDS/toolusersplot_hour_brms.rds")
+# toolusersplot <- readRDS("tide_analysis/ModelRDS/toolusersplot_brms.rds")
+
+ggplot(toolusersplot_hour$data, aes(x = hour, y = distcoast, z = estimate__)) + geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hour of the day", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast), alpha = 0.05, inherit.aes = FALSE) +  facet_wrap(~seasonF) +
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =20))
+
 # non tool users
 tbm2a_h <- brm(n ~ t2(hour, distcoast, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
                 t2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
@@ -1161,8 +1171,17 @@ deriv_plot(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif, distcoa
 ##### Hour of the day
 
 ### tool users: dry vs wet season
+# 50 confidence
+deriv_plot(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("hour", "distcoast"), eps = 0.01, confidence = 50, output = "derivplot_tbm2hseason_50")
 
+# 70 confidence
+deriv_plot(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("hour", "distcoast"), eps = 0.01, confidence = 70, output = "derivplot_tbm2hseason_70")
 
+# 90 confidence
+deriv_plot(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("hour", "distcoast"), eps = 0.01, confidence = 90, output = "derivplot_tbm2hseason_90")
 
 ### non tool users: general
 ### non tool users: dry vs wet season
