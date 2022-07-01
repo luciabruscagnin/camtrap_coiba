@@ -48,6 +48,9 @@ agoutiselect2 <- agoutiselect2[c("deploymentID", "sequenceID", "scientificName",
 
 #### Adding Claudio's non tool use data ######
 cldata <- read.csv("tide_analysis/coiba-bioblitz_observations_2018-06-03_06-58-00..csv")
+cl_seqlength <- read.csv("tide_analysis/coiba-bioblitz_sequence_duration_2022-05-24_17-47-14.csv")
+
+cldata <- left_join(cldata, cl_seqlength, by = c("Image_Sequence_ID" = "IMAGE_SEQUENCE_ID") )
 
 # exclude CBA-0 deployment in 2011
 cldata <- cldata[!cldata$Array == "CT-CBA-0", ]
@@ -63,9 +66,9 @@ cldata$locationName <- cldata$Camera_Site
 cldata$longitude <- cldata$Camera_Site_Longitude
 cldata$latitude <- cldata$Camera_Site_Latitude
 cldata$cameraSetup <- ifelse(cldata$Species_Name_Common == "Setup_Pickup", "True", "False")
-cldata$seq_start <- as.POSIXct(cldata$Image_Sequence_DateTime, tz = "America/Panama", format = "%Y-%m-%d %H:%M")
-cldata$seq_end <- NA
-cldata$seq_length <- NA 
+cldata$seq_start <- as.POSIXct(cldata$SEQUENCE_START, tz = "America/Panama", format = "%Y-%m-%d %H:%M")
+cldata$seq_end <- as.POSIXct(cldata$SEQUENCE_END, tz = "America/Panama", format = "%Y-%m-%d %H:%M")
+cldata$seq_length <- cldata$SEQUENCE_DURATION
 # had this in the other dataset Claudio gave me, but not here, and also not full duration (do we need it?)
 cldata$temperature <- NA
 cldata$dep_start <- as.POSIXct(cldata$Camera_Deployment_Start, tz = "America/Panama", format = "%Y-%m-%d %H:%M")
@@ -100,18 +103,6 @@ cldata$toolusers <- factor(cldata$tool_site, levels = c(0,1), labels = c("Non-to
 cldata$picksetup <- ifelse(cldata$seqday == date(cldata$dep_start) | cldata$seqday == date(cldata$dep_end), 1, 0)
 cldata$dataorigin <- "cldata"
 
-# add duration (from Claudio's other dataset)
-cldata3 <- read.csv("tide_analysis/S1-Data-CapuchinFiveSites.csv") # date is in days since january 1st 1900
-# strip dataframe to only data we need (frames with capuchins)
-cldata3 <- cldata3[which(cldata3$Species_Name_Latin == "Cebus capucinus imitator") & str_detect(cldata3$Camera_Site, "Coiba") == TRUE, c("Image_Sequence_ID", "Duration")]
-cldata3$Image_Sequence_ID <- as.integer(cldata3$Image_Sequence_ID)
-
-cldata <- left_join(cldata, cldata3, by = "Image_Sequence_ID")
-cldata[which(is.na(cldata$Duration) == TRUE & cldata$capuchin == 1),]
-# have two NA's now 
-# need to ask Claudio what this is and see if I can find the duration for these 
-cldata$seq_length <- round(cldata$Duration * 60,1) # I think it's in minutes so I'm making it in seconds like our data
-
 cldata2 <- cldata[which(colnames(cldata) %in% colnames(agoutiselect2))]
 
 ## should now be in right order and same columns as agoutiselect2
@@ -141,6 +132,23 @@ onlycap_tj$locationfactor <- as.factor(onlycap_tj$locationfactor)
 onlycap_tj <- onlycap_tj[which(is.na(onlycap_tj$deploymentID) == FALSE),]
 # new predictor, whether it is the Wet (May-November) or the Dry season (December-April)
 onlycap_tj$seasonF <- as.factor(onlycap_tj$season)
+
+## sequence length
+p1 <- hist(onlycap_tj$seq_length[which(onlycap_tj$dataorigin == "cldata")])
+p2 <- hist(onlycap_tj$seq_length[which(onlycap_tj$dataorigin == "agoutidata" & onlycap_tj$toolusers == "Non-tool-users")])
+plot( p1, col=rgb(0,0,1,1/4), xlim=c(0,6000), ylim = c(0,1000))  # first histogram
+plot( p2, col=rgb(1,0,0,1/4), xlim=c(0,6000), ylim = c(0,1000), add=T)
+
+#zoomed in
+plot( p1, col=rgb(0,0,1,1/4), xlim=c(0,1500), ylim = c(0,1000))  # first histogram
+plot( p2, col=rgb(1,0,0,1/4), xlim=c(0,1500), ylim = c(0,1000), add=T)
+
+p1 <- hist(onlycap_tj$n[which(onlycap_tj$dataorigin == "cldata")])
+p2 <- hist(onlycap_tj$n[which(onlycap_tj$dataorigin == "agoutidata" & onlycap_tj$toolusers == "Non-tool-users")])
+plot( p1, col=rgb(0,0,1,1/4), xlim=c(0,10), ylim = c(0,800))  # first histogram
+plot( p2, col=rgb(1,0,0,1/4), xlim=c(0,10), ylim = c(0,800), add=T)
+
+# red is agoutidata, blue is claudio data 
 
 ## very uneven sampling between tool users and non tool users and very different range
 hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Non-tool-users"])
@@ -618,11 +626,14 @@ ggplot(newdata_tbm1_f) + geom_line(aes(x = tidedif, y = fit_tooltide, group = di
 
 newdata_tbm1_f$distance <- ifelse(newdata_tbm1_f$distcoast < 10, "<10", ifelse(newdata_tbm1_f$distcoast > 10 & newdata_tbm1_f$distcoast < 30, "10-30", "30-50"))
 # for distcoast below 50 and with uncertainty
+newdata_tbm1_f$toolusers <- as.factor(newdata_tbm1_f$toolusers)
+newdata_tbm1_f$toolusers <- relevel(newdata_tbm1_f$toolusers, ref = "Tool-users")
+
 ggplot(newdata_tbm1_f[newdata_tbm1_f$distcoast < 50,]) +   geom_ribbon(aes(x = tidedif, y = fit_tooltide, group = distcoast, fill = distance, ymin=min, ymax = max), alpha = 0.05) + 
   geom_line(aes(x = tidedif, y = fit_tooltide, group = distcoast, color = distance)) +
   labs(y = "Change in capuchin activity", x = "Hours before and after nearest low tide (peak of low tide at 0)") + theme_bw() + facet_wrap(~toolusers)
 
-##### MODEL 2 AND 2A: ADDING SEASON, SPLIT BY TU/NTU #########
+##### MODEL 2 AND 2A: ADDING SEASON, SPLIT BY TU/NTU #####
 ####
 # tool users
 tbm2 <- brm(n ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
@@ -706,6 +717,10 @@ ggplot(data = d2, aes(x = tidedif, y = distcoast, z = fit)) +
   facet_wrap(~seasonF)
 # dev.off()
 
+## plot of number of capuchins
+## number of capuchins per sequence wet vs dry season
+ncap <- plot(conditional_effects(tbm2), plot = FALSE)[[1]]
+ncap + labs(y = "Average number of capuchins per sequence", x = "Season") + theme_bw() 
 
 ### non tool users
 tbm2a <- brm(n  ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
@@ -787,6 +802,7 @@ summary(tbm2_h)
 plot(conditional_effects(tbm2_h))
 plot(conditional_smooths(tbm2_h))
 
+
 toolusersplot_hour <- plot(conditional_smooths(tbm2_h, rug = TRUE), plot = FALSE)[[2]]
 #saveRDS(toolusersplot_hour, "tide_analysis/ModelRDS/toolusersplot_hour_brms.rds")
 # toolusersplot <- readRDS("tide_analysis/ModelRDS/toolusersplot_brms.rds")
@@ -805,9 +821,22 @@ tbm2a_h <- brm(n ~ t2(hour, distcoast, bs = c("tp", "tp"), k = c(10, 6), full = 
               control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
-#saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_h.rds")
+# saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_h.rds")
 # tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_h.rds")
 
+summary(tbm2a_h)
+plot(conditional_effects(tbm2a_h))
+plot(conditional_smooths(tbm2a_h))
+
+nontoolusersplot_hour <- plot(conditional_smooths(tbm2a_h, rug = TRUE), plot = FALSE)[[2]]
+#saveRDS(nontoolusersplot_hour, "tide_analysis/ModelRDS/nontoolusersplot_hour_brms.rds")
+# nontoolusersplot <- readRDS("tide_analysis/ModelRDS/nontoolusersplot_brms.rds")
+
+ggplot(nontoolusersplot_hour$data, aes(x = hour, y = distcoast, z = estimate__)) + geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hour of the day", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast), alpha = 0.05, inherit.aes = FALSE) +  facet_wrap(~seasonF) +
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =20))
 
 ########### DERIVATIVES OF GAMS #########
 
@@ -919,6 +948,7 @@ deriv_plot <- function (model, dimensions = 1, by = FALSE, term, main, eps, resp
       
       # factor level 1
       der_data_by1 <- der_data[which(der_data[,6] == levels(der_data[,6])[1]),]
+      write.csv(der_data_by1, paste(output, "csv1.csv", sep = "_"), row.names = FALSE)
       interpdat_a <- with(der_data_by1, akima::interp(x = der_data_by1[,4], y = der_data_by1[,5], z = mean, duplicate = "mean"))
       interpdat_a2 <- reshape2::melt(interpdat_a$z, na.rm = TRUE)
       names(interpdat_a2) <- c("x", "y", "dir")
@@ -940,6 +970,7 @@ deriv_plot <- function (model, dimensions = 1, by = FALSE, term, main, eps, resp
       
       # factor level 2
       der_data_by2 <- der_data[which(der_data[,6] == levels(der_data[,6])[2]),]
+      write.csv(der_data_by2, paste(output, "csv2.csv", sep = "_"), row.names = FALSE)
       interpdat_b <- with(der_data_by2, akima::interp(x = der_data_by2[,4], y = der_data_by2[,5], z = mean, duplicate = "mean"))
       interpdat_b2 <- reshape2::melt(interpdat_b$z, na.rm = TRUE)
       names(interpdat_b2) <- c("x", "y", "dir")
@@ -1137,6 +1168,8 @@ deriv_plot <- function (model, dimensions = 1, by = FALSE, term, main, eps, resp
   
 }
 
+## follow up function to isolate ranges that are significant
+
 ##### Time to low tide
 
 ### tool users vs non tool users
@@ -1183,19 +1216,35 @@ deriv_plot(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoast
 deriv_plot(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("hour", "distcoast"), eps = 0.01, confidence = 90, output = "derivplot_tbm2hseason_90")
 
-### non tool users: general
 ### non tool users: dry vs wet season
+# 50 confidence
+deriv_plot(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("hour", "distcoast"), eps = 0.01, confidence = 50, output = "derivplot_tbm2ahseason_50")
+
+# 70 confidence
+deriv_plot(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoast, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("hour", "distcoast"), eps = 0.01, confidence = 70, output = "derivplot_tbm2ahseason_70")
+
+#### Creating overlay for 2D contour plot #####
+
+deriv_ranges <- function()
+
+
+# step 1: extract data frame used for plotly of derivatives from the function (use Shauhin's other functions for this)
+# use der_data or interp?
+# step 2: for each row in this data frame, get -1, 0, or 1 for whether there is significant negative or positive increase or none
+
+# step 3: use this dataframe to make contour plot (not filled) or grid of these values that can go over 2D contour plot
+
+# option A: rectangle around significant areas (different color/linetypes for increase/decrease? different color/linetype for different confidence levels?)
+# maybe with shading or something?
+# option B: make separate contour plot, not filled, with lines for each confidence interval level? 
 
 
 
 
 
-
-deriv_plot(tbm2, dimensions = 2, term = 't2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
-           main = c("tidedif", "distcoast"), by = c("seasonF"), eps = 0.05, confidence = 80, output = "derivplot_tbm2season")
-
-
-#### Descriptives for presentation ####
+#### Descriptives for presentation and paper ####
 # How many camera trapping days
 # need to add in the zero's
 
@@ -1233,12 +1282,16 @@ summary(as.numeric(locations_t$dep_days))
 max(as.matrix(ftable(locations_t$locationfactor)))
 mean(as.matrix(ftable(locations_t$locationfactor)))
 
-
+## number of capuchins per sequence
+# did we see capuchins on all cameras
+agoutiselect_tj <- agoutiselect_t[agoutiselect_t$island == "Jicaron" & agoutiselect_t$locationfactor != "CEBUS-03",]
+table(agoutiselect_tj$capuchin, agoutiselect_tj$uniqueloctag)
+mean(onlycap_tj$n[which(onlycap_tj$toolusers == "Tool-users")])
+max(onlycap_tj$n)
 
 ########## TEMPERATURE ########
 # First need to identify cameras that are definitely wrong
 # per deployment, plot temperature per hour of the day with color of the camera location
-str(onlycap_tj)
 plot(onlycap_tj$seq_start, onlycap_tj$temperature)
 
 ggplot(data = onlycap_tj[str_detect(onlycap_tj$uniqueloctag, "R6") == TRUE,], aes(x = seq_start, y = temperature, group = locationfactor, color = locationfactor)) +
