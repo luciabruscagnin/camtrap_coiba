@@ -101,11 +101,14 @@ multimedia2 <- multimedia2[!duplicated(multimedia2$sequenceID),]
 agoutigross <- left_join(agoutigross, multimedia2, "sequenceID")
 
 # add correct deployment start and end time (can still double check, now took the minimum and maximum sequence time within deployment id)
-startdep <- aggregate(x = list(dep_start = agoutigross$seq_start), by = list(deploymentID = agoutigross$deploymentID), FUN = min)
-enddep <- aggregate(x = list(dep_end = agoutigross$seq_start), by = list(deploymentID = agoutigross$deploymentID), FUN = max)
+# need to do this per camera (because camera could stop before deployment end)
+# create unique variable (like deployment ID) that is location name + tag
+agoutigross$uniqueloctag <- paste(agoutigross$locationName, agoutigross$tag, sep = "-")
+startdep <- aggregate(x = list(dep_start = agoutigross$seq_start), by = list(uniqueloctag = agoutigross$uniqueloctag), FUN = min)
+enddep <- aggregate(x = list(dep_end = agoutigross$seq_start), by = list(uniqueloctag = agoutigross$uniqueloctag), FUN = max)
 
-agoutigross <- left_join(agoutigross, startdep, "deploymentID")
-agoutigross <- left_join(agoutigross, enddep, "deploymentID")
+agoutigross <- left_join(agoutigross, startdep, "uniqueloctag")
+agoutigross <- left_join(agoutigross, enddep, "uniqueloctag")
 # add deployment length in hours, this is an exposure
 agoutigross$dep_length_hours <-as.numeric(difftime(agoutigross$dep_end,agoutigross$dep_start,units="hours"))
 
@@ -394,8 +397,6 @@ for (i in 1:nrow(agoutisequence)) {
 #### Further prep and filter uncoded out #####
 # rename SURVEY-CEBUS-24-01 to CEBUS-04
 agoutisequence$locationName[which(agoutisequence$locationName == "SURVEY-CEBUS-24-01")] <- "CEBUS-04"
-# create unique variable (like deployment ID) that is location name + tag
-agoutisequence$uniqueloctag <- paste(agoutisequence$locationName, agoutisequence$tag, sep = "-")
 # make temperature numerical
 agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
 # add seqday variable (RDate format)
