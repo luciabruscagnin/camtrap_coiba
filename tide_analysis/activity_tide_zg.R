@@ -20,6 +20,7 @@ require(tidybayes)
 library(akima)
 library(reshape2)
 library(matrixStats)
+library(ggnewscale)
 
 ### Prepare dataframe tidal analyses ####
 
@@ -960,8 +961,6 @@ ggplot(data = d2_rt, aes(x = tidedif, y = distcoast, z = fit)) +
   facet_wrap(~toolusers, scales = "free")
 # dev.off()
 
-
-
 ### Model 2: Reduced sample NTU season
 tbm2a_r <- brm(n  ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                  t2(tidedif, distcoast, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
@@ -987,7 +986,7 @@ bayes_R2(tbm2a_r)
 
 predict_tbm2a_r <- posterior_smooths(tbm2a_r, smooth = 't2(tidedif,distcoast,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
 # mean of each column is what I'm looking for
-tbm2a_r$data$fit_seasontide <- as.numeric(colMedians(predict_tbm2a_r))
+tbm2a_r$data$fit_seasontide <- as.numeric(colMeans(predict_tbm2a_r))
 
 d1a_rwet <- with(tbm2a_r$data[tbm2a_r$data$seasonF == "Wet",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
 d1a_rdry <-  with(tbm2a_r$data[tbm2a_r$data$seasonF == "Dry",], interp(x = tidedif, y = distcoast, z = fit_seasontide, duplicate = "mean"))
@@ -1068,6 +1067,32 @@ ggplot(data = d2har, aes(x = hour, y = distcoast, z = fit)) +
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +
   facet_wrap(~seasonF, scales = "free")
 # dev.off()
+
+###### TRIAL Z-TRANSFORMED ######
+
+# standardize distance to coast (for whole agoutidata)
+onlycap_tj$distcoast_z <- ifelse(onlycap_tj$dataorigin == "agoutidata", scale(onlycap_tj$distcoast[which(onlycap_tj$dataorigin == "agoutidata")], center = TRUE, scale = TRUE), 0)
+# standardize tidedif
+onlycap_tj$tidedif_z <- ifelse(onlycap_tj$dataorigin == "agoutidata", scale(onlycap_tj$tidedif[which(onlycap_tj$dataorigin == "agoutidata")], center = TRUE, scale = TRUE), 0)
+
+# tool users z-transformed
+tbm2_z <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+              t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
+              s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users" & onlycap_tj$dataorigin == "agoutidata",], 
+            knots = list(tidedif_z =c(-6,6)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+
+# tbm2_z <- add_criterion(tbm2_z, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+#saveRDS(tbm2_z, "tide_analysis/ModelRDS/tbm2_ztransform.rds")
+#tbm2_z <- readRDS("tide_analysis/ModelRDS/tbm2_ztransform.rds")
+
+
+
+
+
+
+
+
 
 ########### DERIVATIVES OF GAMS #########
 
@@ -1568,45 +1593,28 @@ confcol <- c("black","#3FC9BD", "#ff148d")
 deriv_ranges(derivplot_tbm2season_50_1, derivplot_tbm2season_50_2, derivplot_tbm2season_70_1, derivplot_tbm2season_70_2, derivplot_tbm2season_90_1, derivplot_tbm2season_90_2, 
              factorlevels = c("Dry", "Wet"), modelname <- "tbm2", seventy = TRUE, ninety = TRUE)
 
-#### need to figure out how to get them on the same scale. 
-# facet_wrap works for the geom_contour but doesnt seem to work for the geom_tile
-# if I use something like  shapefile instead of geom_tile this should be more doable
-tbm2_dry <- ggplot() +
-  geom_contour_filled(data = d2[d2$seasonF == "Dry",], aes(x = tidedif, y = distcoast, z = fit)) + scale_fill_viridis(option = "inferno", discrete = TRUE) + 
-  geom_tile(data = tbm2_overlay[tbm2_overlay$factor == "Dry" & tbm2_overlay$Significance == 1,], aes(x = main1, y = main2, color = as.factor(confidence)), alpha = 0) +
-  theme_bw() + theme(panel.grid = element_blank())  +
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins", title = "Dry Season", color = "Confidence") +
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users" & onlycap_tj$seasonF == "Dry",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+tbm2_merge <- left_join(d2, tbm2_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+
+# 50 % confidence, still put alpha of rug lower if you are exporting to picture
+ggplot() +
+  geom_contour_filled(data = tbm2_merge, aes(x = tidedif, y = distcoast, z = fit)) + scale_fill_grey() +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_merge[tbm2_merge$confidence == 50 & tbm2_merge$Significance == 1,], aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-       legend.title = element_text(size =12), axis.text = element_text(size=12)) + scale_color_manual(values = confcol)
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
 
-#png("tide_analysis/ModelRDS/tooluserplot_dry.png", width = 8, height = 6, units = 'in', res = 300)
-tbm2_dry
-#dev.off()
-
-tbm2_wet <- ggplot() +
-  geom_contour_filled(data = d2[d2$seasonF == "Wet",], aes(x = tidedif, y = distcoast, z = fit)) + scale_fill_viridis(option = "inferno", discrete = TRUE) + 
-  geom_tile(data = tbm2_overlay[tbm2_overlay$factor == "Wet" & tbm2_overlay$Significance == 1,], aes(x = main1, y = main2, color = as.factor(confidence)), alpha = 0) +
-  theme_bw() + theme(panel.grid = element_blank())  +
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins", title = "Wet Season", color = "Confidence") +
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users" & onlycap_tj$seasonF == "Wet",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+ggplot() +
+  geom_contour_filled(data = tbm2_merge, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_merge[tbm2_merge$confidence == 70 & tbm2_merge$Significance == 1,], aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12)) + scale_color_manual(values = confcol)
-
-#png("tide_analysis/ModelRDS/tooluserplot_wet.png", width = 8, height = 6, units = 'in', res = 300)
-tbm2_wet
-#dev.off()
-
-## once I have common legend can then arrange them using grid arrange
-# so option 1: get facet wrap to work with geom_tile
-# option 2: make contourplot have common legend in separate plots and use grid arrange
-# NEED TO PICK BETTER CONTRASTING COLORS! 
-
-require(gridExtra) 
-grid.arrange(tbm2_dry, tbm2_wet, nrow = 2)
-
-## look at minimum convex polygon instead of tiles to show it nicer.
-ggplot(data = tbm2_overlay[tbm2_overlay$Significance == 1 & tbm2_overlay$confidence == 50 & tbm2_overlay$seasonF == "Dry",], aes(x = main1, y = main2)) + geom_tile(alpha = 0, color = "black") + theme_bw() + scale_colour_discrete(na.translate = F) + theme(panel.grid = element_blank()) 
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
 
 #### GENERAL MODEL REDUCED: TBM1_R
 deriv_ranges(derivplot_tbm1_r_50_1, derivplot_tbm1_r_50_2, factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_r", seventy = FALSE, ninety = FALSE)
@@ -1718,23 +1726,33 @@ dev.off()
 
 head(tbm2_h_overlay)
 head(d2h)
-tbm2_hmerge <- left_join(d2h, tbm2_h_overlay, by = c("hour" = "main1", "distcoast" = "main2"))
+tbm2_hmerge <- left_join(d2h, tbm2_h_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 head(tbm2_hmerge)
 
 ### try to get grayscale heatmap of whole contour plot and then on it in color parts that are significant (e.g. at 70 percent confidence)
-# have problems that they can't have several scale_fill in one ggplot. But seems like there are ways around this so google it. 
+# have problems that they can't have several scale_fill in one ggplot. But seems like there are ways around this so google it.
+
+# alpha variation showing confident areas
+ggplot() +
+  geom_contour_filled(data = tbm2_hmerge, aes(x = hour, y = distcoast, z = fit), alpha = 0.5) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_hmerge[tbm2_hmerge$confidence == 50 & tbm2_hmerge$Significance == 1,], aes(x = hour, y = distcoast, z = fit)) + 
+                      scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins", color = "Confidence") +
+  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
+
+# colour vs grayscale
 ggplot() +
   geom_contour_filled(data = tbm2_hmerge, aes(x = hour, y = distcoast, z = fit)) + scale_fill_grey() +
-  geom_contour_filled(data = tbm2_hmerge[tbm2_hmerge$confidence == 70 & tbm2_hmerge$Significance == 1,], aes(x = hour, y = distcoast, z = fit)) +
-                      scale_fill_viridis(option = "inferno", discrete = TRUE) +facet_wrap(~seasonF.x)
-
-
-ggplot() +
-  geom_contour(data = tbm2_hmerge, aes(x = hour, y = distcoast, z = fit)) + scale_colour_grey() +
-  geom_contour_filled(data = tbm2_hmerge[tbm2_hmerge$confidence == 70 & tbm2_hmerge$Significance == 1,], aes(x = hour, y = distcoast, z = fit)) +
-  scale_fill_viridis(option = "inferno", discrete = TRUE) +facet_wrap(~seasonF.x)
-
-## make heatmap grayscale or have alpha vary depending on significance
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_hmerge[tbm2_hmerge$confidence == 50 & tbm2_hmerge$Significance == 1,], aes(x = hour, y = distcoast, z = fit)) + 
+  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins", color = "Confidence") +
+  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
 
 
 #### Descriptives for presentation and paper ####
