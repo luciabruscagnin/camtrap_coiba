@@ -451,6 +451,15 @@ concurvity(tm5b)
 
 #### BRMS ####
 
+## for plotting, create universal colorpalette for the heatmap
+inferncol <- viridis_pal(option = "B")(10)
+mybreaks <- seq(-0.30, 0.30, length.out = 11)
+breaklabel <- function(x){
+  labels<- paste0(mybreaks[1:10], "-", mybreaks[2:11])
+  labels[1:x]
+}
+
+
 # priors for tidal models
 tidal_prior <- c(prior(normal(0, 2), class = Intercept),
                prior(normal(0,2), class = b),
@@ -564,7 +573,7 @@ d2_t$toolusers <- relevel(d2_t$toolusers, ref = "Tool-users")
 # png("tide_analysis/ModelRDS/tuvsntu_pred.png", width = 12, height = 6, units = 'in', res = 300)
 # setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
 ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
-  geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
+  geom_contour_filled(breaks = mybreaks, show.legend = TRUE) + scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + theme_bw() + theme(panel.grid = element_blank()) +  
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
   geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16), axis.text = element_text(size = 14)) +
@@ -1075,6 +1084,11 @@ onlycap_tj$distcoast_z <- ifelse(onlycap_tj$dataorigin == "agoutidata", scale(on
 # standardize tidedif
 onlycap_tj$tidedif_z <- ifelse(onlycap_tj$dataorigin == "agoutidata", scale(onlycap_tj$tidedif[which(onlycap_tj$dataorigin == "agoutidata")], center = TRUE, scale = TRUE), 0)
 
+mdist <- mean(onlycap_tj$distcoast[which(onlycap_tj$dataorigin == "agoutidata")])
+sddist <- sd(onlycap_tj$distcoast[which(onlycap_tj$dataorigin == "agoutidata")])
+meantide <- mean(onlycap_tj$tidedif[which(onlycap_tj$dataorigin == "agoutidata")])
+sdtide <- sd(onlycap_tj$tidedif[which(onlycap_tj$dataorigin == "agoutidata")])
+
 # tool users z-transformed
 tbm2_z <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
@@ -1086,13 +1100,52 @@ tbm2_z <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), f
 #saveRDS(tbm2_z, "tide_analysis/ModelRDS/tbm2_ztransform.rds")
 #tbm2_z <- readRDS("tide_analysis/ModelRDS/tbm2_ztransform.rds")
 
+plot(conditional_effects(tbm2_z))
+plot(conditional_smooths(tbm2_z))
+
+predict_tbm2_z <- posterior_smooths(tbm2_z, smooth = 't2(tidedif_z,distcoast_z,bs=c("cc","tp"),by=seasonF,k=c(10,6),m=1)')
+# mean of each column is what I'm looking for
+tbm2_z$data$fit_seasontide <- as.numeric(colMedians(predict_tbm2_z))
+
+d1z_wet <- with(tbm2_z$data[tbm2_z$data$seasonF == "Wet",], interp(x = tidedif_z, y = distcoast_z, z = fit_seasontide, duplicate = "mean"))
+d1z_dry <-  with(tbm2_z$data[tbm2_z$data$seasonF == "Dry",], interp(x = tidedif_z, y = distcoast_z, z = fit_seasontide, duplicate = "mean"))
+
+d2z_wet <- melt(d1z_wet$z, na.rm = TRUE)
+names(d2z_wet) <- c("x", "y", "fit")
+
+
+d2z_wet$tidedif <- d1z_wet$x[d2z_wet$x] * sdtide + meantide
+d2z_wet$distcoast <- d1z_wet$y[d2z_wet$y] * sddist + mdist
+
+d2z_dry <- melt(d1z_dry$z, na.rm = TRUE)
+names(d2z_dry) <- c("x", "y", "fit")
+d2z_dry$tidedif <- d1z_dry$x[d2z_dry$x] * sdtide + meantide
+d2z_dry$distcoast <- d1z_dry$y[d2z_dry$y] * sddist + mdist
+
+d2z_dry$seasonF <- "Dry"
+d2z_wet$seasonF <- "Wet"
+
+d2z <- rbind(d2z_dry, d2z_wet)
+d2z$seasonF <- as.factor(d2z$seasonF)
+
+# png("tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6, units = 'in', res = 300)
+# setEPS(postscript(file = "tide_analysis/ModelRDS/toolusersplot_pred.png", width = 12, height = 6))
+ggplot(data = d2z, aes(x = tidedif, y = distcoast, z = fit)) +
+  geom_contour_filled() + scale_fill_viridis(option = "inferno", discrete = TRUE) + theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), legend.title = element_text(size =16), axis.text = element_text(size=14)) +
+  facet_wrap(~seasonF)
+# dev.off()
 
 
 
 
+ggplot(data = d2z, aes(x = tidedif, y = distcoast, z = fit)) +
+  geom_contour_filled(breaks = mybreaks, show.legend = TRUE) + scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + theme_bw() + theme(panel.grid = element_blank()) +  
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change in number of capuchins") + facet_wrap(~seasonF)
 
-
-
+?scale_fill_manual
 
 ########### DERIVATIVES OF GAMS #########
 
@@ -1538,6 +1591,403 @@ deriv_plot(tbm2a_rh, dimensions = 2, by = c("seasonF"), term = 't2(hour, distcoa
 derivplot_tbm2arhseason_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2a_rh_50_1.rds")
 derivplot_tbm2arhseason_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2a_rh_50_2.rds")
 
+### Z TRANSFORMED
+deriv_plot_ztransformed <- function (model, dimensions = 1, by = FALSE, term, main, eps, response = NULL, spaghetti=FALSE, rug = TRUE, confidence=95,output, meanmain, sdmain){
+  require(dplyr)
+  require(ggplot2)
+  require(plotly)
+  require(brms)
+  
+  ###model must be a brms model object
+  ###dimensions should be the number of variables in your spline
+  ###term is a character string of the smooth term, same syntax as used in the model
+  ###main is a character string (or vector of characters equal to dimensions) of the predictor variable, must not be wrapped in a smooth function
+  ###eps is the amount to offset the original data (or a vector of offsets equal to dimensions), to be differenced from original to calculate slope
+  ###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
+  ###confidence is the confidence level used to calculate the posterior intervals
+  ###The desired name of the resulting ggplot object 
+  ## meanmain is a vector of the means of your main predictor variable(s)
+  ## sdmain is a vector of the means of your main predictor variable(s)
+  Response=response
+  if(is.null(Response)){
+    Response=model$formula$resp
+  }
+  
+  if(length(names(model$data))>6){
+    model$data=model$data[,c(1:6)]
+  }
+  
+  upper=(50+(confidence/2))/100
+  lower=(50-(confidence/2))/100
+  
+  newdat=model$data
+  newdat_b=model$data
+  newdat_c=model$data
+  newdat_d=model$data
+  
+  ##for 2D smooth finite difference aprox something like this
+  ##fxy(x,y)~(f(x+eps_h,y+eps_k)-f(x+eps_h,y-eps_k)-f(x-eps_h,y+eps_k)+f(x-eps_h,y-eps_k))/(4*eps_h*eps*k)
+  if(dimensions > 1) {
+    if(length(eps)==1){
+      eps[2]=eps[1]
+    }
+    for(i in 1:dimensions) {
+      newdat[,which(names(newdat)==main[i])]=newdat[,which(names(newdat)==main[i])]+eps[i] # h + K
+      newdat_b[,which(names(newdat_b)==main[i])]=newdat_b[,which(names(newdat_b)==main[i])]-eps[i] # -h - K
+      
+    }
+    
+    
+    #h - k
+    newdat_c[,which(names(newdat_c)==main[1])]=newdat_c[,which(names(newdat_c)==main[1])]+eps[1] 
+    newdat_c[,which(names(newdat_c)==main[2])]=newdat_c[,which(names(newdat_c)==main[2])]-eps[2] 
+    
+    #-h + k
+    newdat_d[,which(names(newdat_d)==main[1])]=newdat_d[,which(names(newdat_d)==main[1])]-eps[1]  
+    newdat_d[,which(names(newdat_d)==main[2])]=newdat_d[,which(names(newdat_d)==main[2])]+eps[2] 
+    
+    
+  } else{
+    newdat[,which(names(newdat)==main)]=newdat[,which(names(newdat)==main)]+eps
+  } 
+  
+  if(dimensions > 1){
+    #dir=posterior_smooths(model, smooth = term, resp=response)
+    dir2=posterior_smooths(model, smooth = term, resp=response, newdata = newdat)
+    dir2_b=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_b)
+    dir2_c=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_c)
+    dir2_d=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_d)
+    
+    dir_model=(dir2-dir2_c-dir2_d+dir2_b)/(4*prod(eps))
+    
+    mean_der <- apply(dir_model,MARGIN = 2,FUN = mean)
+    lower_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = lower)
+    upper_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = upper)
+    
+    
+    der_data = cbind(mean_der, lower_der, upper_der)
+    
+    for(i in 1:length(main)) {
+      der_data = cbind(der_data, model$data[,which(names(model$data)==main[i])])
+    }
+    der_data <- as.data.frame(der_data)
+    
+    colnames(der_data)=c("mean","lower","upper", main[1:length(main)])
+    
+    if(is.null(by)==TRUE) {
+      interpdat <- with(der_data, akima::interp(x = der_data[,4], y = der_data[,5], z = mean, duplicate = "mean"))
+      interpdat2 <- reshape2::melt(interpdat$z, na.rm = TRUE)
+      names(interpdat2) <- c("x", "y", "dir")
+      interpdat2$main1 <- interpdat$x[interpdat2$x]
+      interpdat2$main2 <- interpdat$y[interpdat2$y]
+      interpdat_low <- with(der_data, akima::interp(x = der_data[,4], y = der_data[,5], z = lower, duplicate = "mean"))
+      interpdat2_low <- reshape2::melt(interpdat_low$z, na.rm = TRUE)
+      names(interpdat2_low) <- c("x", "y", "dir")
+      interpdat2_low$main1 <- interpdat_low$x[interpdat2_low$x]
+      interpdat2_low$main2 <- interpdat_low$y[interpdat2_low$y]
+      interpdat_high <- with(der_data, akima::interp(x = der_data[,4], y = der_data[,5], z = upper, duplicate = "mean"))
+      interpdat2_high <- reshape2::melt(interpdat_high$z, na.rm = TRUE)
+      names(interpdat2_high) <- c("x", "y", "dir")
+      interpdat2_high$main1 <- interpdat_high$x[interpdat2_high$x]
+      interpdat2_high$main2 <- interpdat_high$y[interpdat2_high$y]
+      interpdat2$upper=interpdat2_high$dir
+      interpdat2$lower=interpdat2_low$dir
+      interpdat2$threshold=0
+    } else {
+      # add by column to der_data
+      # for now only set up for by variable with TWO LEVELS and in quite explicit/roundabout way
+      der_data = cbind(der_data, model$data[,which(names(model$data)==by)])
+      colnames(der_data)=c("mean","lower","upper", main[1:length(main)], by)
+      ## transform back to real scale for z-transformed variables
+      der_data[,which(names(der_data)==main[1])] <- der_data[,which(names(der_data)==main[1])] * sdmain[1] + meanmain[1]
+      der_data[,which(names(der_data)==main[2])] <- der_data[,which(names(der_data)==main[2])] * sdmain[2] + meanmain[2]
+      
+      # factor level 1
+      der_data_by1 <- der_data[which(der_data[,6] == levels(der_data[,6])[1]),]
+      interpdat_a <- with(der_data_by1, akima::interp(x = der_data_by1[,4], y = der_data_by1[,5], z = mean, duplicate = "mean"))
+      interpdat_a2 <- reshape2::melt(interpdat_a$z, na.rm = TRUE)
+      names(interpdat_a2) <- c("x", "y", "dir")
+      interpdat_a2$main1 <- interpdat_a$x[interpdat_a2$x]
+      interpdat_a2$main2 <- interpdat_a$y[interpdat_a2$y]
+      interpdat_a_low <- with(der_data_by1, akima::interp(x = der_data_by1[,4], y = der_data_by1[,5], z = lower, duplicate = "mean"))
+      interpdat_a2_low <- reshape2::melt(interpdat_a_low$z, na.rm = TRUE)
+      names(interpdat_a2_low) <- c("x", "y", "dir")
+      interpdat_a2_low$main1 <- interpdat_a_low$x[interpdat_a2_low$x]
+      interpdat_a2_low$main2 <- interpdat_a_low$y[interpdat_a2_low$y]
+      interpdat_a_high <- with(der_data_by1, akima::interp(x = der_data_by1[,4], y = der_data_by1[,5], z = upper, duplicate = "mean"))
+      interpdat_a2_high <- reshape2::melt(interpdat_a_high$z, na.rm = TRUE)
+      names(interpdat_a2_high) <- c("x", "y", "dir")
+      interpdat_a2_high$main1 <- interpdat_a_high$x[interpdat_a2_high$x]
+      interpdat_a2_high$main2 <- interpdat_a_high$y[interpdat_a2_high$y]
+      interpdat_a2$upper=interpdat_a2_high$dir
+      interpdat_a2$lower=interpdat_a2_low$dir
+      interpdat_a2$threshold=0
+      assign(paste(output, "1", sep = "_"),interpdat_a2, envir = parent.frame())
+      
+      
+      # factor level 2
+      der_data_by2 <- der_data[which(der_data[,6] == levels(der_data[,6])[2]),]
+      interpdat_b <- with(der_data_by2, akima::interp(x = der_data_by2[,4], y = der_data_by2[,5], z = mean, duplicate = "mean"))
+      interpdat_b2 <- reshape2::melt(interpdat_b$z, na.rm = TRUE)
+      names(interpdat_b2) <- c("x", "y", "dir")
+      interpdat_b2$main1 <- interpdat_b$x[interpdat_b2$x]
+      interpdat_b2$main2 <- interpdat_b$y[interpdat_b2$y]
+      interpdat_b_low <- with(der_data_by2, akima::interp(x = der_data_by2[,4], y = der_data_by2[,5], z = lower, duplicate = "mean"))
+      interpdat_b2_low <- reshape2::melt(interpdat_b_low$z, na.rm = TRUE)
+      names(interpdat_b2_low) <- c("x", "y", "dir")
+      interpdat_b2_low$main1 <- interpdat_b_low$x[interpdat_b2_low$x]
+      interpdat_b2_low$main2 <- interpdat_b_low$y[interpdat_b2_low$y]
+      interpdat_b_high <- with(der_data_by2, akima::interp(x = der_data_by2[,4], y = der_data_by2[,5], z = upper, duplicate = "mean"))
+      interpdat_b2_high <- reshape2::melt(interpdat_b_high$z, na.rm = TRUE)
+      names(interpdat_b2_high) <- c("x", "y", "dir")
+      interpdat_b2_high$main1 <- interpdat_b_high$x[interpdat_b2_high$x]
+      interpdat_b2_high$main2 <- interpdat_b_high$y[interpdat_b2_high$y]
+      interpdat_b2$upper=interpdat_b2_high$dir
+      interpdat_b2$lower=interpdat_b2_low$dir
+      interpdat_b2$threshold=0
+      assign(paste(output, "2", sep = "_"),interpdat_b2, envir = parent.frame())
+      
+    }
+    
+    if(is.null(by)==TRUE){
+      axx <- list(
+        title = names(model$data)[3]
+      )
+      
+      axy <- list(
+        title = names(model$data)[4]
+      )
+      
+      
+      p <- plot_ly(interpdat2, x=~main1, y=~main2, 
+                   z=~dir, intensity = ~dir,type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p=p%>% hide_colorbar()
+      p <- p %>% layout(title = "Derivative",
+                        scene = list(xaxis=axx, yaxis=axy,
+                                     aspectmode='cube'))
+      assign(output,p, envir = parent.frame())
+      return(p)
+    } else{ 
+      axx <- list(
+        title = names(model$data)[3]
+      )
+      
+      axy <- list(
+        title = names(model$data)[4]
+      )
+      
+      p1 <- plot_ly(interpdat_a2, x=~main1, y=~main2, 
+                    z=~dir, intensity = ~dir, scene= 'scene1', type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p1=p1%>% hide_colorbar()
+      p1 <- p1 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[1], sep = ": "),
+                                             showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
+      
+      p2 <- plot_ly(interpdat_b2, x=~main1, y=~main2, 
+                    z=~dir, intensity = ~dir, scene= 'scene2', type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p2=p2%>% hide_colorbar()
+      p2 <- p2 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[2], sep = ": "),
+                                             showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
+      
+      pp <- subplot(p1, p2)
+      pp <- pp %>% layout(title = paste("Derivative at confidence", confidence, sep = " "),
+                          scene = list(xaxis=axx, yaxis=axy,
+                                       aspectmode='cube'),
+                          scene2 = list(xaxis=axx, yaxis=axy,
+                                        aspectmode='cube'))
+      assign(output,pp, envir = parent.frame())
+      return(pp) 
+    }
+    
+    
+    
+  } else{
+    newdat=model$data
+    newdat[,which(names(newdat)==main)]=newdat[,which(names(newdat)==main)]+eps
+    dir=posterior_smooths(model, smooth = term, resp=response)
+    dir2=posterior_smooths(model, smooth = term, resp=response, newdata = newdat)
+    
+    dir_model=(dir2-dir)/eps
+    
+    mean_der <- apply(dir_model,MARGIN = 2,FUN = mean)
+    lower_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = lower)
+    upper_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = upper)
+    
+    der_data=data.frame(mean_der) %>%
+      cbind(lower_der) %>%
+      cbind(upper_der) %>%
+      cbind(model$data[,which(names(model$data)==main)])
+    colnames(der_data)=c("mean","lower","upper","main")
+    
+    
+    der_data$Significance=NA
+    der_data$Significance[which(sign(der_data$lower)<0&sign(der_data$upper)<0)]="Significant"
+    der_data$Significance[which(sign(der_data$lower)>0&sign(der_data$upper)>0)]="Significant"
+    der_data$Significance[which(sign(der_data$lower)!=sign(der_data$upper))]="Not Significant"
+    #sigranges=tapply(der_data$main,as.factor(der_data$Significance),range)
+    
+    der_data$Significance=NA
+    der_data$Significance[which(sign(der_data$lower)<0&sign(der_data$upper)<0)]=-1
+    der_data$Significance[which(sign(der_data$lower)>0&sign(der_data$upper)>0)]=1
+    der_data$Significance[which(sign(der_data$lower)!=sign(der_data$upper))]=0
+    #der_data=der_data[with(der_data, order(der_data[,4], der_data[,5])),]
+    der_data$siglab <- with(rle(der_data$Significance), rep(cumsum(lengths >= 1),lengths))
+    
+    
+    if(length(which(der_data$Significance!=0))==0){
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)
+      if(is.null(response)){
+        index=which(names(model_plot)==paste(main,sep=""))
+      }else{
+        index=which(names(model_plot)==paste(response,".",response,"_",main,sep=""))
+      }    
+      model_est <- as.data.frame(model_plot[[index]][[1]])
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)[[index]]
+      
+      index2=which(names(model_est)==main)
+      colnames(model_est)[index2]="Main"
+      
+      model_plot2=model_plot+
+        geom_line(data=model_est,aes(Main,estimate__,color=I("black")),size=1)+
+        ylab(Response)+xlab(main)+
+        theme_classic()+ guides(color="none")
+      assign(output,model_plot2, envir = parent.frame())
+      return(model_plot2)
+      
+    } else{
+      der_data_SIG=der_data[which(der_data$Significance!=0),]
+      
+      sigranges=tapply(der_data_SIG$main,as.factor(der_data_SIG$siglab),range, na.rm=T)
+      
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)
+      if(is.null(response)){
+        index=which(names(model_plot)==paste(main,sep=""))
+      }else{
+        index=which(names(model_plot)==paste(response,".",response,"_",main,sep=""))
+      }    
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug, errorbar_args = list(alpha=0.1),plot=FALSE)[[index]]
+      
+      model_est <- as.data.frame(model_plot[[1]])
+      model_est$Sig=NA
+      model_est$Sig2=NA
+      model_est$Sig2[which(model_est$Sig==0)]=.8
+      model_est$Sig2[which(model_est$Sig==1)]=1.5
+      index2=which(names(model_est)==main)
+      colnames(model_est)[index2]="Main"
+      
+      
+      for(i in 1:nrow(model_est)){
+        for(j in 1:length(sigranges)){
+          if(model_est$Main[i]>=sigranges[[j]][1] & model_est$Main[i]<sigranges[[j]][2]){
+            model_est$Sig[i]=1
+          }
+        }
+        
+        
+      }
+      model_est$Sig[-which(model_est$Sig==1)]=0
+      if(length(which(model_est$Sig==1))==0){
+        model_est$Sig=0
+      }
+      model_plot2=model_plot+ 
+        geom_line(data=model_est,aes(Main,estimate__,color=(Sig)),size=1)+
+        scale_color_gradient2(low="black", mid="black",high="cyan" )+
+        ylab(Response)+xlab(main)+
+        theme_classic()+ guides(color="none")
+      
+      assign(output,model_plot2, envir = parent.frame())
+      output2=gsub("_plot", "", output)
+      output2=paste("VOI",output2,sep="_")
+      if(length(which(model_est$Sig==1))>0){
+        VOIdat=model_est[which(model_est$Sig==1),]
+        assign(output2,VOIdat, envir = parent.frame())
+      }
+    }
+    return(model_plot2)
+    
+  }
+  
+}
+
+
+## 50 confidence
+deriv_plot_ztransformed(tbm2_z, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm2_zseason_50", meanmain = c(meantide, mdist), sdmain = c(sdtide, sddist))
+
+deriv_plot(tbm2_z, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                        main = c("tidedif_z", "distcoast_z"), eps = 0.01, confidence = 50, output = "derivplot_tbm2_zseason_50")
+# now  still on z-scale, transform
+
+# now  still on z-scale, transform
+for (i in 1:length(derivplot_tbm2_zseason_50$x$data)) { 
+  derivplot_tbm2_zseason_50$x$data[[i]]$x <- derivplot_tbm2_zseason_50$x$data[[i]]$x * sdtide + meantide
+  derivplot_tbm2_zseason_50$x$data[[i]]$y <- derivplot_tbm2_zseason_50$x$data[[i]]$y * sddist + mdist
+  }
+
+derivplot_tbm2_zseason_50_1$main1 <- derivplot_tbm2_zseason_50_1$main1 * sdtide  + meantide
+derivplot_tbm2_zseason_50_1$main2 <- derivplot_tbm2_zseason_50_1$main2 * sddist + mdist
+derivplot_tbm2_zseason_50_2$main1 <- derivplot_tbm2_zseason_50_2$main1 * sdtide + meantide
+derivplot_tbm2_zseason_50_2$main2 <- derivplot_tbm2_zseason_50_2$main2 * sddist + mdist
+
+#saveRDS(derivplot_tbm2_zseason_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm2_zseason_50_1.rds")
+#saveRDS(derivplot_tbm2_zseason_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm2_zseason_50_2.rds")
+derivplot_tbm2_zseason_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2_zseason_50_1.rds")
+derivplot_tbm2_zseason_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2_zseason_50_2.rds")
+
+## 70 confidence
+deriv_plot(tbm2_z, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm2_zseason_70")
+# now  still on z-scale, transform
+for (i in 1:length(derivplot_tbm2_zseason_70$x$data)) { 
+  derivplot_tbm2_zseason_70$x$data[[i]]$x <- derivplot_tbm2_zseason_70$x$data[[i]]$x * sdtide + meantide
+  derivplot_tbm2_zseason_70$x$data[[i]]$y <- derivplot_tbm2_zseason_70$x$data[[i]]$y * sddist + mdist
+}
+
+derivplot_tbm2_zseason_70_1$main1 <- derivplot_tbm2_zseason_70_1$main1 * sdtide  + meantide
+derivplot_tbm2_zseason_70_1$main2 <- derivplot_tbm2_zseason_70_1$main2 * sddist + mdist
+derivplot_tbm2_zseason_70_2$main1 <- derivplot_tbm2_zseason_70_2$main1 * sdtide + meantide
+derivplot_tbm2_zseason_70_2$main2 <- derivplot_tbm2_zseason_70_2$main2 * sddist + mdist
+
+#saveRDS(derivplot_tbm2_zseason_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm2_zseason_70_1.rds")
+#saveRDS(derivplot_tbm2_zseason_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm2_zseason_70_2.rds")
+derivplot_tbm2_zseason_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2_zseason_70_1.rds")
+derivplot_tbm2_zseason_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2_zseason_70_2.rds")
+
+## 90 confidence
+deriv_plot(tbm2_z, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+           main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 90, output = "derivplot_tbm2_zseason_90")
+# now  still on z-scale, transform
+for (i in 1:length(derivplot_tbm2_zseason_90$x$data)) { 
+  derivplot_tbm2_zseason_90$x$data[[i]]$x <- derivplot_tbm2_zseason_90$x$data[[i]]$x * sdtide + meantide
+  derivplot_tbm2_zseason_90$x$data[[i]]$y <- derivplot_tbm2_zseason_90$x$data[[i]]$y * sddist + mdist
+}
+
+derivplot_tbm2_zseason_90_1$main1 <- derivplot_tbm2_zseason_90_1$main1 * sdtide  + meantide
+derivplot_tbm2_zseason_90_1$main2 <- derivplot_tbm2_zseason_90_1$main2 * sddist + mdist
+derivplot_tbm2_zseason_90_2$main1 <- derivplot_tbm2_zseason_90_2$main1 * sdtide + meantide
+derivplot_tbm2_zseason_90_2$main2 <- derivplot_tbm2_zseason_90_2$main2 * sddist + mdist
+
+#saveRDS(derivplot_tbm2_zseason_90_1, file = "tide_analysis/ModelRDS/derivplot_tbm2_zseason_90_1.rds")
+#saveRDS(derivplot_tbm2_zseason_90_2, file = "tide_analysis/ModelRDS/derivplot_tbm2_zseason_90_2.rds")
+derivplot_tbm2_zseason_90_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2_zseason_90_1.rds")
+derivplot_tbm2_zseason_90_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2_zseason_90_2.rds")
 
 #### Creating overlay 2D contour plot #####
 deriv_ranges <- function(der_data_50_1, der_data_50_2, der_data_70_1, der_data_70_2, der_data_90_1, der_data_90_2, factorlevels, modelname, seventy = TRUE, ninety = TRUE){
@@ -1615,6 +2065,34 @@ ggplot() +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
         legend.title = element_text(size =12), axis.text = element_text(size=12))
+
+### TOOL USER MODEL Z-TRANSFORMED, OFFSET OF 0.001: TBM2_Z
+deriv_ranges(derivplot_tbm2_zseason_50_1, derivplot_tbm2_zseason_50_2, derivplot_tbm2_zseason_70_1, derivplot_tbm2_zseason_70_2, derivplot_tbm2_zseason_90_1, derivplot_tbm2_zseason_90_2, 
+             factorlevels = c("Dry", "Wet"), modelname <- "tbm2_z", seventy = TRUE, ninety = TRUE)
+
+tbm2_z_merge <- left_join(d2z, tbm2_z_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+head(tbm2_z_merge)
+# 50 % confidence, still put alpha of rug lower if you are exporting to picture
+ggplot() +
+  geom_contour_filled(data = tbm2_z_merge, aes(x = tidedif, y = distcoast, z = fit)) + scale_fill_grey() +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_z_merge[tbm2_z_merge$confidence == 50 & tbm2_z_merge$Significance == 1,], aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
+
+ggplot() +
+  geom_contour_filled(data = tbm2_z_merge, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.8) + scale_fill_viridis(option = "inferno", discrete = TRUE) +
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_z_merge[tbm2_z_merge$confidence == 50 & tbm2_z_merge$Significance == 1,], aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
+
 
 #### GENERAL MODEL REDUCED: TBM1_R
 deriv_ranges(derivplot_tbm1_r_50_1, derivplot_tbm1_r_50_2, factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_r", seventy = FALSE, ninety = FALSE)
