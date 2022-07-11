@@ -88,6 +88,40 @@ hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Tool-users"])
 testdist1.1 <- fitdist(onlycap_tj$n, "pois")
 plot(testdist1.1)
 
+## BRMS prep
+## for plotting, create universal colorpalette for the heatmap
+inferncol <- viridis_pal(option = "B")(10)
+mybreaks <- seq(-0.30, 0.30, length.out = 11)
+breaklabel <- function(x){
+  labels<- paste0(mybreaks[1:10], "-", mybreaks[2:11])
+  labels[1:x]
+}
+
+### z-transform 
+# standardize distance to coast 
+onlycap_tj$distcoast_z <- scale(onlycap_tj$distcoast, center = TRUE, scale = TRUE)
+# standardize tidedif
+onlycap_tj$tidedif_z <- scale(onlycap_tj$tidedif, center = TRUE, scale = TRUE)
+# standardize hour of day
+onlycap_tj$hour_z <- scale(onlycap_tj$hour, center = TRUE, scale = TRUE)
+
+meandist <- mean(onlycap_tj$distcoast)
+sddist <- sd(onlycap_tj$distcoast)
+meantide <- mean(onlycap_tj$tidedif)
+sdtide <- sd(onlycap_tj$tidedif)
+meanhour <- mean(onlycap_tj$hour)
+sdhour <- sd(onlycap_tj$hour)
+
+##### PRIOR ####
+# CHECK if these priors still make sense with the z-transformed data
+# priors for tidal models
+tidal_prior <- c(prior(normal(0, 2), class = Intercept),
+                 prior(normal(0,2), class = b),
+                 prior(normal(0,2), class = sds))
+
+######### run until here to prepare for running or loading models #######
+
+
 ### TIDAL GAMS ####
 ## outcome variable:
 # number of capuchins per sequence
@@ -225,36 +259,6 @@ concurvity(tm5b)
 #### BRMS ####
 ## 08.07.2022: now all models are only on tool use and non tool use data within 50 m from coast, and with z-transformed tidedif and distcoast data (and hour). 
 
-## for plotting, create universal colorpalette for the heatmap
-inferncol <- viridis_pal(option = "B")(10)
-mybreaks <- seq(-0.30, 0.30, length.out = 11)
-breaklabel <- function(x){
-  labels<- paste0(mybreaks[1:10], "-", mybreaks[2:11])
-  labels[1:x]
-}
-
-### z-transform 
-# standardize distance to coast 
-onlycap_tj$distcoast_z <- scale(onlycap_tj$distcoast, center = TRUE, scale = TRUE)
-# standardize tidedif
-onlycap_tj$tidedif_z <- scale(onlycap_tj$tidedif, center = TRUE, scale = TRUE)
-# standardize hour of day
-onlycap_tj$hour_z <- scale(onlycap_tj$hour, center = TRUE, scale = TRUE)
-
-meandist <- mean(onlycap_tj$distcoast)
-sddist <- sd(onlycap_tj$distcoast)
-meantide <- mean(onlycap_tj$tidedif)
-sdtide <- sd(onlycap_tj$tidedif)
-meanhour <- mean(onlycap_tj$hour)
-sdhour <- sd(onlycap_tj$hour)
-
-##### PRIOR ####
-# CHECK if these priors still make sense with the z-transformed data
-# priors for tidal models
-tidal_prior <- c(prior(normal(0, 2), class = Intercept),
-               prior(normal(0,2), class = b),
-               prior(normal(0,2), class = sds))
-
 # prior simulation
 tbm1_prior <- brm(n | trunc(lb=1) ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
@@ -265,20 +269,19 @@ summary(tbm1_prior)
 prior_summary(tbm1_prior)
 mcmc_plot(tbm1_prior)
 
-######### run until here to prepare for running or loading models #######
 
 ##### MODEL 1: TU AND NTU TOGETHER, NO SEASON ######
 ## Number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
 ####
-tbm1 <- brm(n  ~ t2(tidedif, distcoast, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
-              t2(tidedif, distcoast, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
+tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+              t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
               s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-6,6)),  data = onlycap_tj, 
             chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 #tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 2000) 
 #saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_z.rds")
-# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_pois.rds")
+# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_z.rds")
 
 mcmc_plot(tbm1,type = "trace")
 mcmc_plot(tbm1) #plot posterior intervals
@@ -342,8 +345,8 @@ tbm2 <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), ful
           control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
-#saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_ztransform.rds")
-#tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_ztransform.rds")
+#saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_z.rds")
+#tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_z.rds")
 
 mcmc_plot(tbm2,type = "trace")
 mcmc_plot(tbm2) #plot posterior intervals
@@ -559,7 +562,6 @@ ggplot(data = d2ha, aes(x = hour, y = distcoast, z = fit)) +
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), 
         legend.title = element_text(size =16)) +  facet_wrap(~seasonF, scales = "free")
 # dev.off()
-
 
 ### DERIVATIVES OF GAMS #########
 #### FUNCTIONS ####
@@ -1283,8 +1285,43 @@ deriv_ranges <- function(der_data_50_1, der_data_50_2, der_data_70_1, der_data_7
 deriv_plot_ztransformed(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
                         main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm1_50", 
                         meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-## CHECK IF: no regions that are reliably on one side of 0, already at such low confidence, so no need to proceed (also not with ranges plot)
-# means that the effect is not really supported
+#saveRDS(derivplot_tbm1_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_1.rds")
+#saveRDS(derivplot_tbm1_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_2.rds")
+derivplot_tbm1_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_1.rds")
+derivplot_tbm1_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_2.rds")
+
+deriv_plot_ztransformed(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                        main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm1_70", 
+                        meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+#saveRDS(derivplot_tbm1_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_1.rds")
+#saveRDS(derivplot_tbm1_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_2.rds")
+derivplot_tbm1_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_1.rds")
+derivplot_tbm1_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_2.rds")
+
+#### Making overlay plot
+deriv_ranges(derivplot_tbm1_50_1, derivplot_tbm1_50_2, derivplot_tbm1_70_1, derivplot_tbm1_70_2, 
+             factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1", seventy = TRUE, ninety = FALSE)
+
+d2_t[,c("tidedif", "distcoast")] <- round(d2_t[,c("tidedif", "distcoast")], 6)
+tbm1_overlay[,c("main1", "main2")] <- round(tbm1_overlay[,c("main1", "main2")], 6)
+
+tbm1_merge <- left_join(d2_t, tbm1_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
+tbm1_merge$toolusers <- factor(tbm1_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
+
+# 70 % confidence, still put alpha of rug lower if you are exporting to picture
+# color on lighter color
+# png("tide_analysis/ModelRDS/tuvsntu_predder.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm1_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = na.omit(tbm1_merge[tbm1_merge$confidence == 70 & tbm1_merge$Significance == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers, ) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
+#dev.off()
 
 ###### Tbm2: TU #####
 ## 50 confidence
@@ -1317,42 +1354,73 @@ derivplot_tbm2season_90_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2seaso
 
 #### Making overlay plot
 deriv_ranges(derivplot_tbm2season_50_1, derivplot_tbm2season_50_2, derivplot_tbm2season_70_1, derivplot_tbm2season_70_2, derivplot_tbm2season_90_1, derivplot_tbm2season_90_2, 
-             factorlevels = c("Dry", "Wet"), modelname <- "tbm2", seventy = TRUE, ninety = TRUE)
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2", seventy = TRUE, ninety = TRUE)
+
+# need to round to get the data comparable (I think they have different rounding due to the z-transformation)
+d2[,c("tidedif", "distcoast")] <- round(d2[,c("tidedif", "distcoast")], 6)
+tbm2_overlay[,c("main1", "main2")] <- round(tbm2_overlay[,c("main1", "main2")], 6)
 
 tbm2_merge <- left_join(d2, tbm2_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
-# color on gray
-ggplot() +
-  geom_contour_filled(data = tbm2_merge, aes(x = tidedif, y = distcoast, z = fit)) + scale_fill_grey() +
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
-  new_scale_fill() + 
-  geom_contour_filled(data = tbm2_merge[tbm2_merge$confidence == 70 & tbm2_merge$Significance == 1,], aes(x = tidedif, y = distcoast, z = fit)) + 
-  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
-
 # color on lighter color
+# png("tide_analysis/ModelRDS/toolusers_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
   geom_contour_filled(data = tbm2_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
   geom_contour_filled(data = tbm2_merge[tbm2_merge$confidence == 70 & tbm2_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
         legend.title = element_text(size =12), axis.text = element_text(size=12))
+#dev.off()
 
 ###### Tbm2a: NTU ####
 ## 50 confidence
 deriv_plot_ztransformed(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm2aseason_50",
            meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+#saveRDS(derivplot_tbm2aseason_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_1.rds")
+#saveRDS(derivplot_tbm2aseason_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_2.rds")
+derivplot_tbm2aseason_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_1.rds")
+derivplot_tbm2aseason_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_2.rds")
 
-### CHECK IF no regions that are reliably on one side of 0, already at such low confidence, so no need to proceed
-# means that the effect is not really supported
+## 70 confidence
+deriv_plot_ztransformed(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                        main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm2aseason_70",
+                        meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+#saveRDS(derivplot_tbm2aseason_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_1.rds")
+#saveRDS(derivplot_tbm2aseason_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_2.rds")
+derivplot_tbm2aseason_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_1.rds")
+derivplot_tbm2aseason_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_2.rds")
+
+#### Making overlay plot
+deriv_ranges(derivplot_tbm2aseason_50_1, derivplot_tbm2aseason_50_2, derivplot_tbm2aseason_70_1, derivplot_tbm2aseason_70_2, 
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2a", seventy = TRUE, ninety = FALSE)
+
+# need to round to get the data comparable (I think they have different rounding due to the z-transformation)
+d2a[,c("tidedif", "distcoast")] <- round(d2a[,c("tidedif", "distcoast")], 6)
+tbm2a_overlay[,c("main1", "main2")] <- round(tbm2a_overlay[,c("main1", "main2")], 6)
+
+tbm2a_merge <- left_join(d2a, tbm2a_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+
+# 70 % confidence, still put alpha of rug lower if you are exporting to picture
+# color on lighter color
+# png("tide_analysis/ModelRDS/nontoolusers_predder.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2a_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2a_merge[tbm2a_merge$confidence == 70 & tbm2a_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
+        legend.title = element_text(size =12), axis.text = element_text(size=12))
+#dev.off()
+
 
 ##### HOUR OF DAY ####
 ###### Tbm2_h: TU ####
@@ -1387,31 +1455,27 @@ derivplot_tbm2hseason_90_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hsea
 deriv_ranges(derivplot_tbm2hseason_50_1, derivplot_tbm2hseason_50_2, derivplot_tbm2hseason_70_1, derivplot_tbm2hseason_70_2, derivplot_tbm2hseason_90_1, derivplot_tbm2hseason_90_2, 
              factorlevels = c("Dry", "Wet"), modelname <- "tbm2_h", seventy = TRUE, ninety = TRUE)
 
-tbm2_h_merge <- left_join(d2, tbm2_h_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+# need to round to get the data comparable (I think they have different rounding due to the z-transformation)
+d2h[,c("hour", "distcoast")] <- round(d2h[,c("hour", "distcoast")], 6)
+tbm2_h_overlay[,c("main1", "main2")] <- round(tbm2_h_overlay[,c("main1", "main2")], 6)
+
+tbm2_h_merge <- left_join(d2h, tbm2_h_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
-# color on gray
-ggplot() +
-  geom_contour_filled(data = tbm2_h_merge, aes(x = hour, y = distcoast, z = fit)) + scale_fill_grey() +
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
-  new_scale_fill() + 
-  geom_contour_filled(data = tbm2_h_merge[tbm2_h_merge$confidence == 70 & tbm2_h_merge$Significance == 1,], aes(x = hour, y = distcoast, z = fit)) + 
-  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
-  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
 
 # color on lighter color
+# png("tide_analysis/ModelRDS/toolusershour_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
   geom_contour_filled(data = tbm2_h_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
   geom_contour_filled(data = tbm2_h_merge[tbm2_h_merge$confidence == 70 & tbm2_h_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
         legend.title = element_text(size =12), axis.text = element_text(size=12))
+#dev.off()
 
 ###### Tbm2a_h: NTU  ####
 # 50 confidence
@@ -1434,34 +1498,28 @@ derivplot_tbm2ahseason_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahs
 
 #### Making overlay plot
 deriv_ranges(derivplot_tbm2ahseason_50_1, derivplot_tbm2ahseason_50_2, derivplot_tbm2ahseason_70_1, derivplot_tbm2ahseason_70_2, 
-             factorlevels = c("Dry", "Wet"), modelname <- "tbm2_ah", seventy = TRUE, ninety = FALSE)
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2_ah", seventy = TRUE, ninety = FALSE)
 
-tbm2_ah_merge <- left_join(d2, tbm2_ah_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+# need to round to get the data comparable (I think they have different rounding due to the z-transformation)
+d2ha[,c("hour", "distcoast")] <- round(d2ha[,c("hour", "distcoast")], 6)
+tbm2_ah_overlay[,c("main1", "main2")] <- round(tbm2_ah_overlay[,c("main1", "main2")], 6)
+
+tbm2_ah_merge <- left_join(d2ha, tbm2_ah_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
-# color on gray
-ggplot() +
-  geom_contour_filled(data = tbm2_ah_merge, aes(x = hour, y = distcoast, z = fit)) + scale_fill_grey() +
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
-  new_scale_fill() + 
-  geom_contour_filled(data = tbm2_h_merge[tbm2_ah_merge$confidence == 70 & tbm2_ah_merge$Significance == 1,], aes(x = hour, y = distcoast, z = fit)) + 
-  scale_fill_viridis(option = "inferno", discrete = TRUE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
-  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
-
 # color on lighter color
+# png("tide_analysis/ModelRDS/nontoolusershour_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
   geom_contour_filled(data = tbm2_ah_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
-  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
   geom_contour_filled(data = tbm2_ah_merge[tbm2_ah_merge$confidence == 70 & tbm2_ah_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
         legend.title = element_text(size =12), axis.text = element_text(size=12))
-
+#dev.off()
 
 #### DESCRIPTIVES ####
 # How many camera trapping days
