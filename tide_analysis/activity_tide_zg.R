@@ -1319,8 +1319,8 @@ ggplot() +
   geom_contour_filled(data = na.omit(tbm1_merge[tbm1_merge$confidence == 70 & tbm1_merge$Significance == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers, ) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 #dev.off()
 
 ###### Tbm2: TU #####
@@ -1373,8 +1373,8 @@ ggplot() +
   geom_contour_filled(data = tbm2_merge[tbm2_merge$confidence == 70 & tbm2_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 #dev.off()
 
 ###### Tbm2a: NTU ####
@@ -1417,8 +1417,8 @@ ggplot() +
   geom_contour_filled(data = tbm2a_merge[tbm2a_merge$confidence == 70 & tbm2a_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 #dev.off()
 
 
@@ -1473,8 +1473,8 @@ ggplot() +
   geom_contour_filled(data = tbm2_h_merge[tbm2_h_merge$confidence == 70 & tbm2_h_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 #dev.off()
 
 ###### Tbm2a_h: NTU  ####
@@ -1517,8 +1517,8 @@ ggplot() +
   geom_contour_filled(data = tbm2_ah_merge[tbm2_ah_merge$confidence == 70 & tbm2_ah_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 12), axis.title = element_text(size = 14), legend.text =  element_text(size = 12), plot.title = element_text(size = 14),
-        legend.title = element_text(size =12), axis.text = element_text(size=12))
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 #dev.off()
 
 #### DESCRIPTIVES ####
@@ -1561,10 +1561,11 @@ mean(as.matrix(ftable(locations_t$locationfactor)))
 
 ## number of capuchins per sequence
 # did we see capuchins on all cameras
-agoutiselect_tj <- agoutiselect_t[agoutiselect_t$island == "Jicaron" & agoutiselect_t$locationfactor != "CEBUS-03",]
+agoutiselect_tj <- agoutiselect_t[agoutiselect_t$island == "Jicaron" & agoutiselect_t$locationfactor != "CEBUS-03" & 
+                                    agoutiselect_t$locationfactor != "JIC-STREAM-CAMP-NO-T-01" & agoutiselect_t$locationfactor != "JIC-STREAM-CAMP-NO-T-02",]
 table(agoutiselect_tj$capuchin, agoutiselect_tj$uniqueloctag)
-mean(onlycap_tj$n[which(onlycap_tj$toolusers == "Tool-users")])
-max(onlycap_tj$n)
+mean(onlycap_tj$n)
+min(onlycap_tj$n)
 
 ## reduced sample
 tidaldays_r <- onlycap_tj[onlycap_tj$dataorigin == "agoutidata",]
