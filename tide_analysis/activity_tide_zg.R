@@ -21,18 +21,19 @@ library(akima)
 library(reshape2)
 library(matrixStats)
 library(ggnewscale)
+library(lubridate)
+library(dplyr)
+
+setwd("~/Git/camtrap_coiba")
 
 ### Prepare dataframe tidal analyses ####
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level
+# can load it if you previously saved it
+#agoutisequence_c <- readRDS("tide_analysis/ModelRDS/agoutisequence_c.rds")
+
 # and subsetted to only coded deployments
-agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
-agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users"))
-agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
-
-unique(agoutisequence_c$locationfactor)
-
-# Could add in the hours that the cameras werent triggered but were deployed (see bottom of script)
+# Could add in the hours that the cameras werent triggered but were deployed (see old version of script)
 # If this is done, then don't run following line
 agoutiselect2 <- agoutisequence_c
 
@@ -40,11 +41,10 @@ agoutiselect2 <- agoutisequence_c
 # most of the pickup/setup days were at the start/end of the deployment. But sometimes people came to mess with cameras in middle of deployment. Should exclude those too
 picksetupdays <- unique(agoutiselect2$seqday[which(agoutiselect2$seqday == date(agoutiselect2$dep_start) | agoutiselect2$seqday == date(agoutiselect2$dep_end) | agoutiselect2$cameraSetup ==  "True")] )
 agoutiselect2$picksetup <- ifelse(agoutiselect2$seqday %in% picksetupdays , 1, 0)
-
-agoutiselect2 <- agoutiselect2[c("deploymentID", "sequenceID", "scientificName", "locationName", "longitude", "latitude", "cameraSetup", "seq_start", 
+agoutiselect2 <- agoutiselect2[,c("deploymentID", "sequenceID", "scientificName", "locationName", "longitude", "latitude", "cameraSetup", "seq_start", 
                                                                "seq_end", "seq_length", "temperature", "dep_start", "dep_end", "dep_length_hours", "month", 
                                                                "season", "island", "tool_anvil", "tool_site", "streambed", "capuchin", "n", "tooluse", "tidedifabs", 
-                                                               "tidedif", "tidedif2", "uniqueloctag", "seqday", "hour", "toolusers",  "picksetup", "dataorigin")] # add "noanimal if you added 0's)
+                                                               "tidedif", "tidedif2", "uniqueloctag", "seqday", "hour", "toolusers",  "picksetup")] # add "noanimal if you added 0's)
 
 # exclude days on which cameras were deployed or picked up (to take away that bias)
 agoutiselect_t <- agoutiselect2[(agoutiselect2$picksetup == 0),]
@@ -402,7 +402,9 @@ ggplot(data = d2, aes(x = tidedif, y = distcoast, z = fit)) +
 ## plot of number of capuchins
 ## number of capuchins per sequence wet vs dry season
 ncap <- plot(conditional_effects(tbm2), plot = FALSE)[[1]]
-ncap + labs(y = "Average number of capuchins per sequence", x = "Season") + theme_bw() 
+ncap + labs(y = "Average number of capuchins per sequence", x = "Season") + theme_bw() + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), 
+                                                                                               legend.title = element_text(size =16), axis.text = element_text(size=14))
 
 ###### Non tool users ####
 tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
@@ -521,7 +523,7 @@ tbm2a_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), ful
 
 # tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 # saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_hz.rds")
-# tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_hz.rds")
+#tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_hz.rds")
 
 mcmc_plot(tbm2a_h,type = "trace")
 mcmc_plot(tbm2a_h) #plot posterior intervals
@@ -1231,30 +1233,398 @@ deriv_plot_ztransformed <- function (model, dimensions = 1, by = FALSE, term, ma
   
 }
 
+## deriv_plot function that doesn't do all on one side of 0 but rather 90%
+## function for z-transformed data
+deriv_plot_zprob <- function (model, dimensions = 1, by = FALSE, term, main, eps, response = NULL, spaghetti=FALSE, rug = TRUE, confidence=95,output, meanmain, sdmain){
+  require(dplyr)
+  require(ggplot2)
+  require(plotly)
+  require(brms)
+  
+  ###model must be a brms model object
+  ###dimensions should be the number of variables in your spline
+  ###term is a character string of the smooth term, same syntax as used in the model
+  ###main is a character string (or vector of characters equal to dimensions) of the predictor variable, must not be wrapped in a smooth function
+  ###eps is the amount to offset the original data (or a vector of offsets equal to dimensions), to be differenced from original to calculate slope
+  ###response is an optional character string indicating the response variable to use, only relevant in the multivariate case
+  ###confidence is the confidence level used to calculate the posterior intervals
+  ###The desired name of the resulting ggplot object 
+  ## meanmain is a vector of the means of your main predictor variable(s)
+  ## sdmain is a vector of the means of your main predictor variable(s)
+  Response=response
+  if(is.null(Response)){
+    Response=model$formula$resp
+  }
+  
+  if(length(names(model$data))>6){
+    model$data=model$data[,c(1:6)]
+  }
+  
+  upper=(50+(confidence/2))/100
+  lower=(50-(confidence/2))/100
+  
+  newdat=model$data
+  newdat_b=model$data
+  newdat_c=model$data
+  newdat_d=model$data
+  
+  ##for 2D smooth finite difference aprox something like this
+  ##fxy(x,y)~(f(x+eps_h,y+eps_k)-f(x+eps_h,y-eps_k)-f(x-eps_h,y+eps_k)+f(x-eps_h,y-eps_k))/(4*eps_h*eps*k)
+  if(dimensions > 1) {
+    if(length(eps)==1){
+      eps[2]=eps[1]
+    }
+    for(i in 1:dimensions) {
+      newdat[,which(names(newdat)==main[i])]=newdat[,which(names(newdat)==main[i])]+eps[i] # h + K
+      newdat_b[,which(names(newdat_b)==main[i])]=newdat_b[,which(names(newdat_b)==main[i])]-eps[i] # -h - K
+      
+    }
+    
+    
+    #h - k
+    newdat_c[,which(names(newdat_c)==main[1])]=newdat_c[,which(names(newdat_c)==main[1])]+eps[1] 
+    newdat_c[,which(names(newdat_c)==main[2])]=newdat_c[,which(names(newdat_c)==main[2])]-eps[2] 
+    
+    #-h + k
+    newdat_d[,which(names(newdat_d)==main[1])]=newdat_d[,which(names(newdat_d)==main[1])]-eps[1]  
+    newdat_d[,which(names(newdat_d)==main[2])]=newdat_d[,which(names(newdat_d)==main[2])]+eps[2] 
+    
+    
+  } else{
+    newdat[,which(names(newdat)==main)]=newdat[,which(names(newdat)==main)]+eps
+  } 
+  
+  if(dimensions > 1){
+    #dir=posterior_smooths(model, smooth = term, resp=response)
+    dir2=posterior_smooths(model, smooth = term, resp=response, newdata = newdat)
+    dir2_b=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_b)
+    dir2_c=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_c)
+    dir2_d=posterior_smooths(model, smooth = term, resp=response, newdata = newdat_d)
+    
+    dir_model=(dir2-dir2_c-dir2_d+dir2_b)/(4*prod(eps))
+    
+    mean_der <- apply(dir_model,MARGIN = 2,FUN = mean)
+    lower_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = lower)
+    upper_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = upper)
+    
+    probrange <- function(x) {
+      sum(x>0)/length(x)
+    }
+    probrange2 <- function(x) {
+      sum(x < 0)/length(x)
+    }
+    sum(dir_model[,1] > 0 )/length(dir_model[,1])
+    prob_above <- apply(dir_model, MARGIN = 2, probrange)
+    prob_below <- apply(dir_model, MARGIN = 2, probrange2)
+    
+    der_data = cbind(mean_der, lower_der, upper_der, prob_above, prob_below)
+    
+    for(i in 1:length(main)) {
+      der_data = cbind(der_data, model$data[,which(names(model$data)==main[i])])
+    }
+    der_data <- as.data.frame(der_data)
+    colnames(der_data)=c("mean","lower","upper", "prob_above", "prob_below", main[1:length(main)])
+    
+    if(is.null(by)==TRUE) {
+      interpdat <- with(der_data, akima::interp(x = der_data[,6], y = der_data[,7], z = mean, duplicate = "mean"))
+      interpdat2 <- reshape2::melt(interpdat$z, na.rm = TRUE)
+      names(interpdat2) <- c("x", "y", "dir")
+      interpdat2$main1 <- interpdat$x[interpdat2$x]
+      interpdat2$main2 <- interpdat$y[interpdat2$y]
+      interpdat_low <- with(der_data, akima::interp(x = der_data[,6], y = der_data[,7], z = lower, duplicate = "mean"))
+      interpdat2_low <- reshape2::melt(interpdat_low$z, na.rm = TRUE)
+      names(interpdat2_low) <- c("x", "y", "dir")
+      interpdat2_low$main1 <- interpdat_low$x[interpdat2_low$x]
+      interpdat2_low$main2 <- interpdat_low$y[interpdat2_low$y]
+      interpdat_high <- with(der_data, akima::interp(x = der_data[,6], y = der_data[,7], z = upper, duplicate = "mean"))
+      interpdat2_high <- reshape2::melt(interpdat_high$z, na.rm = TRUE)
+      names(interpdat2_high) <- c("x", "y", "dir")
+      interpdat2_high$main1 <- interpdat_high$x[interpdat2_high$x]
+      interpdat2_high$main2 <- interpdat_high$y[interpdat2_high$y]
+      interpdat2$upper=interpdat2_high$dir
+      interpdat2$lower=interpdat2_low$dir
+      interpdat2$threshold=0
+    } else {
+      # add by column to der_data
+      # for now only set up for by variable with TWO LEVELS and in quite explicit/roundabout way
+      der_data = cbind(der_data, model$data[,which(names(model$data)==by)])
+      colnames(der_data)=c("mean","lower","upper", "prob_above", "prob_below", main[1:length(main)], by)
+      ## transform back to real scale for z-transformed variables
+      der_data[,which(names(der_data)==main[1])] <- der_data[,which(names(der_data)==main[1])] * sdmain[1] + meanmain[1]
+      der_data[,which(names(der_data)==main[2])] <- der_data[,which(names(der_data)==main[2])] * sdmain[2] + meanmain[2]
+      
+      # factor level 1
+      der_data_by1 <- der_data[which(der_data[,8] == levels(der_data[,8])[1]),]
+      interpdat_a <- with(der_data_by1, akima::interp(x = der_data_by1[,6], y = der_data_by1[,7], z = mean, duplicate = "mean"))
+      interpdat_a2 <- reshape2::melt(interpdat_a$z, na.rm = TRUE)
+      names(interpdat_a2) <- c("x", "y", "dir")
+      interpdat_a2$main1 <- interpdat_a$x[interpdat_a2$x]
+      interpdat_a2$main2 <- interpdat_a$y[interpdat_a2$y]
+      interpdat_a_low <- with(der_data_by1, akima::interp(x = der_data_by1[,6], y = der_data_by1[,7], z = lower, duplicate = "mean"))
+      interpdat_a2_low <- reshape2::melt(interpdat_a_low$z, na.rm = TRUE)
+      names(interpdat_a2_low) <- c("x", "y", "dir")
+      interpdat_a2_low$main1 <- interpdat_a_low$x[interpdat_a2_low$x]
+      interpdat_a2_low$main2 <- interpdat_a_low$y[interpdat_a2_low$y]
+      interpdat_a_high <- with(der_data_by1, akima::interp(x = der_data_by1[,6], y = der_data_by1[,7], z = upper, duplicate = "mean"))
+      interpdat_a2_high <- reshape2::melt(interpdat_a_high$z, na.rm = TRUE)
+      names(interpdat_a2_high) <- c("x", "y", "dir")
+      interpdat_a2_high$main1 <- interpdat_a_high$x[interpdat_a2_high$x]
+      interpdat_a2_high$main2 <- interpdat_a_high$y[interpdat_a2_high$y]
+      interpdat_a_probabove <- with(der_data_by1, akima::interp(x = der_data_by1[,6], y = der_data_by1[,7], z = prob_above, duplicate = "mean"))
+      interpdat_a2_probabove <- reshape2::melt(interpdat_a_probabove$z, na.rm = TRUE)
+      names(interpdat_a2_probabove) <- c("x", "y", "dir")
+      interpdat_a2_probabove$main1 <- interpdat_a_probabove$x[interpdat_a2_probabove$x]
+      interpdat_a2_probabove$main2 <- interpdat_a_probabove$y[interpdat_a2_probabove$y]
+      interpdat_a_probbelow <- with(der_data_by1, akima::interp(x = der_data_by1[,6], y = der_data_by1[,7], z = prob_below, duplicate = "mean"))
+      interpdat_a2_probbelow <- reshape2::melt(interpdat_a_probbelow$z, na.rm = TRUE)
+      names(interpdat_a2_probbelow) <- c("x", "y", "dir")
+      interpdat_a2_probbelow$main1 <- interpdat_a_probbelow$x[interpdat_a2_probbelow$x]
+      interpdat_a2_probbelow$main2 <- interpdat_a_probbelow$y[interpdat_a2_probbelow$y]
+      interpdat_a2$upper=interpdat_a2_high$dir
+      interpdat_a2$lower=interpdat_a2_low$dir
+      interpdat_a2$probabove = interpdat_a2_probabove$dir
+      interpdat_a2$probbelow = interpdat_a2_probbelow$dir
+      interpdat_a2$threshold=0
+      assign(paste(output, "1p", sep = "_"),interpdat_a2, envir = parent.frame())
+      
+      
+      # factor level 2
+      der_data_by2 <- der_data[which(der_data[,8] == levels(der_data[,8])[2]),]
+      interpdat_b <- with(der_data_by2, akima::interp(x = der_data_by2[,6], y = der_data_by2[,7], z = mean, duplicate = "mean"))
+      interpdat_b2 <- reshape2::melt(interpdat_b$z, na.rm = TRUE)
+      names(interpdat_b2) <- c("x", "y", "dir")
+      interpdat_b2$main1 <- interpdat_b$x[interpdat_b2$x]
+      interpdat_b2$main2 <- interpdat_b$y[interpdat_b2$y]
+      interpdat_b_low <- with(der_data_by2, akima::interp(x = der_data_by2[,6], y = der_data_by2[,7], z = lower, duplicate = "mean"))
+      interpdat_b2_low <- reshape2::melt(interpdat_b_low$z, na.rm = TRUE)
+      names(interpdat_b2_low) <- c("x", "y", "dir")
+      interpdat_b2_low$main1 <- interpdat_b_low$x[interpdat_b2_low$x]
+      interpdat_b2_low$main2 <- interpdat_b_low$y[interpdat_b2_low$y]
+      interpdat_b_high <- with(der_data_by2, akima::interp(x = der_data_by2[,6], y = der_data_by2[,7], z = upper, duplicate = "mean"))
+      interpdat_b2_high <- reshape2::melt(interpdat_b_high$z, na.rm = TRUE)
+      names(interpdat_b2_high) <- c("x", "y", "dir")
+      interpdat_b2_high$main1 <- interpdat_b_high$x[interpdat_b2_high$x]
+      interpdat_b2_high$main2 <- interpdat_b_high$y[interpdat_b2_high$y]
+      interpdat_b_probabove <- with(der_data_by2, akima::interp(x = der_data_by2[,6], y = der_data_by2[,7], z = prob_above, duplicate = "mean"))
+      interpdat_b2_probabove <- reshape2::melt(interpdat_b_probabove$z, na.rm = TRUE)
+      names(interpdat_b2_probabove) <- c("x", "y", "dir")
+      interpdat_b2_probabove$main1 <- interpdat_b_probabove$x[interpdat_b2_probabove$x]
+      interpdat_b2_probabove$main2 <- interpdat_b_probabove$y[interpdat_b2_probabove$y]
+      interpdat_b_probbelow <- with(der_data_by2, akima::interp(x = der_data_by2[,6], y = der_data_by2[,7], z = prob_below, duplicate = "mean"))
+      interpdat_b2_probbelow <- reshape2::melt(interpdat_b_probbelow$z, na.rm = TRUE)
+      names(interpdat_b2_probbelow) <- c("x", "y", "dir")
+      interpdat_b2_probbelow$main1 <- interpdat_b_probbelow$x[interpdat_b2_probbelow$x]
+      interpdat_b2_probbelow$main2 <- interpdat_b_probbelow$y[interpdat_b2_probbelow$y]
+      interpdat_b2$upper=interpdat_b2_high$dir
+      interpdat_b2$lower=interpdat_b2_low$dir
+      interpdat_b2$probabove=interpdat_b2_probabove$dir
+      interpdat_b2$probbelow = interpdat_b2_probbelow$dir
+      interpdat_b2$threshold=0
+      assign(paste(output, "2p", sep = "_"),interpdat_b2, envir = parent.frame())
+      
+    }
+    
+    if(is.null(by)==TRUE){
+      axx <- list(
+        title = names(model$data)[3]
+      )
+      
+      axy <- list(
+        title = names(model$data)[4]
+      )
+      
+      
+      p <- plot_ly(interpdat2, x=~main1, y=~main2, 
+                   z=~dir, intensity = ~dir,type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p=p%>% hide_colorbar()
+      p <- p %>% layout(title = "Derivative",
+                        scene = list(xaxis=axx, yaxis=axy,
+                                     aspectmode='cube'))
+      assign(output,p, envir = parent.frame())
+      return(p)
+    } else{ 
+      axx <- list(
+        title = names(model$data)[3]
+      )
+      
+      axy <- list(
+        title = names(model$data)[4]
+      )
+      
+      p1 <- plot_ly(interpdat_a2, x=~main1, y=~main2, 
+                    z=~dir, intensity = ~dir, scene= 'scene1', type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p1=p1%>% hide_colorbar()
+      p1 <- p1 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[1], sep = ": "),
+                                             showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
+      
+      p2 <- plot_ly(interpdat_b2, x=~main1, y=~main2, 
+                    z=~dir, intensity = ~dir, scene= 'scene2', type="mesh3d") %>% 
+        add_mesh(x=~main1, y=~main2, 
+                 z=~upper, intensity = ~upper, opacity=0.30) %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~lower, intensity = ~lower, opacity=0.30)  %>%
+        add_mesh(x=~main1, y=~main2, 
+                 z=~threshold, intensity = ~threshold, colorscale='Hot' )
+      p2=p2%>% hide_colorbar()
+      p2 <- p2 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[2], sep = ": "),
+                                             showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
+      
+      pp <- subplot(p1, p2)
+      pp <- pp %>% layout(title = paste("Derivative at confidence", confidence, sep = " "),
+                          scene = list(xaxis=axx, yaxis=axy,
+                                       aspectmode='cube'),
+                          scene2 = list(xaxis=axx, yaxis=axy,
+                                        aspectmode='cube'))
+      assign(output,pp, envir = parent.frame())
+      return(pp) 
+    }
+    
+    
+    
+  } else{
+    newdat=model$data
+    newdat[,which(names(newdat)==main)]=newdat[,which(names(newdat)==main)]+eps
+    dir=posterior_smooths(model, smooth = term, resp=response)
+    dir2=posterior_smooths(model, smooth = term, resp=response, newdata = newdat)
+    
+    dir_model=(dir2-dir)/eps
+    
+    mean_der <- apply(dir_model,MARGIN = 2,FUN = mean)
+    lower_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = lower)
+    upper_der <- apply(dir_model,MARGIN = 2,FUN = quantile, prob = upper)
+    
+    der_data=data.frame(mean_der) %>%
+      cbind(lower_der) %>%
+      cbind(upper_der) %>%
+      cbind(model$data[,which(names(model$data)==main)])
+    colnames(der_data)=c("mean","lower","upper","main")
+    
+    
+    der_data$Significance=NA
+    der_data$Significance[which(sign(der_data$lower)<0&sign(der_data$upper)<0)]="Significant"
+    der_data$Significance[which(sign(der_data$lower)>0&sign(der_data$upper)>0)]="Significant"
+    der_data$Significance[which(sign(der_data$lower)!=sign(der_data$upper))]="Not Significant"
+    #sigranges=tapply(der_data$main,as.factor(der_data$Significance),range)
+    
+    der_data$Significance=NA
+    der_data$Significance[which(sign(der_data$lower)<0&sign(der_data$upper)<0)]=-1
+    der_data$Significance[which(sign(der_data$lower)>0&sign(der_data$upper)>0)]=1
+    der_data$Significance[which(sign(der_data$lower)!=sign(der_data$upper))]=0
+    #der_data=der_data[with(der_data, order(der_data[,4], der_data[,5])),]
+    der_data$siglab <- with(rle(der_data$Significance), rep(cumsum(lengths >= 1),lengths))
+    
+    
+    if(length(which(der_data$Significance!=0))==0){
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)
+      if(is.null(response)){
+        index=which(names(model_plot)==paste(main,sep=""))
+      }else{
+        index=which(names(model_plot)==paste(response,".",response,"_",main,sep=""))
+      }    
+      model_est <- as.data.frame(model_plot[[index]][[1]])
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)[[index]]
+      
+      index2=which(names(model_est)==main)
+      colnames(model_est)[index2]="Main"
+      
+      model_plot2=model_plot+
+        geom_line(data=model_est,aes(Main,estimate__,color=I("black")),size=1)+
+        ylab(Response)+xlab(main)+
+        theme_classic()+ guides(color="none")
+      assign(output,model_plot2, envir = parent.frame())
+      return(model_plot2)
+      
+    } else{
+      der_data_SIG=der_data[which(der_data$Significance!=0),]
+      
+      sigranges=tapply(der_data_SIG$main,as.factor(der_data_SIG$siglab),range, na.rm=T)
+      
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug,errorbar_args = list(alpha=0.1),plot=FALSE)
+      if(is.null(response)){
+        index=which(names(model_plot)==paste(main,sep=""))
+      }else{
+        index=which(names(model_plot)==paste(response,".",response,"_",main,sep=""))
+      }    
+      model_plot=plot(conditional_effects(model,spaghetti=spaghetti),rug = rug, errorbar_args = list(alpha=0.1),plot=FALSE)[[index]]
+      
+      model_est <- as.data.frame(model_plot[[1]])
+      model_est$Sig=NA
+      model_est$Sig2=NA
+      model_est$Sig2[which(model_est$Sig==0)]=.8
+      model_est$Sig2[which(model_est$Sig==1)]=1.5
+      index2=which(names(model_est)==main)
+      colnames(model_est)[index2]="Main"
+      
+      
+      for(i in 1:nrow(model_est)){
+        for(j in 1:length(sigranges)){
+          if(model_est$Main[i]>=sigranges[[j]][1] & model_est$Main[i]<sigranges[[j]][2]){
+            model_est$Sig[i]=1
+          }
+        }
+        
+        
+      }
+      model_est$Sig[-which(model_est$Sig==1)]=0
+      if(length(which(model_est$Sig==1))==0){
+        model_est$Sig=0
+      }
+      model_plot2=model_plot+ 
+        geom_line(data=model_est,aes(Main,estimate__,color=(Sig)),size=1)+
+        scale_color_gradient2(low="black", mid="black",high="cyan" )+
+        ylab(Response)+xlab(main)+
+        theme_classic()+ guides(color="none")
+      
+      assign(output,model_plot2, envir = parent.frame())
+      output2=gsub("_plot", "", output)
+      output2=paste("VOI",output2,sep="_")
+      if(length(which(model_est$Sig==1))>0){
+        VOIdat=model_est[which(model_est$Sig==1),]
+        assign(output2,VOIdat, envir = parent.frame())
+      }
+    }
+    return(model_plot2)
+    
+  }
+  
+}
+
 ## function for extracting ranges of derivative at one side of 0
 deriv_ranges <- function(der_data_50_1, der_data_50_2, der_data_70_1, der_data_70_2, der_data_90_1, der_data_90_2, factorlevels, modelname, seventy = TRUE, ninety = TRUE){
   # supply all derivative dataframes
   # levels of factor
   # name of model
   
-  der_data_50_1$Significance <- ifelse(sign(der_data_50_1$lower) <0 & sign(der_data_50_1$upper)<0 | sign(der_data_50_1$lower) >0 & sign(der_data_50_1$upper)>0, 1, 0)
-  der_data_50_2$Significance <- ifelse(sign(der_data_50_2$lower) <0 & sign(der_data_50_2$upper)<0 | sign(der_data_50_2$lower) >0 & sign(der_data_50_2$upper)>0, 1, 0)
+  der_data_50_1$Significance <- ifelse((sign(der_data_50_1$lower) <0 & sign(der_data_50_1$upper)<0) | (sign(der_data_50_1$lower) >0 & sign(der_data_50_1$upper)>0), 1, 0)
+  der_data_50_2$Significance <- ifelse((sign(der_data_50_2$lower) <0 & sign(der_data_50_2$upper)<0) | (sign(der_data_50_2$lower) >0 & sign(der_data_50_2$upper)>0), 1, 0)
   der_data_50_1$factor <- factorlevels[1]
   der_data_50_2$factor <- factorlevels[2]
   der_data_50_1$confidence <- 50
   der_data_50_2$confidence <- 50 
   
   if(seventy == TRUE){
-    der_data_70_1$Significance <- ifelse(sign(der_data_70_1$lower) <0 & sign(der_data_70_1$upper)<0 | sign(der_data_70_1$lower) >0 & sign(der_data_70_1$upper)>0, 1, 0)
-    der_data_70_2$Significance <- ifelse(sign(der_data_70_2$lower) <0 & sign(der_data_70_2$upper)<0 | sign(der_data_70_2$lower) >0 & sign(der_data_70_2$upper)>0, 1, 0)
+    der_data_70_1$Significance <- ifelse((sign(der_data_70_1$lower) <0 & sign(der_data_70_1$upper)<0) | (sign(der_data_70_1$lower) >0 & sign(der_data_70_1$upper)>0), 1, 0)
+    der_data_70_2$Significance <- ifelse((sign(der_data_70_2$lower) <0 & sign(der_data_70_2$upper)<0) | (sign(der_data_70_2$lower) >0 & sign(der_data_70_2$upper)>0), 1, 0)
     der_data_70_1$factor <- factorlevels[1]
     der_data_70_2$factor <- factorlevels[2]
     der_data_70_1$confidence <- 70
     der_data_70_2$confidence <- 70 
   }
   if(ninety==TRUE){
-    der_data_90_1$Significance <- ifelse(sign(der_data_90_1$lower) <0 & sign(der_data_90_1$upper)<0 | sign(der_data_90_1$lower) >0 & sign(der_data_90_1$upper)>0, 1, 0)
-    der_data_90_2$Significance <- ifelse(sign(der_data_90_2$lower) <0 & sign(der_data_90_2$upper)<0 | sign(der_data_90_2$lower) >0 & sign(der_data_90_2$upper)>0, 1, 0)
+    der_data_90_1$Significance <- ifelse((sign(der_data_90_1$lower) <0 & sign(der_data_90_1$upper)<0) | (sign(der_data_90_1$lower) >0 & sign(der_data_90_1$upper)>0), 1, 0)
+    der_data_90_2$Significance <- ifelse((sign(der_data_90_2$lower) <0 & sign(der_data_90_2$upper)<0) | (sign(der_data_90_2$lower) >0 & sign(der_data_90_2$upper)>0), 1, 0)
     der_data_90_1$factor <- factorlevels[1]
     der_data_90_2$factor <- factorlevels[2]
     der_data_90_1$confidence <- 90
@@ -1282,95 +1652,132 @@ deriv_ranges <- function(der_data_50_1, der_data_50_2, der_data_70_1, der_data_7
 ##### TIDES #####
 ###### Tbm1: TU vs NTU #####
 ## 50 confidence
-deriv_plot_ztransformed(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
                         main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm1_50", 
                         meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-#saveRDS(derivplot_tbm1_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_1.rds")
-#saveRDS(derivplot_tbm1_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_2.rds")
-derivplot_tbm1_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_1.rds")
-derivplot_tbm1_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_2.rds")
+#saveRDS(derivplot_tbm1_50_1p, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_1p.rds")
+#saveRDS(derivplot_tbm1_50_2p, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_2p.rds")
+derivplot_tbm1_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_1p.rds")
+derivplot_tbm1_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_2p.rds")
 
-deriv_plot_ztransformed(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
                         main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm1_70", 
                         meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-#saveRDS(derivplot_tbm1_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_1.rds")
-#saveRDS(derivplot_tbm1_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_2.rds")
-derivplot_tbm1_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_1.rds")
-derivplot_tbm1_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_2.rds")
+#saveRDS(derivplot_tbm1_70_1p, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_1p.rds")
+#saveRDS(derivplot_tbm1_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_2p.rds")
+derivplot_tbm1_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_1p.rds")
+derivplot_tbm1_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_2p.rds")
 
 #### Making overlay plot
-deriv_ranges(derivplot_tbm1_50_1, derivplot_tbm1_50_2, derivplot_tbm1_70_1, derivplot_tbm1_70_2, 
-             factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1", seventy = TRUE, ninety = FALSE)
+deriv_ranges(derivplot_tbm1_50_1p, derivplot_tbm1_50_2p, derivplot_tbm1_70_1p, derivplot_tbm1_70_2p, 
+             factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_p", seventy = TRUE, ninety = FALSE)
 
 d2_t[,c("tidedif", "distcoast")] <- round(d2_t[,c("tidedif", "distcoast")], 6)
-tbm1_overlay[,c("main1", "main2")] <- round(tbm1_overlay[,c("main1", "main2")], 6)
+tbm1_p_overlay[,c("main1", "main2")] <- round(tbm1_p_overlay[,c("main1", "main2")], 6)
 
-tbm1_merge <- left_join(d2_t, tbm1_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
-tbm1_merge$toolusers <- factor(tbm1_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
+tbm1_p_merge <- left_join(d2_t, tbm1_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
+tbm1_p_merge$toolusers <- factor(tbm1_p_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
 # color on lighter color
 # png("tide_analysis/ModelRDS/tuvsntu_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm1_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = na.omit(tbm1_merge[tbm1_merge$confidence == 70 & tbm1_merge$Significance == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers, ) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
         legend.title = element_text(size =14), axis.text = element_text(size=14))
 #dev.off()
 
+## regions 89% on one side of 0
+tbm1_p_merge$Significance_p <- ifelse(tbm1_p_merge$probabove > 0.89 | tbm1_p_merge$probbelow > 0.89, 1, 0)
+
+# png("tide_analysis/ModelRDS/tusvsntu_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+#dev.off()
+## get stupid error about zero contours being generated. No clue why... maybe because it's only in one of the facets? 
+# but was not a problem above?? 
+# look into it and fix
+
 ###### Tbm2: TU #####
 ## 50 confidence
-deriv_plot_ztransformed(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
-           main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm2season_50",
-           meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-# save the resulting data frames as rds so I don't have to keep running this
-#saveRDS(derivplot_tbm2season_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm2season_50_1.rds")
-#saveRDS(derivplot_tbm2season_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm2season_50_2.rds")
-derivplot_tbm2season_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_1.rds")
-derivplot_tbm2season_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_2.rds")
+deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                 main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm2season_50",
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+#saveRDS(derivplot_tbm2season_50_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2season_50_1p.rds")
+#saveRDS(derivplot_tbm2season_50_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2season_50_2p.rds")
+derivplot_tbm2season_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_1p.rds")
+derivplot_tbm2season_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_2p.rds")
 
 ## 70 confidence
-deriv_plot_ztransformed(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
-           main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm2season_70",
-           meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-#saveRDS(derivplot_tbm2season_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm2season_70_1.rds")
-#saveRDS(derivplot_tbm2season_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm2season_70_2.rds")
-derivplot_tbm2season_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_1.rds")
-derivplot_tbm2season_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_2.rds")
+deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                 main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm2season_70",
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+#saveRDS(derivplot_tbm2season_70_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2season_70_1p.rds")
+#saveRDS(derivplot_tbm2season_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2season_70_2p.rds")
+derivplot_tbm2season_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_1p.rds")
+derivplot_tbm2season_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_2p.rds")
 
-## 90 confidence
-deriv_plot_ztransformed(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
-           main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 90, output = "derivplot_tbm2season_90",
-           meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-#saveRDS(derivplot_tbm2season_90_1, file = "tide_analysis/ModelRDS/derivplot_tbm2season_90_1.rds")
-#saveRDS(derivplot_tbm2season_90_2, file = "tide_analysis/ModelRDS/derivplot_tbm2season_90_2.rds")
-derivplot_tbm2season_90_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_90_1.rds")
-derivplot_tbm2season_90_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_90_2.rds")
+# 90 confidence
+deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                 main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 90, output = "derivplot_tbm2season_90",
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+#saveRDS(derivplot_tbm2season_90_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2season_90_1p.rds")
+#saveRDS(derivplot_tbm2season_90_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2season_90_2p.rds")
+derivplot_tbm2season_90_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_90_1p.rds")
+derivplot_tbm2season_90_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_90_2p.rds")
 
+# now have in dataframe output the prob on one side of 0 for all places
 #### Making overlay plot
-deriv_ranges(derivplot_tbm2season_50_1, derivplot_tbm2season_50_2, derivplot_tbm2season_70_1, derivplot_tbm2season_70_2, derivplot_tbm2season_90_1, derivplot_tbm2season_90_2, 
-             factorlevels = c("Dry", "Wet"), modelname = "tbm2", seventy = TRUE, ninety = TRUE)
+deriv_ranges(derivplot_tbm2season_50_1p, derivplot_tbm2season_50_2p, derivplot_tbm2season_70_1p, derivplot_tbm2season_70_2p, derivplot_tbm2season_90_1p, derivplot_tbm2season_90_2p, 
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2_p", seventy = TRUE, ninety = TRUE)
 
 # need to round to get the data comparable (I think they have different rounding due to the z-transformation)
 d2[,c("tidedif", "distcoast")] <- round(d2[,c("tidedif", "distcoast")], 6)
-tbm2_overlay[,c("main1", "main2")] <- round(tbm2_overlay[,c("main1", "main2")], 6)
+tbm2_p_overlay[,c("main1", "main2")] <- round(tbm2_p_overlay[,c("main1", "main2")], 6)
 
-tbm2_merge <- left_join(d2, tbm2_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+tbm2_p_merge <- left_join(d2, tbm2_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
 # color on lighter color
 # png("tide_analysis/ModelRDS/toolusers_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2_merge[tbm2_merge$confidence == 70 & tbm2_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  geom_contour_filled(data = tbm2_p_merge[tbm2_p_merge$confidence == 70 & tbm2_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+#dev.off()
+
+## probability on one side of 0 rather than absolute ###
+# use other function deriv_plot_zprob that saves this output too
+# I think this could easily just be the ztransformed function (the changes don't have effect on the rest of the output)
+
+tbm2_p_merge$Significance_p <- ifelse(tbm2_p_merge$probabove > 0.89 | tbm2_p_merge$probbelow > 0.89, 1, 0)
+# png("tide_analysis/ModelRDS/toolusers_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_p_merge[tbm2_p_merge$confidence == 70 & tbm2_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
@@ -1379,98 +1786,129 @@ ggplot() +
 
 ###### Tbm2a: NTU ####
 ## 50 confidence
-deriv_plot_ztransformed(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+deriv_plot_zprob(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm2aseason_50",
            meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-#saveRDS(derivplot_tbm2aseason_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_1.rds")
-#saveRDS(derivplot_tbm2aseason_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_2.rds")
-derivplot_tbm2aseason_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_1.rds")
-derivplot_tbm2aseason_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_2.rds")
+#saveRDS(derivplot_tbm2aseason_50_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_1p.rds")
+#saveRDS(derivplot_tbm2aseason_50_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_2p.rds")
+derivplot_tbm2aseason_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_1p.rds")
+derivplot_tbm2aseason_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_2p.rds")
 
 ## 70 confidence
-deriv_plot_ztransformed(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+deriv_plot_zprob(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
                         main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm2aseason_70",
                         meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-#saveRDS(derivplot_tbm2aseason_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_1.rds")
-#saveRDS(derivplot_tbm2aseason_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_2.rds")
-derivplot_tbm2aseason_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_1.rds")
-derivplot_tbm2aseason_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_2.rds")
+#saveRDS(derivplot_tbm2aseason_70_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_1p.rds")
+#saveRDS(derivplot_tbm2aseason_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_2p.rds")
+derivplot_tbm2aseason_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_1p.rds")
+derivplot_tbm2aseason_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_2p.rds")
 
 #### Making overlay plot
-deriv_ranges(derivplot_tbm2aseason_50_1, derivplot_tbm2aseason_50_2, derivplot_tbm2aseason_70_1, derivplot_tbm2aseason_70_2, 
-             factorlevels = c("Dry", "Wet"), modelname = "tbm2a", seventy = TRUE, ninety = FALSE)
+deriv_ranges(derivplot_tbm2aseason_50_1p, derivplot_tbm2aseason_50_2p, derivplot_tbm2aseason_70_1p, derivplot_tbm2aseason_70_2p, 
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2a_p", seventy = TRUE, ninety = FALSE)
 
 # need to round to get the data comparable (I think they have different rounding due to the z-transformation)
 d2a[,c("tidedif", "distcoast")] <- round(d2a[,c("tidedif", "distcoast")], 6)
-tbm2a_overlay[,c("main1", "main2")] <- round(tbm2a_overlay[,c("main1", "main2")], 6)
+tbm2a_p_overlay[,c("main1", "main2")] <- round(tbm2a_p_overlay[,c("main1", "main2")], 6)
 
-tbm2a_merge <- left_join(d2a, tbm2a_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+tbm2a_p_merge <- left_join(d2a, tbm2a_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
 # color on lighter color
 # png("tide_analysis/ModelRDS/nontoolusers_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2a_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2a_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2a_merge[tbm2a_merge$confidence == 70 & tbm2a_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  geom_contour_filled(data = tbm2a_p_merge[tbm2a_p_merge$confidence == 70 & tbm2a_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
         legend.title = element_text(size =14), axis.text = element_text(size=14))
 #dev.off()
 
+## probability on one side of 0 rather than absolute ###
+tbm2a_p_merge$Significance_p <- ifelse(tbm2a_p_merge$probabove > 0.89 | tbm2a_p_merge$probbelow > 0.89, 1, 0)
+
+# png("tide_analysis/ModelRDS/nontoolusers_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2a_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2a_p_merge[tbm2a_p_merge$confidence == 70 & tbm2a_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+#dev.off()
 
 ##### HOUR OF DAY ####
 ###### Tbm2_h: TU ####
 # 50 confidence
-deriv_plot_ztransformed(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+deriv_plot_zprob(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("hour_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm2hseason_50",
            meanmain = c(meanhour, meandist), sdmain = c(sdhour, sddist))
-#saveRDS(derivplot_tbm2hseason_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_50_1.rds")
-#saveRDS(derivplot_tbm2hseason_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_50_2.rds")
-derivplot_tbm2hseason_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_50_1.rds")
-derivplot_tbm2hseason_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_50_2.rds")
+#saveRDS(derivplot_tbm2hseason_50_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_50_1p.rds")
+#saveRDS(derivplot_tbm2hseason_50_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_50_2p.rds")
+derivplot_tbm2hseason_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_50_1p.rds")
+derivplot_tbm2hseason_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_50_2p.rds")
 
 # 70 confidence
-deriv_plot_ztransformed(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+deriv_plot_zprob(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("hour_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm2hseason_70",
            meanmain = c(meanhour, meandist), sdmain = c(sdhour, sddist))
-#saveRDS(derivplot_tbm2hseason_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_70_1.rds")
-#saveRDS(derivplot_tbm2hseason_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_70_2.rds")
-derivplot_tbm2hseason_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_70_1.rds")
-derivplot_tbm2hseason_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_70_2.rds")
+#saveRDS(derivplot_tbm2hseason_70_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_70_1p.rds")
+#saveRDS(derivplot_tbm2hseason_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_70_2p.rds")
+derivplot_tbm2hseason_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_70_1p.rds")
+derivplot_tbm2hseason_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_70_2p.rds")
 
 # 90 confidence
-deriv_plot_ztransformed(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+deriv_plot_zprob(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("hour_z", "distcoast_z"), eps = 0.001, confidence = 90, output = "derivplot_tbm2hseason_90",
            meanmain = c(meanhour, meandist), sdmain = c(sdhour, sddist))
-#saveRDS(derivplot_tbm2hseason_90_1, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_90_1.rds")
-#saveRDS(derivplot_tbm2hseason_90_2, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_90_2.rds")
-derivplot_tbm2hseason_90_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_90_1.rds")
-derivplot_tbm2hseason_90_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_90_2.rds")
+#saveRDS(derivplot_tbm2hseason_90_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_90_1p.rds")
+#saveRDS(derivplot_tbm2hseason_90_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2hseason_90_2p.rds")
+derivplot_tbm2hseason_90_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_90_1p.rds")
+derivplot_tbm2hseason_90_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_90_2p.rds")
 
 #### Making overlay plot
-deriv_ranges(derivplot_tbm2hseason_50_1, derivplot_tbm2hseason_50_2, derivplot_tbm2hseason_70_1, derivplot_tbm2hseason_70_2, derivplot_tbm2hseason_90_1, derivplot_tbm2hseason_90_2, 
-             factorlevels = c("Dry", "Wet"), modelname <- "tbm2_h", seventy = TRUE, ninety = TRUE)
+deriv_ranges(derivplot_tbm2hseason_50_1p, derivplot_tbm2hseason_50_2p, derivplot_tbm2hseason_70_1p, derivplot_tbm2hseason_70_2p, derivplot_tbm2hseason_90_1p, derivplot_tbm2hseason_90_2p, 
+             factorlevels = c("Dry", "Wet"), modelname <- "tbm2_h_p", seventy = TRUE, ninety = TRUE)
 
 # need to round to get the data comparable (I think they have different rounding due to the z-transformation)
 d2h[,c("hour", "distcoast")] <- round(d2h[,c("hour", "distcoast")], 6)
-tbm2_h_overlay[,c("main1", "main2")] <- round(tbm2_h_overlay[,c("main1", "main2")], 6)
+tbm2_h_p_overlay[,c("main1", "main2")] <- round(tbm2_h_p_overlay[,c("main1", "main2")], 6)
 
-tbm2_h_merge <- left_join(d2h, tbm2_h_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+tbm2_h_p_merge <- left_join(d2h, tbm2_h_p_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
 
 # color on lighter color
 # png("tide_analysis/ModelRDS/toolusershour_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2_h_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2_h_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2_h_merge[tbm2_h_merge$confidence == 70 & tbm2_h_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
+  geom_contour_filled(data = tbm2_h_p_merge[tbm2_h_p_merge$confidence == 70 & tbm2_h_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+#dev.off()
+
+## probability on one side of 0 rather than absolute ###
+tbm2_h_p_merge$Significance_p <- ifelse(tbm2_h_p_merge$probabove > 0.89 | tbm2_h_p_merge$probbelow > 0.89, 1, 0)
+
+# png("tide_analysis/ModelRDS/toolusershour_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2_h_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_h_p_merge[tbm2_h_p_merge$confidence == 70 & tbm2_h_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
@@ -1479,42 +1917,58 @@ ggplot() +
 
 ###### Tbm2a_h: NTU  ####
 # 50 confidence
-deriv_plot_ztransformed(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+deriv_plot_zprob(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("hour_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm2ahseason_50",
            meanmain = c(meanhour, meandist), sdmain = c(sdhour, sddist))
-#saveRDS(derivplot_tbm2ahseason_50_1, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_1.rds")
-#saveRDS(derivplot_tbm2ahseason_50_2, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_2.rds")
-derivplot_tbm2ahseason_50_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_1.rds")
-derivplot_tbm2ahseason_50_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_2.rds")
+#saveRDS(derivplot_tbm2ahseason_50_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_1p.rds")
+#saveRDS(derivplot_tbm2ahseason_50_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_2p.rds")
+derivplot_tbm2ahseason_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_1p.rds")
+derivplot_tbm2ahseason_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_50_2p.rds")
 
 # 70 confidence
-deriv_plot_ztransformed(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+deriv_plot_zprob(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
            main = c("hour_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm2ahseason_70",
            meanmain = c(meanhour, meandist), sdmain = c(sdhour, sddist))
-#saveRDS(derivplot_tbm2ahseason_70_1, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_1.rds")
-#saveRDS(derivplot_tbm2ahseason_70_2, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_2.rds")
-derivplot_tbm2ahseason_70_1 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_1.rds")
-derivplot_tbm2ahseason_70_2 <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_2.rds")
+#saveRDS(derivplot_tbm2ahseason_70_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_1p.rds")
+#saveRDS(derivplot_tbm2ahseason_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_2p.rds")
+derivplot_tbm2ahseason_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_1p.rds")
+derivplot_tbm2ahseason_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_2p.rds")
 
 #### Making overlay plot
-deriv_ranges(derivplot_tbm2ahseason_50_1, derivplot_tbm2ahseason_50_2, derivplot_tbm2ahseason_70_1, derivplot_tbm2ahseason_70_2, 
-             factorlevels = c("Dry", "Wet"), modelname = "tbm2_ah", seventy = TRUE, ninety = FALSE)
+deriv_ranges(derivplot_tbm2ahseason_50_1p, derivplot_tbm2ahseason_50_2p, derivplot_tbm2ahseason_70_1p, derivplot_tbm2ahseason_70_2p, 
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2_ah_p", seventy = TRUE, ninety = FALSE)
 
 # need to round to get the data comparable (I think they have different rounding due to the z-transformation)
 d2ha[,c("hour", "distcoast")] <- round(d2ha[,c("hour", "distcoast")], 6)
-tbm2_ah_overlay[,c("main1", "main2")] <- round(tbm2_ah_overlay[,c("main1", "main2")], 6)
+tbm2_ah_p_overlay[,c("main1", "main2")] <- round(tbm2_ah_p_overlay[,c("main1", "main2")], 6)
 
-tbm2_ah_merge <- left_join(d2ha, tbm2_ah_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+tbm2_ah_p_merge <- left_join(d2ha, tbm2_ah_p_overlay, by = c("hour" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
 # color on lighter color
 # png("tide_analysis/ModelRDS/nontoolusershour_predder.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2_ah_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2_ah_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2_ah_merge[tbm2_ah_merge$confidence == 70 & tbm2_ah_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
+  geom_contour_filled(data = tbm2_ah_p_merge[tbm2_ah_p_merge$confidence == 70 & tbm2_ah_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+#dev.off()
+
+## probability on one side of 0 rather than absolute ###
+tbm2_ah_p_merge$Significance_p <- ifelse(tbm2_ah_p_merge$probabove > 0.89 | tbm2_ah_p_merge$probbelow > 0.89, 1, 0)
+
+# png("tide_analysis/ModelRDS/nontoolusershour_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2_ah_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = tbm2_ah_p_merge[tbm2_ah_p_merge$confidence == 70 & tbm2_ah_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
@@ -1700,157 +2154,3 @@ draw(tidetemp_m1)
 
 
 # standardize within cameras vs get average per region (e.g. tool users) or whole island even?
-
-
-
-
-
-####
-#### ACTIVITY TOOL USERS VS NON TOOL USERS ####
-####
-# decide if only Jicaron or both islands
-# preliminary, better for this would be grid data if we get it
-
-## distribution of data (with 0s in)
-ftable(agoutiselect_t$n)
-testdist1 <- fitdist(agoutiselect_t$n, "pois")
-plot(testdist1)
-
-testdist2 <- fitdist(agoutiselect_t$n, "gamma", "mme")
-plot(testdist2)
-
-hist(agoutiselect_t$n)
-
-## zero inflated poisson makes sense
-# or potentially gamma
-
-## distribution of data (only capuchin sequences)
-testdist1.2 <- fitdist(onlycap_t$n, "pois")
-plot(testdist1.2)
-
-testdist2.2 <- fitdist(onlycap_t$n, "gamma", "mme")
-plot(testdist2.2)
-
-ftable(onlycap_t$n)
-## poisson makes sense or gamma makes sense
-
-## just plots of number of capuchins per hour by tool use vs non tool use
-
-# colors for two histograms in one
-c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
-c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
-
-### Tool users vs non tool users
-histtool <- hist(onlycap_t$hour[onlycap_t$tool_site == 1 & onlycap_t$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-histnotool <- hist(onlycap_t$hour[onlycap_t$tool_site == 0 & onlycap_t$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-
-plot(histnotool, col = c2, freq = FALSE, main = "Tool users (blue) vs non-tool users (red)", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins", ylim = c(0, 0.3))
-plot(histtool, col = c1, freq = FALSE, add = TRUE)
-
-## GAMs
-## outcome variable:
-# number of capuchins per sequence (to be consistent with Claudio's data)
-# currently don't include sequence length as offset, if we would, need to get it for Claudio's data
-# can do only Jicaron, or both Jicaron and Coiba
-
-## hour of day is not cyclic spline, as we have no observations at midnight and early in morning (explained in bottom of the heap youtube)
-
-## Model 1: number of capuchins in sequences with capuchins depending on hour of day, by tool use/vs non tool users
-am1 <- gam(n ~ s(hour, by = toolusers, k = 15) + toolusers,
-              family = poisson(), data = onlycap_t, method = "REML")
-summary(am1) 
-# visualize
-plot(am1, all.terms = TRUE, pages = 1)
-draw(am1)
-# check assumptions
-gam.check(am1) # k too low? need to find k that works
-
-# with factor smooth instead of by smooth
-am1.2 <- gam(n ~ s(hour, toolusers, bs = "fs"), family = poisson(), data = onlycap_t, method = "REML")
-summary(am1.2)
-plot(am1.2, all.terms = TRUE)
-draw(am1.2)
-
-## Model 2: including location as random effect
-am2 <- gam(n ~ s(hour, by = toolusers, k = 12) +  toolusers + s(locationfactor, bs = "re"), family = poisson(), data = onlycap_t, method = "REML")
-summary(am2)
-
-draw(am2)
-plot(am2, all.terms = TRUE, pages = 1)
-# check assumptions
-gam.check(am2) 
-
-# with factor smooth instead of by smooth
-# CHECK THIS MODEL 
-am2.2 <- gam(n ~ s(hour, toolusers, bs = "fs") + s(locationfactor, bs = "re"), family = poisson(), data = onlycap_t, method = "REML")
-summary(am2.2)
-plot(am2.2, all.terms = TRUE, pages = 1)
-draw(am2.2)
-
-########################################
-#### NOTES #######
-## still use this?
-## CHECK IF THIS WORKS AND IF IT'S NECESSARY
-# maybe instead calculate number of capuchins per minute/hour whatever (per sequence using sequencelength offset)
-# and then make average of that per day-hour 
-# still figure this out, need to do some math (to also incorporate all the minutes/seconds there were no capuchins? unclear)
-# or add all sequence lengths and all capuchins per hour and then divide capuchins by total seq length? Think about independence etc and what this means
-
-## create variable for nr of capuchins per hour
-agoutiselect2$n_hour <- (agoutiselect2$n/agoutiselect2$seq_length) * 3600
-agoutiselect2$dayhour <- paste(agoutiselect2$seqday, agoutiselect2$hour, sep = " ")
-agoutidayhour <- aggregate(agoutiselect2$n, by = list(dayhour = agoutiselect2$dayhour, uniqueloctag = agoutiselect2$uniqueloctag), FUN = mean)
-aggregate(agoutiselect2$seq_length, by = list(dayhour = agoutiselect2$dayhour, uniqueloctag = agoutiselect2$uniqueloctag), FUN = sum)
-
-
-
-## if we want to generate 0 days (not sure if necessary for tidal analysis, not if we work on number of capuchins)
-#  ## SKIP THIS? need to add in the hours that the camera wasn't triggered as 0s  #####
-# first make overview of deployments we have in this dataframe and their start and end days
-# NOTE: CAN LIKELY DO THIS EASIER BY GENERATING THIS ENTIRE THING ONCE AND THEN FILTERING? 
-locations2 <- data.frame(uniqueloctag = unique(agoutisequence_c$uniqueloctag)) 
-locations2 <- left_join(locations2, agoutisequence_c[,c("uniqueloctag", "dep_start", "dep_end")], by = "uniqueloctag")
-locations2 <- locations2[!duplicated(locations2$uniqueloctag),]
-# take time off and keep just date variable
-locations2$dep_startday <- as.Date(format(locations2$dep_start, "%Y-%m-%d"))
-locations2$dep_endday <- as.Date(format(locations2$dep_end, "%Y-%m-%d"))
-
-###  generate all the days that should be present within each deployment
-# first create dataframe for first one
-depldays3 <<- data.frame(uniqueloctag = locations2$uniqueloctag[1], seqday = seq(locations2$dep_startday[1], locations2$dep_endday[1], by = "days"))
-# now iterate over all the other ones and append those to the dataframe
-for (i in 2:nrow(locations2)) {
-  depldays4 = data.frame(uniqueloctag = locations2$uniqueloctag[i], seqday = seq(locations2$dep_startday[i], locations2$dep_endday[i], by = "days"))
-  depldays3 <<- rbind(depldays3, depldays4)
-} 
-
-# need to expand this dataframe to have an hour a day for each deployment.
-depldayhour <- data.frame(uniqueloctag = rep(depldays3$uniqueloctag, 24), seqday = rep(depldays3$seqday, 24))
-depldayhour <- depldayhour[order(depldayhour$uniqueloctag),]
-depldayhour$hour <- rep(1:24, (nrow(depldayhour)/24))
-
-agoutiselect2 <- left_join(depldayhour[depldayhour$uniqueloctag %in% agoutisequence_c$uniqueloctag,], agoutisequence_c, by = c("uniqueloctag", "seqday", "hour"))
-agoutiselect2$noanimal <- ifelse(is.na(agoutiselect2$sequenceID), 1, 0)
-
-## fill in NAs like above, using a metadata file
-metadata2 <- agoutisequence_c[!duplicated(agoutisequence_c$uniqueloctag), c("uniqueloctag", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours",
-                                                                            "island", "tool_anvil", "tool_site")]
-
-for (i in 1:nrow(metadata2)) {
-  agoutiselect2$locationName[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$locationName[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
-  agoutiselect2$tags[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$tags[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
-  agoutiselect2$dep_start[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$dep_start[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
-  agoutiselect2$dep_end[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$dep_end[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
-  agoutiselect2$dep_length_hours[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$dep_length_hours[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
-  agoutiselect2$island[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$island[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
-  agoutiselect2$tool_anvil[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$tool_anvil[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
-  agoutiselect2$deploymentID[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$deploymentID[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
-  agoutiselect2$tool_site[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$tool_site[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
-  
-} 
-
-agoutiselect2$n[agoutiselect2$noanimal == 1] <- 0
-agoutiselect2$capuchin[agoutiselect2$noanimal == 1] <- 0
-# not sure if we should change seq_length to 0
-agoutiselect2$seq_length[agoutiselect2$noanimal == 1] <- 0
-

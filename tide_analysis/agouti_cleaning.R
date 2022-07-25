@@ -102,6 +102,8 @@ agoutigross <- left_join(agoutigross, multimedia2, "sequenceID")
 
 # add correct deployment start and end time (can still double check, now took the minimum and maximum sequence time within deployment id)
 # need to do this per camera (because camera could stop before deployment end)
+# rename SURVEY-CEBUS-24-01 to CEBUS-04
+agoutigross$locationName[which(agoutigross$locationName == "SURVEY-CEBUS-24-01")] <- "CEBUS-04"
 # create unique variable (like deployment ID) that is location name + tag
 agoutigross$uniqueloctag <- paste(agoutigross$locationName, agoutigross$tag, sep = "-")
 startdep <- aggregate(x = list(dep_start = agoutigross$seq_start), by = list(uniqueloctag = agoutigross$uniqueloctag), FUN = min)
@@ -123,6 +125,7 @@ agoutigross$season <- ifelse(agoutigross$month == 12 | agoutigross$month == 1 | 
 # pull island location and tool use/non tool use from coiba_camtrap_ids_gps.csv
 deployment_info <- read.csv("coiba_camtrap_ids_gps.csv")
 deployment_info$locationName <- deployment_info$camera_id
+deployment_info$locationName[which(deployment_info$locationName == "SURVEY-CEBUS-24-01")] <- "CEBUS-04"
 
 # drop columns we don't want to attach
 deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id", "number", "longitude", "latitude")]
@@ -168,6 +171,16 @@ agoutigross$nSubadult <- agoutigross$nSF + agoutigross$nSM + agoutigross$nSU
 agoutigross$nJuvenile <- agoutigross$nJF + agoutigross$nJM + agoutigross$nJU
 agoutigross$nFemales <- agoutigross$nAF + agoutigross$nSF + agoutigross$nJF + agoutigross$nUF
 agoutigross$nMales <- agoutigross$nAM + agoutigross$nSM + agoutigross$nJM + agoutigross$nUM
+
+# add nr or capuchins inspecting camera trap
+agoutigross_capinsp <- agoutigross[agoutigross$capuchin == 1 & str_detect(agoutigross$behaviour, "Inspecting"), ]
+cap_numbers_insp <- agoutigross_capinsp %>%
+  dplyr::count(sequenceID)
+colnames(cap_numbers_insp) <- c("sequenceID", "n_inspect")
+head(cap_numbers_insp)
+
+agoutigross <- left_join(agoutigross, cap_numbers_insp, "sequenceID")
+agoutigross$n_inspect[is.na(agoutigross$n_inspect)] <- 0
 
 ##### Foraging items #####
 # what is being foraged on per sequence
@@ -395,8 +408,6 @@ for (i in 1:nrow(agoutisequence)) {
 }
 
 #### Further prep and filter uncoded out #####
-# rename SURVEY-CEBUS-24-01 to CEBUS-04
-agoutisequence$locationName[which(agoutisequence$locationName == "SURVEY-CEBUS-24-01")] <- "CEBUS-04"
 # make temperature numerical
 agoutisequence$temperature <- as.numeric(agoutisequence$temperature)
 # add seqday variable (RDate format)
@@ -430,3 +441,8 @@ codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5]) # de
 # subset only fully coded deployments 
 agoutisequence_c <- agoutisequence[(agoutisequence$uniqueloctag %in% codeddeployments_total),]
 agoutisequence_c <- droplevels.data.frame(agoutisequence_c)
+
+agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
+agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users"))
+agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
+
