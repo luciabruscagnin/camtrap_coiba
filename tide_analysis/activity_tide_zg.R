@@ -402,9 +402,11 @@ ggplot(data = d2, aes(x = tidedif, y = distcoast, z = fit)) +
 ## plot of number of capuchins
 ## number of capuchins per sequence wet vs dry season
 ncap <- plot(conditional_effects(tbm2), plot = FALSE)[[1]]
+# png("tide_analysis/ModelRDS/TUnr_season.png", width = 12, height = 7, units = 'in', res = 300)
 ncap + labs(y = "Average number of capuchins per sequence", x = "Season") + theme_bw() + 
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), 
                                                                                                legend.title = element_text(size =16), axis.text = element_text(size=14))
+#dev.off()
 
 ###### Non tool users ####
 tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
@@ -1466,7 +1468,7 @@ deriv_plot_zprob <- function (model, dimensions = 1, by = FALSE, term, main, eps
         add_mesh(x=~main1, y=~main2, 
                  z=~threshold, intensity = ~threshold, colorscale='Hot' )
       p1=p1%>% hide_colorbar()
-      p1 <- p1 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[1], sep = ": "),
+      p1 <- p1 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,8])[1], sep = ": "),
                                              showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
       
       p2 <- plot_ly(interpdat_b2, x=~main1, y=~main2, 
@@ -1478,7 +1480,7 @@ deriv_plot_zprob <- function (model, dimensions = 1, by = FALSE, term, main, eps
         add_mesh(x=~main1, y=~main2, 
                  z=~threshold, intensity = ~threshold, colorscale='Hot' )
       p2=p2%>% hide_colorbar()
-      p2 <- p2 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,6])[2], sep = ": "),
+      p2 <- p2 %>% layout(annotations = list(x = 0.2 , y = 0.95, text = paste(by, levels(der_data[,8])[2], sep = ": "),
                                              showarrow = F, xref='paper', yref='paper', font = list(size = 15)), showlegend = FALSE) 
       
       pp <- subplot(p1, p2)
@@ -1668,6 +1670,11 @@ deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z
 derivplot_tbm1_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_1p.rds")
 derivplot_tbm1_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_2p.rds")
 
+# 100 percent confidence for showing full derivative
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 100, output = "derivplot_tbm1_100", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
 #### Making overlay plot
 deriv_ranges(derivplot_tbm1_50_1p, derivplot_tbm1_50_2p, derivplot_tbm1_70_1p, derivplot_tbm1_70_2p, 
              factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_p", seventy = TRUE, ninety = FALSE)
@@ -1689,8 +1696,8 @@ ggplot() +
   geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers, ) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 
 ## regions 89% on one side of 0
@@ -1705,12 +1712,24 @@ ggplot() +
   geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 ## get stupid error about zero contours being generated. No clue why... maybe because it's only in one of the facets? 
 # but was not a problem above?? 
 # look into it and fix
+
+### plot showing just how much is on side of 0
+tbm1_p_overlay$factor <- factor(tbm1_p_overlay$factor, levels = c("Tool-users", "Non-tool-users"))
+# prob above
+ggplot(data = tbm1_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+ggplot(data = tbm1_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 
 ###### Tbm2: TU #####
 ## 50 confidence
@@ -1740,6 +1759,11 @@ deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, 
 derivplot_tbm2season_90_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_90_1p.rds")
 derivplot_tbm2season_90_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_90_2p.rds")
 
+# 100 confidence for showing full derivative
+deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 100, output = "derivplot_tbm2season_100",
+                meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
 # now have in dataframe output the prob on one side of 0 for all places
 #### Making overlay plot
 deriv_ranges(derivplot_tbm2season_50_1p, derivplot_tbm2season_50_2p, derivplot_tbm2season_70_1p, derivplot_tbm2season_70_2p, derivplot_tbm2season_90_1p, derivplot_tbm2season_90_2p, 
@@ -1762,8 +1786,8 @@ ggplot() +
   geom_contour_filled(data = tbm2_p_merge[tbm2_p_merge$confidence == 70 & tbm2_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 
 ## probability on one side of 0 rather than absolute ###
@@ -1780,9 +1804,20 @@ ggplot() +
   geom_contour_filled(data = tbm2_p_merge[tbm2_p_merge$confidence == 70 & tbm2_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
+
+### plot showing just how much is on side of 0
+# prob above
+ggplot(data = tbm2_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+ggplot(data = tbm2_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 
 ###### Tbm2a: NTU ####
 ## 50 confidence
@@ -1791,8 +1826,8 @@ deriv_plot_zprob(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z,
            meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
 #saveRDS(derivplot_tbm2aseason_50_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_1p.rds")
 #saveRDS(derivplot_tbm2aseason_50_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_50_2p.rds")
-derivplot_tbm2aseason_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_1p.rds")
-derivplot_tbm2aseason_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_50_2p.rds")
+derivplot_tbm2aseason_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2aseason_50_1p.rds")
+derivplot_tbm2aseason_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2aseason_50_2p.rds")
 
 ## 70 confidence
 deriv_plot_zprob(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
@@ -1800,8 +1835,13 @@ deriv_plot_zprob(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z,
                         meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
 #saveRDS(derivplot_tbm2aseason_70_1p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_1p.rds")
 #saveRDS(derivplot_tbm2aseason_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2aseason_70_2p.rds")
-derivplot_tbm2aseason_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_1p.rds")
-derivplot_tbm2aseason_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2season_70_2p.rds")
+derivplot_tbm2aseason_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2aseason_70_1p.rds")
+derivplot_tbm2aseason_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2aseason_70_2p.rds")
+
+# 100 confidence for showing full derivative
+deriv_plot_zprob(tbm2a, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                 main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 100, output = "derivplot_tbm2aseason_100",
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
 
 #### Making overlay plot
 deriv_ranges(derivplot_tbm2aseason_50_1p, derivplot_tbm2aseason_50_2p, derivplot_tbm2aseason_70_1p, derivplot_tbm2aseason_70_2p, 
@@ -1824,8 +1864,8 @@ ggplot() +
   geom_contour_filled(data = tbm2a_p_merge[tbm2a_p_merge$confidence == 70 & tbm2a_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 
 ## probability on one side of 0 rather than absolute ###
@@ -1840,9 +1880,20 @@ ggplot() +
   geom_contour_filled(data = tbm2a_p_merge[tbm2a_p_merge$confidence == 70 & tbm2a_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
+
+### plot showing just how much is on side of 0
+# prob above
+ggplot(data = tbm2a_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+ggplot(data = tbm2a_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 
 ##### HOUR OF DAY ####
 ###### Tbm2_h: TU ####
@@ -1873,6 +1924,11 @@ deriv_plot_zprob(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, d
 derivplot_tbm2hseason_90_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_90_1p.rds")
 derivplot_tbm2hseason_90_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2hseason_90_2p.rds")
 
+# 100 confidence
+deriv_plot_zprob(tbm2_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                 main = c("hour_z", "distcoast_z"), eps = 0.001, confidence = 100, output = "derivplot_tbm2hseason_100",
+                 meanmain = c(meanhour, meandist), sdmain = c(sdhour, sddist))
+
 #### Making overlay plot
 deriv_ranges(derivplot_tbm2hseason_50_1p, derivplot_tbm2hseason_50_2p, derivplot_tbm2hseason_70_1p, derivplot_tbm2hseason_70_2p, derivplot_tbm2hseason_90_1p, derivplot_tbm2hseason_90_2p, 
              factorlevels = c("Dry", "Wet"), modelname <- "tbm2_h_p", seventy = TRUE, ninety = TRUE)
@@ -1895,14 +1951,14 @@ ggplot() +
   geom_contour_filled(data = tbm2_h_p_merge[tbm2_h_p_merge$confidence == 70 & tbm2_h_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 
 ## probability on one side of 0 rather than absolute ###
 tbm2_h_p_merge$Significance_p <- ifelse(tbm2_h_p_merge$probabove > 0.89 | tbm2_h_p_merge$probbelow > 0.89, 1, 0)
 
-# png("tide_analysis/ModelRDS/toolusershour_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+#png("tide_analysis/ModelRDS/toolusershour_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
   geom_contour_filled(data = tbm2_h_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
@@ -1911,9 +1967,19 @@ ggplot() +
   geom_contour_filled(data = tbm2_h_p_merge[tbm2_h_p_merge$confidence == 70 & tbm2_h_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
+
+### plot showing just how much is on side of 0
+ggplot(data = tbm2_h_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+ggplot(data = tbm2_h_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 
 ###### Tbm2a_h: NTU  ####
 # 50 confidence
@@ -1933,6 +1999,11 @@ deriv_plot_zprob(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, 
 #saveRDS(derivplot_tbm2ahseason_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_2p.rds")
 derivplot_tbm2ahseason_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_1p.rds")
 derivplot_tbm2ahseason_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm2ahseason_70_2p.rds")
+
+# 100 confidence
+deriv_plot_zprob(tbm2a_h, dimensions = 2, by = c("seasonF"), term = 't2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1)',
+                 main = c("hour_z", "distcoast_z"), eps = 0.001, confidence = 100, output = "derivplot_tbm2ahseason_100",
+                 meanmain = c(meanhour, meandist), sdmain = c(sdhour, sddist))
 
 #### Making overlay plot
 deriv_ranges(derivplot_tbm2ahseason_50_1p, derivplot_tbm2ahseason_50_2p, derivplot_tbm2ahseason_70_1p, derivplot_tbm2ahseason_70_2p, 
@@ -1955,8 +2026,8 @@ ggplot() +
   geom_contour_filled(data = tbm2_ah_p_merge[tbm2_ah_p_merge$confidence == 70 & tbm2_ah_p_merge$Significance == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 
 ## probability on one side of 0 rather than absolute ###
@@ -1964,16 +2035,25 @@ tbm2_ah_p_merge$Significance_p <- ifelse(tbm2_ah_p_merge$probabove > 0.89 | tbm2
 
 # png("tide_analysis/ModelRDS/nontoolusershour_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2_ah_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2_ah_p_merge, breaks = mybreaks, show.legend = FALSE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
   geom_contour_filled(data = tbm2_ah_p_merge[tbm2_ah_p_merge$confidence == 70 & tbm2_ah_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), plot.title = element_text(size = 18),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
+
+ggplot(data = tbm2_ah_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
+ggplot(data = tbm2_ah_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
+  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
+        legend.title = element_text(size =14), axis.text = element_text(size=14))
 
 #### DESCRIPTIVES ####
 # How many camera trapping days
