@@ -258,11 +258,13 @@ concurvity(tm5b)
 
 #### BRMS ####
 ## 08.07.2022: now all models are only on tool use and non tool use data within 50 m from coast, and with z-transformed tidedif and distcoast data (and hour). 
+max(onlycap_tj$tidedif_z)
 
 # prior simulation
-tbm1_prior <- brm(n | trunc(lb=1) ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
-              t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
-              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif =c(-6,6)),  data = onlycap_tj, chain = 2, core = 2, iter = 1000,
+# STILL CONSIDER: where to put knots on the standardized tide dif variable. 
+tbm1_prior <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+                    t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
+                    s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = onlycap_tj, chain = 2, core = 2, iter = 1000,
               prior = tidal_prior, sample_prior = "only", backend = "cmdstanr")
 
 summary(tbm1_prior)
@@ -275,7 +277,7 @@ mcmc_plot(tbm1_prior)
 ####
 tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
-              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-6,6)),  data = onlycap_tj, 
+              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = onlycap_tj, 
             chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
@@ -341,7 +343,7 @@ ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
 tbm2 <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
             t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
             s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-          knots = list(tidedif_z =c(-6,6)), chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
+          knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
           control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
@@ -412,7 +414,7 @@ ncap + labs(y = "Average number of capuchins per sequence", x = "Season") + them
 tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
-             knots = list(tidedif_z =c(-6,6)), chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
+             knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
              control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
