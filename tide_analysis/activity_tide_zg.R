@@ -258,7 +258,6 @@ concurvity(tm5b)
 
 #### BRMS ####
 ## 08.07.2022: now all models are only on tool use and non tool use data within 50 m from coast, and with z-transformed tidedif and distcoast data (and hour). 
-max(onlycap_tj$tidedif_z)
 
 # prior simulation
 # STILL CONSIDER: where to put knots on the standardized tide dif variable. 
@@ -527,7 +526,7 @@ tbm2a_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), ful
 
 # tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 # saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_hz.rds")
-#tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_hz.rds")
+# tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_hz.rds")
 
 mcmc_plot(tbm2a_h,type = "trace")
 mcmc_plot(tbm2a_h) #plot posterior intervals
@@ -1709,7 +1708,7 @@ tbm1_p_merge$Significance_p <- ifelse(tbm1_p_merge$probabove > 0.89 | tbm1_p_mer
 ggplot() +
   geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
-  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 1, inherit.aes = FALSE) + 
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
   geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
@@ -2228,11 +2227,111 @@ draw(tidetemp_m1)
 # add temp2 to dataframe by leftjoining on seqday + hour
 
 
-
-
-
-
-
-
-
 # standardize within cameras vs get average per region (e.g. tool users) or whole island even?
+
+####### DERIVATIVES ONLY VARYING ONE: TRIAL ##########
+
+# varying only tides and only distance
+#	shows how sensitive we are. Which of these dimensions causes the biggest change in our response. 
+#	So run offset just one. Could have supplemental figure multipanel with one changing, other changing, both changing. 
+
+## trial with TBM1 (or otherwise TBM2). Just for illustration
+
+###### Tbm1: TU vs NTU #####
+# only vary tidedif
+## 50 confidence
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.1), confidence = 50, output = "derivplot_tbm1_50_donly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+#### get error when trying with 0, 0.001. Now instead made one super small and other kept normal: Error in quantile.default(newX[, i], ...) : 
+## missing values and NaN's not allowed if 'na.rm' is FALSE
+## NEED TO RUN THROUGH FUNCTION ONE BY ONE TO FIGURE OUT WHERE IT GOES WRONG
+
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.1), confidence = 70, output = "derivplot_tbm1_70_donly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+# 100 percent confidence for showing full derivative
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.1), confidence = 100, output = "derivplot_tbm1_100_donly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+#### Making overlay plot
+deriv_ranges(derivplot_tbm1_50_donly_1p, derivplot_tbm1_50_donly_2p, derivplot_tbm1_70_donly_1p, derivplot_tbm1_70_donly_2p, 
+             factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_p", seventy = TRUE, ninety = FALSE)
+
+d2_t[,c("tidedif", "distcoast")] <- round(d2_t[,c("tidedif", "distcoast")], 6)
+tbm1_p_overlay[,c("main1", "main2")] <- round(tbm1_p_overlay[,c("main1", "main2")], 6)
+
+tbm1_p_merge <- left_join(d2_t, tbm1_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
+tbm1_p_merge$toolusers <- factor(tbm1_p_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
+
+## regions 89% on one side of 0
+tbm1_p_merge$Significance_p <- ifelse(tbm1_p_merge$probabove > 0.89 | tbm1_p_merge$probbelow > 0.89, 1, 0)
+
+# png("tide_analysis/ModelRDS/tusvsntu_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
+#dev.off()
+## get stupid error about zero contours being generated. No clue why... maybe because it's only in one of the facets? 
+# but was not a problem above?? 
+# look into it and fix
+
+
+# only vary distance
+
+## 50 confidence
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.1, 0.0000001), confidence = 50, output = "derivplot_tbm1_50_tonly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+#### get error when trying with 0, 0.001. Now instead made one super small and other kept normal: Error in quantile.default(newX[, i], ...) : 
+## missing values and NaN's not allowed if 'na.rm' is FALSE
+## NEED TO RUN THROUGH FUNCTION ONE BY ONE TO FIGURE OUT WHERE IT GOES WRONG
+
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.1, 0.0000001), confidence = 70, output = "derivplot_tbm1_70_tonly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+# 100 percent confidence for showing full derivative
+deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.1, 0.0000001), confidence = 100, output = "derivplot_tbm1_100_tonly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+#### Making overlay plot
+deriv_ranges(derivplot_tbm1_50_tonly_1p, derivplot_tbm1_50_tonly_2p, derivplot_tbm1_70_tonly_1p, derivplot_tbm1_70_tonly_2p, 
+             factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_p", seventy = TRUE, ninety = FALSE)
+
+d2_t[,c("tidedif", "distcoast")] <- round(d2_t[,c("tidedif", "distcoast")], 6)
+tbm1_p_overlay[,c("main1", "main2")] <- round(tbm1_p_overlay[,c("main1", "main2")], 6)
+
+tbm1_p_merge <- left_join(d2_t, tbm1_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
+tbm1_p_merge$toolusers <- factor(tbm1_p_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
+
+## regions 89% on one side of 0
+tbm1_p_merge$Significance_p <- ifelse(tbm1_p_merge$probabove > 0.89 | tbm1_p_merge$probbelow > 0.89, 1, 0)
+
+# png("tide_analysis/ModelRDS/tusvsntu_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
+#dev.off()
+## get stupid error about zero contours being generated. No clue why... maybe because it's only in one of the facets? 
+# but was not a problem above?? 
+# look into it and fix

@@ -445,4 +445,3 @@ agoutisequence_c <- droplevels.data.frame(agoutisequence_c)
 agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
 agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users"))
 agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
-

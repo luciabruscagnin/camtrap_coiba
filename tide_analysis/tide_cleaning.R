@@ -226,6 +226,8 @@ points(day(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR ==
 legend("topright", inset=c(-0.35,0), legend = c("Low Tide", "High Tide"), 
          col = c("#FC4E07", "#00AFBB"), pch = 19)
 
+dev.off()
+
 ###### WORKING CODE TO CLEAN ONE CSV ######
 # I used this a lot for troubleshooting
 ## still have problem with some that apparently have less white lines in the top? So can't do skip = 9 (which works for some)
