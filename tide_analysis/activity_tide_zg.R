@@ -272,15 +272,16 @@ mcmc_plot(tbm1_prior)
 
 
 ##### MODEL 1: TU AND NTU TOGETHER, NO SEASON ######
+## maybe still run with MORE CHAINS? 4?
 ## Number of capuchins by tidedif (not absolute) and split by toolusers, with locationfactor as random effect and distance to coast
 ####
 tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
               s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = onlycap_tj, 
-            chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
-            control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+            chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
-#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 2000) 
+tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 5000) 
 #saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_z.rds")
 # tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_z.rds")
 
@@ -342,10 +343,10 @@ ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
 tbm2 <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
             t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
             s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-          knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
+          knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
           control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
-# tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+# tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
 #saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_z.rds")
 #tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_z.rds")
 
@@ -413,7 +414,7 @@ ncap + labs(y = "Average number of capuchins per sequence", x = "Season") + them
 tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
-             knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
+             knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
              control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
@@ -477,10 +478,10 @@ ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = fit)) +
 tbm2_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
               t2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
               s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-            chain = 2, core = 2, iter = 3000, save_pars = save_pars(all = TRUE),
+            chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
-# tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+# tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
 #saveRDS(tbm2_h, "tide_analysis/ModelRDS/tbm2_hz.rds")
 # tbm2_h <- readRDS("tide_analysis/ModelRDS/tbm2_hz.rds")
 
@@ -538,7 +539,7 @@ tbm2a_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), ful
               chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
               control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
-# tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+# tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
 # saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_hz.rds")
 # tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_hz.rds")
 
@@ -547,10 +548,10 @@ mcmc_plot(tbm2a_h) #plot posterior intervals
 summary(tbm2a_h)
 
 ## Checks
-pp_check(tbm2_h, ndraw = 100) 
-loo(tbm2_h)
-loo_R2(tbm2_h)
-bayes_R2(tbm2_h)
+pp_check(tbm2a_h, ndraw = 100) 
+loo(tbm2a_h)
+loo_R2(tbm2a_h)
+bayes_R2(tbm2a_h)
 
 plot(conditional_effects(tbm2a_h))
 plot(conditional_smooths(tbm2a_h))
@@ -590,6 +591,11 @@ ggplot(data = d2ha, aes(x = hour, y = distcoast, z = fit)) +
 # dev.off()
 
 ### DERIVATIVES OF GAMS #########
+
+### IMPORTANT NOTE: If you'd want to go back to the 50/70/90 confidence approach, then you need to still run
+# tbm1 at 90 % confidence, because I think it will still have certain areas!
+# and maybe others too
+
 #### FUNCTIONS ####
 
 ## run function below (now copied from Shauhin's script on 23.06.2022)
@@ -1677,7 +1683,7 @@ deriv_ranges <- function(der_data_50_1, der_data_50_2, der_data_70_1, der_data_7
 ###### Tbm1: TU vs NTU #####
 ## 50 confidence
 deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
-                        main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 50, output = "derivplot_tbm1_50", 
+                        main = c("tidedif_z", "distcoast_z"), eps = 0.01, confidence = 50, output = "derivplot_tbm1_50", 
                         meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
 #saveRDS(derivplot_tbm1_50_1p, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_1p.rds")
 #saveRDS(derivplot_tbm1_50_2p, file = "tide_analysis/ModelRDS/derivplot_tbm1_50_2p.rds")
@@ -1685,12 +1691,13 @@ derivplot_tbm1_50_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_1p.rds
 derivplot_tbm1_50_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_50_2p.rds")
 
 deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
-                        main = c("tidedif_z", "distcoast_z"), eps = 0.001, confidence = 70, output = "derivplot_tbm1_70", 
+                        main = c("tidedif_z", "distcoast_z"), eps = 0.01, confidence = 70, output = "derivplot_tbm1_70", 
                         meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
 #saveRDS(derivplot_tbm1_70_1p, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_1p.rds")
 #saveRDS(derivplot_tbm1_70_2p, file = "tide_analysis/ModelRDS/derivplot_tbm1_70_2p.rds")
 derivplot_tbm1_70_1p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_1p.rds")
 derivplot_tbm1_70_2p <- readRDS("tide_analysis/ModelRDS/derivplot_tbm1_70_2p.rds")
+
 
 # 100 percent confidence for showing full derivative
 deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
@@ -1704,7 +1711,7 @@ deriv_ranges(derivplot_tbm1_50_1p, derivplot_tbm1_50_2p, derivplot_tbm1_70_1p, d
 d2_t[,c("tidedif", "distcoast")] <- round(d2_t[,c("tidedif", "distcoast")], 6)
 tbm1_p_overlay[,c("main1", "main2")] <- round(tbm1_p_overlay[,c("main1", "main2")], 6)
 
-tbm1_p_merge <- left_join(d2_t, tbm1_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
+tbm1_p_merge <- left_join(d2_t, tbm1_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor", "x" = "x", "y" = "y"))
 tbm1_p_merge$toolusers <- factor(tbm1_p_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
 
 # 70 % confidence, still put alpha of rug lower if you are exporting to picture
@@ -1727,12 +1734,13 @@ tbm1_p_merge$Significance_p <- ifelse(tbm1_p_merge$probabove > 0.89 | tbm1_p_mer
 
 # png("tide_analysis/ModelRDS/tusvsntu_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) +
   geom_rug(data = onlycap_tj, aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
+  geom_raster(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = tidedif, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none")  + 
+  facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
@@ -1816,12 +1824,13 @@ ggplot() +
 tbm2_p_merge$Significance_p <- ifelse(tbm2_p_merge$probabove > 0.89 | tbm2_p_merge$probbelow > 0.89, 1, 0)
 # png("tide_analysis/ModelRDS/toolusers_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_contour_filled(data = tbm2_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) +
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2_p_merge[tbm2_p_merge$confidence == 70 & tbm2_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  geom_raster(data = na.omit(tbm2_p_merge[tbm2_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = tidedif, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none")  + 
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
@@ -1892,15 +1901,17 @@ tbm2a_p_merge$Significance_p <- ifelse(tbm2a_p_merge$probabove > 0.89 | tbm2a_p_
 
 # png("tide_analysis/ModelRDS/nontoolusers_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2a_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_contour_filled(data = tbm2a_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) +
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2a_p_merge[tbm2a_p_merge$confidence == 70 & tbm2a_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  geom_raster(data = na.omit(tbm2a_p_merge[tbm2a_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = tidedif, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none")  + 
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
+
 #dev.off()
 
 ### plot showing just how much is on side of 0
@@ -1979,12 +1990,13 @@ tbm2_h_p_merge$Significance_p <- ifelse(tbm2_h_p_merge$probabove > 0.89 | tbm2_h
 
 #png("tide_analysis/ModelRDS/toolusershour_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2_h_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2_h_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 1) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2_h_p_merge[tbm2_h_p_merge$confidence == 70 & tbm2_h_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  geom_raster(data = na.omit(tbm2_h_p_merge[tbm2_h_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = hour, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none") +
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
@@ -2054,12 +2066,13 @@ tbm2_ah_p_merge$Significance_p <- ifelse(tbm2_ah_p_merge$probabove > 0.89 | tbm2
 
 # png("tide_analysis/ModelRDS/nontoolusershour_predder_p.png", width = 12, height = 6, units = 'in', res = 300)
 ggplot() +
-  geom_contour_filled(data = tbm2_ah_p_merge, breaks = mybreaks, show.legend = FALSE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2_ah_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 1) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   geom_rug(data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
   new_scale_fill() + 
-  geom_contour_filled(data = tbm2_ah_p_merge[tbm2_ah_p_merge$confidence == 70 & tbm2_ah_p_merge$Significance_p == 1,], breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit)) + 
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  geom_raster(data = na.omit(tbm2_ah_p_merge[tbm2_ah_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = hour, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none") +
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
@@ -2117,8 +2130,9 @@ mean(as.matrix(ftable(locations_t$locationfactor)))
 agoutiselect_tj <- agoutiselect_t[agoutiselect_t$island == "Jicaron" & agoutiselect_t$locationfactor != "CEBUS-03" & 
                                     agoutiselect_t$locationfactor != "JIC-STREAM-CAMP-NO-T-01" & agoutiselect_t$locationfactor != "JIC-STREAM-CAMP-NO-T-02",]
 table(agoutiselect_tj$capuchin, agoutiselect_tj$uniqueloctag)
-mean(onlycap_tj$n)
-min(onlycap_tj$n)
+round(mean(onlycap_tj$n),2)
+max(onlycap_tj$n)
+round(sd(onlycap_tj$n),2)
 
 ## reduced sample
 tidaldays_r <- onlycap_tj[onlycap_tj$dataorigin == "agoutidata",]
@@ -2339,87 +2353,70 @@ ggplot() +
 
 
 ###### Tbm2: TU #####
+# only vary dist
+## 50 confidence
+deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.001), confidence = 50, output = "derivplot_tbm2_50_donly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.001), confidence = 70, output = "derivplot_tbm2_70_donly", 
+                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
+
+#### Making overlay plot
+deriv_ranges(derivplot_tbm2_50_donly_1p, derivplot_tbm2_50_donly_2p, derivplot_tbm2_70_donly_1p, derivplot_tbm2_70_donly_2p, 
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2_pd", seventy = TRUE, ninety = FALSE)
+
+d2[,c("tidedif", "distcoast")] <- round(d2[,c("tidedif", "distcoast")], 6)
+tbm2_pd_overlay[,c("main1", "main2")] <- round(tbm2_pd_overlay[,c("main1", "main2")], 6)
+
+tbm2_pd_merge <- left_join(d2, tbm2_pd_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+tbm2_pd_merge$seasonF <- factor(tbm2_pd_merge$seasonF, levels = c("Dry", "Wet"))
+
+## regions 89% on one side of 0
+tbm2_pd_merge$Significance_p <- ifelse(tbm2_pd_merge$probabove > 0.89 | tbm2_pd_merge$probbelow > 0.89, 1, 0)
+
+ggplot() +
+  geom_contour_filled(data = tbm2_pd_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  new_scale_fill() + 
+  geom_contour_filled(data = na.omit(tbm2_p_merge[tbm2_pd_merge$confidence == 70 & tbm2_pd_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
+
 # only vary tidedif
 ## 50 confidence
 deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10, 6), m = 1)', 
-                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.1), confidence = 50, output = "derivplot_tbm2_50_donly", 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.001, 0.0000001), confidence = 50, output = "derivplot_tbm2_50_tonly", 
                  meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
 
-#### get error when trying with 0, 0.001. Now instead made one super small and other kept normal: Error in quantile.default(newX[, i], ...) : 
-## missing values and NaN's not allowed if 'na.rm' is FALSE
-## NEED TO RUN THROUGH FUNCTION ONE BY ONE TO FIGURE OUT WHERE IT GOES WRONG
-
-deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
-                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.1), confidence = 70, output = "derivplot_tbm1_70_donly", 
-                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-
-# 100 percent confidence for showing full derivative
-deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
-                 main = c("tidedif_z", "distcoast_z"), eps = c(0.0000001, 0.1), confidence = 100, output = "derivplot_tbm1_100_donly", 
+deriv_plot_zprob(tbm2, dimensions = 2, by = c("seasonF"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10, 6), m = 1)', 
+                 main = c("tidedif_z", "distcoast_z"), eps = c(0.001, 0.0000001), confidence = 70, output = "derivplot_tbm2_70_tonly", 
                  meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
 
 #### Making overlay plot
-deriv_ranges(derivplot_tbm1_50_donly_1p, derivplot_tbm1_50_donly_2p, derivplot_tbm1_70_donly_1p, derivplot_tbm1_70_donly_2p, 
-             factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_p", seventy = TRUE, ninety = FALSE)
+deriv_ranges(derivplot_tbm2_50_tonly_1p, derivplot_tbm2_50_tonly_2p, derivplot_tbm2_70_tonly_1p, derivplot_tbm2_70_tonly_2p, 
+             factorlevels = c("Dry", "Wet"), modelname = "tbm2_p", seventy = TRUE, ninety = FALSE)
 
-d2_t[,c("tidedif", "distcoast")] <- round(d2_t[,c("tidedif", "distcoast")], 6)
-tbm1_p_overlay[,c("main1", "main2")] <- round(tbm1_p_overlay[,c("main1", "main2")], 6)
+d2[,c("tidedif", "distcoast")] <- round(d2[,c("tidedif", "distcoast")], 6)
+tbm2_p_overlay[,c("main1", "main2")] <- round(tbm2_p_overlay[,c("main1", "main2")], 6)
 
-tbm1_p_merge <- left_join(d2_t, tbm1_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
-tbm1_p_merge$toolusers <- factor(tbm1_p_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
+tbm2_p_merge <- left_join(d2, tbm2_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "seasonF" = "factor"))
+tbm2_p_merge$seasonF <- factor(tbm2_p_merge$seasonF, levels = c("Dry", "Wet"))
 
 ## regions 89% on one side of 0
-tbm1_p_merge$Significance_p <- ifelse(tbm1_p_merge$probabove > 0.89 | tbm1_p_merge$probbelow > 0.89, 1, 0)
+tbm2_p_merge$Significance_p <- ifelse(tbm2_p_merge$probabove > 0.89 | tbm2_p_merge$probbelow > 0.89, 1, 0)
 
 ggplot() +
-  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
+  geom_contour_filled(data = tbm2_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
   scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
   new_scale_fill() + 
-  geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
+  geom_contour_filled(data = na.omit(tbm2_p_merge[tbm2_p_merge$confidence == 70 & tbm2_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
-
-# only vary distance
-
-## 50 confidence
-deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
-                 main = c("tidedif_z", "distcoast_z"), eps = c(0.1, 0.0000001), confidence = 50, output = "derivplot_tbm1_50_tonly", 
-                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-
-deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
-                 main = c("tidedif_z", "distcoast_z"), eps = c(0.1, 0.0000001), confidence = 70, output = "derivplot_tbm1_70_tonly", 
-                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-
-# 100 percent confidence for showing full derivative
-deriv_plot_zprob(tbm1, dimensions = 2, by = c("toolusers"), term = 't2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1)', 
-                 main = c("tidedif_z", "distcoast_z"), eps = c(0.1, 0.0000001), confidence = 100, output = "derivplot_tbm1_100_tonly", 
-                 meanmain = c(meantide, meandist), sdmain = c(sdtide, sddist))
-
-#### Making overlay plot
-deriv_ranges(derivplot_tbm1_50_tonly_1p, derivplot_tbm1_50_tonly_2p, derivplot_tbm1_70_tonly_1p, derivplot_tbm1_70_tonly_2p, 
-             factorlevels = c("Non-tool-users", "Tool-users"), modelname = "tbm1_p", seventy = TRUE, ninety = FALSE)
-
-d2_t[,c("tidedif", "distcoast")] <- round(d2_t[,c("tidedif", "distcoast")], 6)
-tbm1_p_overlay[,c("main1", "main2")] <- round(tbm1_p_overlay[,c("main1", "main2")], 6)
-
-tbm1_p_merge <- left_join(d2_t, tbm1_p_overlay, by = c("tidedif" = "main1", "distcoast" = "main2", "toolusers" = "factor"))
-tbm1_p_merge$toolusers <- factor(tbm1_p_merge$toolusers, levels = c("Tool-users", "Non-tool-users"))
-
-## regions 89% on one side of 0
-tbm1_p_merge$Significance_p <- ifelse(tbm1_p_merge$probabove > 0.89 | tbm1_p_merge$probbelow > 0.89, 1, 0)
-
-ggplot() +
-  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
-  new_scale_fill() + 
-  geom_contour_filled(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70 & tbm1_p_merge$Significance_p == 1,]), breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit)) + 
-  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
-  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
-        legend.title = element_text(size =16), axis.text = element_text(size=16))
-
-
 
 

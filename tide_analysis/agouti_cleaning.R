@@ -125,7 +125,7 @@ agoutigross$season <- ifelse(agoutigross$month == 12 | agoutigross$month == 1 | 
 # pull island location and tool use/non tool use from coiba_camtrap_ids_gps.csv
 deployment_info <- read.csv("coiba_camtrap_ids_gps.csv")
 deployment_info$locationName <- deployment_info$camera_id
-deployment_info$locationName[which(deployment_info$locationName == "SURVEY-CEBUS-24-01")] <- "CEBUS-04"
+deployment_info <- deployment_info[!deployment_info$locationName == "SURVEY-CEBUS-24-01",] 
 
 # drop columns we don't want to attach
 deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id", "number", "longitude", "latitude")]
