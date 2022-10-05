@@ -44,7 +44,7 @@ agoutiselect2$picksetup <- ifelse(agoutiselect2$seqday %in% picksetupdays , 1, 0
 agoutiselect2 <- agoutiselect2[,c("deploymentID", "sequenceID", "scientificName", "locationName", "longitude", "latitude", "cameraSetup", "seq_start", 
                                                                "seq_end", "seq_length", "temperature", "dep_start", "dep_end", "dep_length_hours", "month", 
                                                                "season", "island", "tool_anvil", "tool_site", "streambed", "capuchin", "n", "tooluse", "tidedifabs", 
-                                                               "tidedif", "tidedif2", "uniqueloctag", "seqday", "hour", "toolusers",  "picksetup")] # add "noanimal if you added 0's)
+                                                               "tidedif", "tidedif2", "uniqueloctag", "seqday", "hour", "toolusers",  "picksetup", "mediatype")] # add "noanimal if you added 0's)
 
 # exclude days on which cameras were deployed or picked up (to take away that bias)
 agoutiselect_t <- agoutiselect2[(agoutiselect2$picksetup == 0),]
@@ -281,7 +281,7 @@ tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), fu
             chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
             control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
-tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 5000) 
+#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 5000) 
 #saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_z.rds")
 # tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_z.rds")
 
@@ -301,6 +301,9 @@ pp_check(tbm1, ndraw = 100)
 loo(tbm1)
 loo_R2(tbm1)
 bayes_R2(tbm1)
+
+# compare nr of capuchins per sequence for tu vs ntu
+hyp1 <- hypothesis(tbm1, "Intercept = Intercept + toolusersToolMusers")
 
 # Visualize: Compute posterior predictions with posterior_epred and plot contourplot from that
 predict_tbm1_p <- posterior_smooths(tbm1, smooth = 't2(tidedif_z,distcoast_z,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
@@ -365,6 +368,12 @@ pp_check(tbm2, ndraw = 100)
 loo(tbm2)
 loo_R2(tbm2)
 bayes_R2(tbm2)
+
+# compare nr of capuchins per sequence for dry vs wet
+hypothesis(tbm2, "Intercept = Intercept + seasonFWet")
+ggplot(onlycap_tj, aes(seasonF, n)) + geom_boxplot() + facet_wrap(~toolusers)
+ggplot(onlycap_tj, aes(seasonF, n)) + geom_violin() + facet_wrap(~toolusers)
+ggplot(onlycap_tj, aes(toolusers, n)) + geom_violin()
 
 ## Visualizing
 ## Option 2: Predicting data

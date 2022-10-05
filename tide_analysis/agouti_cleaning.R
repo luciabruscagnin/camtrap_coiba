@@ -94,9 +94,10 @@ multimedia <- left_join(multimedia, exifvideosclean, "FileName")
 
 multimedia$temperature <- ifelse(is.na(multimedia$temperature.x), multimedia$temperature.y, multimedia$temperature.x)
 multimedia$seq_length <- ifelse((multimedia$fileMediatype == "video/mp4"), multimedia$seq_lengthv, multimedia$seq_lengthstill) 
+multimedia$mediatype <- ifelse((multimedia$fileMediatype == "video/mp4"), "video", "still") 
 
 # left join does not work if the y dataframe (so multimedia2) has duplicated values in the column you're matching by (so sequenceID). Need to drop duplicates before the left_join
-multimedia2 <- multimedia[,c("sequenceID", "seq_start", "seq_end", "seq_length", "temperature")]
+multimedia2 <- multimedia[,c("sequenceID", "seq_start", "seq_end", "seq_length", "temperature", "mediatype")]
 multimedia2 <- multimedia2[!duplicated(multimedia2$sequenceID),]
 agoutigross <- left_join(agoutigross, multimedia2, "sequenceID")
 
