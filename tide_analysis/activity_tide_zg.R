@@ -23,6 +23,7 @@ library(matrixStats)
 library(ggnewscale)
 library(lubridate)
 library(dplyr)
+require(cowplot)
 
 setwd("~/Git/camtrap_coiba")
 
@@ -340,6 +341,19 @@ ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
         legend.title = element_text(size =16), axis.text = element_text(size = 14)) + facet_wrap(~toolusers, scales = "free")
 # dev.off()
 
+## camera locations plot
+cam1 <- plot(conditional_effects(tbm1), plot = FALSE)[[7]]
+
+#png("tide_analysis/ModelRDS/tbm1_camlocations.png", width = 11, height = 7, units = 'in', res = 300)
+cam1  + theme_bw() + 
+    stat_summary(data = onlycap_tj, inherit.aes = FALSE, aes(x = locationfactor, y = n, group = toolusers, fill = toolusers), 
+                 geom = "point", fun = "mean", size = 4, shape = 24, alpha = 0.5) +
+  labs(y = "Average number of capuchins per sequence", x = "Camera Location", fill = "Group") +
+  theme(axis.text.x = element_text(angle = 90), strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
+#dev.off()  
+
 ##### MODEL 2 AND 2A: ADDING SEASON, SPLIT BY TU/NTU #####
 ####
 ###### Tool users ####
@@ -419,6 +433,20 @@ ncap + labs(y = "Average number of capuchins per sequence", x = "Season") + them
                                                                                                legend.title = element_text(size =16), axis.text = element_text(size=14))
 #dev.off()
 
+## camera locations plot
+cam2 <- plot(conditional_effects(tbm2), plot = FALSE)[[7]]
+
+#png("tide_analysis/ModelRDS/tbm2_camlocations.png", width = 11, height = 7, units = 'in', res = 300)
+cam2  + theme_bw() + 
+  stat_summary(data = onlycap_tj[which(onlycap_tj$toolusers == "Tool-users"),], inherit.aes = FALSE, 
+               aes(x = locationfactor, y = n, group = factor(tool_anvil, labels = c("No", "Yes")), fill = factor(tool_anvil, labels = c("No", "Yes"))), 
+               geom = "point", fun = "mean", size = 4, shape = 24, alpha = 0.5) +
+  labs(y = "Average number of capuchins per sequence", x = "Camera Location", fill = "Anvil") +
+  theme(axis.text.x = element_text(angle = 90), strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
+#dev.off()  
+
 ###### Non tool users ####
 tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
@@ -481,6 +509,21 @@ ggplot(data = d2a, aes(x = tidedif, y = distcoast, z = fit)) +
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), 
         legend.text =  element_text(size = 16), legend.title = element_text(size =16)) +  facet_wrap(~seasonF, scales = "free")
 #dev.off()
+
+
+## camera locations plot
+cam3 <- plot(conditional_effects(tbm2a), plot = FALSE)[[7]]
+
+#png("tide_analysis/ModelRDS/tbm3_camlocations.png", width = 11, height = 7, units = 'in', res = 300)
+cam3  + theme_bw() + 
+  stat_summary(data = onlycap_tj[which(onlycap_tj$toolusers == "Non-tool-users"),], inherit.aes = FALSE, 
+               aes(x = locationfactor, y = n), fill = "red", 
+               geom = "point", fun = "mean", size = 4, shape = 24, alpha = 0.5) +
+  labs(y = "Average number of capuchins per sequence", x = "Camera Location", fill = "Anvil") +
+  theme(axis.text.x = element_text(angle = 90), strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
+#dev.off()  
 
 ##### TIME OF DAY ######
 ###### Tool users ####
@@ -1758,14 +1801,29 @@ ggplot() +
 ### plot showing just how much is on side of 0
 tbm1_p_overlay$factor <- factor(tbm1_p_overlay$factor, levels = c("Tool-users", "Non-tool-users"))
 # prob above
-ggplot(data = tbm1_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
-ggplot(data = tbm1_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+
+tbm1_p1 <- ggplot(data = tbm1_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "", y = "Distance to coast (m)", fill = "Proportion of posterior") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 16), plot.title = element_text(size = 16),
+        legend.title = element_text(size =16), axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Above 0") 
+tbm1_p2 <- ggplot(data = tbm1_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.position = "none", plot.title = element_text(size = 16),
+        axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Below 0")
+
+
+prow <- plot_grid(tbm1_p1 + theme(legend.position = "none"),
+                  tbm1_p2 + theme(legend.position = "none"),
+                  align = "vh",
+                  hjust = -1,
+                  nrow = 2)
+legend_b <- get_legend(tbm1_p1 + theme(legend.position = "right"))
+
+p <- plot_grid(prow, legend_b, ncol = 2, rel_widths = c(1, .4))
+
+#png("tide_analysis/ModelRDS/tbm1_abovebelow.png", width = 12, height = 9, units = 'in', res = 300)
+p
+#dev.off()
 
 ###### Tbm2: TU #####
 ## 50 confidence
@@ -1846,15 +1904,28 @@ ggplot() +
 #dev.off()
 
 ### plot showing just how much is on side of 0
-# prob above
-ggplot(data = tbm2_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
-ggplot(data = tbm2_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+tbm2_p1 <- ggplot(data = tbm2_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "", y = "Distance to coast (m)", fill = "Proportion of posterior") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 16), plot.title = element_text(size = 16),
+        legend.title = element_text(size =16), axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Above 0") 
+tbm2_p2 <- ggplot(data = tbm2_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.position = "none", plot.title = element_text(size = 16),
+        axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Below 0")
+
+
+prow2 <- plot_grid(tbm2_p1 + theme(legend.position = "none"),
+                  tbm2_p2 + theme(legend.position = "none"),
+                  align = "vh",
+                  hjust = -1,
+                  nrow = 2)
+legend_b2 <- get_legend(tbm2_p1 + theme(legend.position = "right"))
+
+p2 <- plot_grid(prow2, legend_b2, ncol = 2, rel_widths = c(1, .4))
+
+#png("tide_analysis/ModelRDS/tbm2_abovebelow.png", width = 12, height = 9, units = 'in', res = 300)
+p2
+#dev.off()
 
 ###### Tbm2a: NTU ####
 ## 50 confidence
@@ -1924,15 +1995,28 @@ ggplot() +
 #dev.off()
 
 ### plot showing just how much is on side of 0
-# prob above
-ggplot(data = tbm2a_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
-  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
-ggplot(data = tbm2a_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+tbm2a_p1 <- ggplot(data = tbm2a_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "", y = "Distance to coast (m)", fill = "Proportion of posterior") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 16), plot.title = element_text(size = 16),
+        legend.title = element_text(size =16), axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Above 0") 
+tbm2a_p2 <- ggplot(data = tbm2a_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.position = "none", plot.title = element_text(size = 16),
+        axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Below 0")
+
+
+prow2a <- plot_grid(tbm2a_p1 + theme(legend.position = "none"),
+                   tbm2a_p2 + theme(legend.position = "none"),
+                   align = "vh",
+                   hjust = -1,
+                   nrow = 2)
+legend_b2a <- get_legend(tbm2a_p1 + theme(legend.position = "right"))
+
+p2a <- plot_grid(prow2a, legend_b2a, ncol = 2, rel_widths = c(1, .4))
+
+#png("tide_analysis/ModelRDS/tbm2a_abovebelow.png", width = 12, height = 9, units = 'in', res = 300)
+p2a
+#dev.off()
 
 ##### HOUR OF DAY ####
 ###### Tbm2_h: TU ####
@@ -2012,14 +2096,27 @@ ggplot() +
 #dev.off()
 
 ### plot showing just how much is on side of 0
-ggplot(data = tbm2_h_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
-  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
-ggplot(data = tbm2_h_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+tbm2h_p1 <- ggplot(data = tbm2_h_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "", y = "Distance to coast (m)", fill = "Proportion of posterior") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 16), plot.title = element_text(size = 16),
+        legend.title = element_text(size =16), axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Above 0") 
+tbm2h_p2 <- ggplot(data = tbm2_h_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.position = "none", plot.title = element_text(size = 16),
+        axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Below 0")
+
+prow2h <- plot_grid(tbm2h_p1 + theme(legend.position = "none"),
+                    tbm2h_p2 + theme(legend.position = "none"),
+                    align = "vh",
+                    hjust = -1,
+                    nrow = 2)
+legend_b2h <- get_legend(tbm2h_p1 + theme(legend.position = "right"))
+
+p2h <- plot_grid(prow2h, legend_b2h, ncol = 2, rel_widths = c(1, .4))
+
+#png("tide_analysis/ModelRDS/tbm2h_abovebelow.png", width = 12, height = 9, units = 'in', res = 300)
+p2h
+#dev.off()
 
 ###### Tbm2a_h: NTU  ####
 # 50 confidence
@@ -2087,14 +2184,29 @@ ggplot() +
         legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 
-ggplot(data = tbm2_ah_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
-  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior above 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
-ggplot(data = tbm2_ah_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
+### plot showing just how much is on side of 0
+tbm2ah_p1 <- ggplot(data = tbm2_ah_p_overlay, aes(x = main1, y = main2, z = probabove)) + geom_contour_filled() + facet_wrap(~factor)  + theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "", y = "Distance to coast (m)", fill = "Proportion of posterior") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 16), plot.title = element_text(size = 16),
+        legend.title = element_text(size =16), axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Above 0") 
+tbm2ah_p2 <- ggplot(data = tbm2_ah_p_overlay, aes(x = main1, y = main2, z = probbelow)) + geom_contour_filled() + facet_wrap(~factor) + theme_bw() + theme(panel.grid = element_blank()) +
   labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Proportion of posterior below 0") +
-  theme(strip.text.x = element_text(size = 14), axis.title = element_text(size = 14), legend.text =  element_text(size = 14), plot.title = element_text(size = 16),
-        legend.title = element_text(size =14), axis.text = element_text(size=14))
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.position = "none", plot.title = element_text(size = 16),
+        axis.text = element_text(size=16), plot.margin = unit(c(6,0,6,0), "pt")) + ggtitle("Below 0")
+
+prow2ah <- plot_grid(tbm2ah_p1 + theme(legend.position = "none"),
+                    tbm2ah_p2 + theme(legend.position = "none"),
+                    align = "vh",
+                    hjust = -1,
+                    nrow = 2)
+legend_b2ah <- get_legend(tbm2ah_p1 + theme(legend.position = "right"))
+
+p2ah <- plot_grid(prow2ah, legend_b2ah, ncol = 2, rel_widths = c(1, .4))
+
+#png("tide_analysis/ModelRDS/tbm2ah_abovebelow.png", width = 12, height = 9, units = 'in', res = 300)
+p2ah
+#dev.off()
+
 
 #### DESCRIPTIVES ####
 # How many camera trapping days
