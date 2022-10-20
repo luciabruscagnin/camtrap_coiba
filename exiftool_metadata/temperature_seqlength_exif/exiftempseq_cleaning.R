@@ -7,6 +7,7 @@ library(tidyverse)
 library(stringr)
 
 # navigate to folder where all exiftool output CSVs are stored
+setwd("~/Git/camtrap_coiba")
 setwd("exiftool_metadata/temperature_seqlength_exif/")
 
 # make a list of the csv per deployment

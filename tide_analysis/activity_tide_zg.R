@@ -76,6 +76,16 @@ onlycap_tj$seasonF <- as.factor(onlycap_tj$season)
 hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Non-tool-users"])
 hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Tool-users"])
 
+## Clean onlycap_tj dataframe and save it to csv for sharing with publication
+str(onlycap_tj)
+
+tooltides <- onlycap_tj[,c("seq_start", "seq_end", "seq_length", "dep_start", "dep_end", "dep_length_hours",
+                           "month", "seasonF", "tool_anvil", "toolusers", "locationfactor", "uniqueloctag", "n", "tidedif","hour", "distcoast")]
+
+write.csv(tooltides, "tide_analysis/tooltides.csv", row.names = FALSE)
+
+# do z_scoring in other script. 
+
 ## some resources on interactions in GAMs
 # see https://stats.stackexchange.com/questions/472434/gam-2d-factor-smooth-with-uneven-sampling-in-xz-space-across-factor-levels-r
 # https://stats.stackexchange.com/questions/432227/smooth-bivariate-interaction-decomposition-in-gam-models

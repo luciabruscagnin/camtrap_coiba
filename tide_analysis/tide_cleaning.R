@@ -219,11 +219,11 @@ par(mar=c(5.1, 5.1, 4.1, 8.1), xpd=TRUE)
 plot(day(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == " 2019" & TidesLow$MONTH == "May")]), 
      hour(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == " 2019" & TidesLow$MONTH == "May")]),
      col = "#FC4E07", bty = 'L', xlab = "Day of the Month", ylab = "Time of Tide", main ="May 2019",
-     cex.lab = 2, cex.main = 2, pch = 19)
+     cex.lab = 1.2, cex.main = 1.2, pch = 19)
 points(day(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == " 2019" & TidesHigh$MONTH == "May")]), 
         hour(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == " 2019" & TidesHigh$MONTH == "May")]),
         col = "#00AFBB", pch = 19) 
-legend("topright", inset=c(-0.35,0), legend = c("Low Tide", "High Tide"), 
+legend("topright", inset=c(0,0.22), legend = c("Low Tide", "High Tide"), 
          col = c("#FC4E07", "#00AFBB"), pch = 19)
 
 dev.off()
