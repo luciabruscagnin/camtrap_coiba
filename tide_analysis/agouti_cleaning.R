@@ -446,3 +446,76 @@ agoutisequence_c <- droplevels.data.frame(agoutisequence_c)
 agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
 agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users"))
 agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
+
+##### generating 0's ####
+## NOTE: this does not yet take into consideration that some cameras may not be active at night (this is only later deployments).
+
+# for some purposes we want to know when the camera was active but not triggered, these 0's are not included yet
+# currently if we look at 0's it's only triggers by other species
+# so need to make this explicit to be able to distinguish between absence of data because camera was not triggered vs camera was not deployed
+
+# do this on the big full agoutisequence_c dataset so that you can easily subset from it
+
+## need to know start and end date of each unique deployment
+locations2 <- data.frame(uniqueloctag = unique(agoutisequence_c$uniqueloctag)) 
+locations2 <- left_join(locations2, agoutisequence_c[,c("uniqueloctag", "dep_start", "dep_end")], by = "uniqueloctag")
+locations2 <- locations2[!duplicated(locations2$uniqueloctag),]
+# take time off and keep just date variable
+locations2$dep_startday <- as.Date(format(locations2$dep_start, "%Y-%m-%d"))
+locations2$dep_endday <- as.Date(format(locations2$dep_end, "%Y-%m-%d"))
+
+###  generate all the days that should be present within each deployment
+# first create dataframe for first one
+depldays3 <<- data.frame(uniqueloctag = locations2$uniqueloctag[1], seqday = seq(locations2$dep_startday[1], locations2$dep_endday[1], by = "days"))
+# now iterate over all the other ones and append those to the dataframe
+for (i in 2:nrow(locations2)) {
+  depldays4 = data.frame(uniqueloctag = locations2$uniqueloctag[i], seqday = seq(locations2$dep_startday[i], locations2$dep_endday[i], by = "days"))
+  depldays3 <<- rbind(depldays3, depldays4)
+} 
+
+# need to expand this dataframe to have an hour a day for each deployment.
+depldayhour <- data.frame(uniqueloctag = rep(depldays3$uniqueloctag, 24), seqday = rep(depldays3$seqday, 24))
+depldayhour <- depldayhour[order(depldayhour$uniqueloctag),]
+depldayhour$hour <- rep(1:24, (nrow(depldayhour)/24))
+
+agoutiselect2 <- left_join(depldayhour[depldayhour$uniqueloctag %in% agoutisequence_c$uniqueloctag,], agoutisequence_c, by = c("uniqueloctag", "seqday", "hour"))
+agoutiselect2$noanimal <- ifelse(is.na(agoutiselect2$sequenceID), 1, 0)
+
+## fill in NAs like above, using a metadata file
+metadata2 <- agoutisequence_c[!duplicated(agoutisequence_c$uniqueloctag), c("uniqueloctag", "deploymentID", "locationName", "tags", "dep_start", "dep_end", "dep_length_hours",
+                                                                            "island", "tool_anvil", "tool_site", "toolusers", "streambed", "mediatype", "depnr", "depdays")]
+
+for (i in 1:nrow(metadata2)) {
+  agoutiselect2$locationName[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$locationName[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$tags[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$tags[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$dep_start[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$dep_start[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
+  agoutiselect2$dep_end[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$dep_end[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
+  agoutiselect2$dep_length_hours[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$dep_length_hours[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
+  agoutiselect2$island[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$island[metadata2$uniqueloctag == metadata2$uniqueloctag[i]] 
+  agoutiselect2$tool_anvil[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$tool_anvil[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$deploymentID[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$deploymentID[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$tool_site[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$tool_site[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$streambed[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$streambed[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$mediatype[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$mediatype[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$toolusers[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$toolusers[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$depnr[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$depnr[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  agoutiselect2$depdays[agoutiselect2$uniqueloctag == metadata2$uniqueloctag[i]] <- metadata2$depdays[metadata2$uniqueloctag == metadata2$uniqueloctag[i]]
+  
+  
+} 
+
+agoutiselect2$n[agoutiselect2$noanimal == 1] <- 0
+agoutiselect2$capuchin[agoutiselect2$noanimal == 1] <- 0
+# not sure if we should change seq_length to 0
+agoutiselect2$seq_length[agoutiselect2$noanimal == 1] <- 0
+agoutiselect2[,c(50:67, 71:86, 91:96)][is.na(agoutiselect2[,c(50:67, 71:86, 91:96)])] <- 0
+
+# fill in important variables
+agoutiselect2$month <- month(agoutiselect2$seqday)
+
+# make wet season may-nov and dry season dec-april
+agoutiselect2$season <- ifelse(agoutiselect2$month == 12 | agoutiselect2$month == 1 | agoutiselect2$month == 2 | agoutiselect2$month == 3 | 
+                               agoutiselect2$month == 4, "Dry", "Wet") 
+
+agoutiselect2$locationfactor <- as.factor(agoutiselect2$locationName)
+agoutiselect2$tooluse[agoutiselect2$noanimal == 1] <- 0

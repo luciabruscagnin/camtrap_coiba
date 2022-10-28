@@ -9,6 +9,9 @@ require(brms)
 require(lme4)
 require(dplyr)
 require(ggplot2)
+require(fitdistrplus)
+require(mgcv)
+require(gratia)
 
 ### Camera Inspection ####
 # For now overall, but could split into age/sex categories
@@ -221,27 +224,25 @@ ftable(agouti_inspect$island)
 # preliminary, better for this would be grid data if we get it
 
 ## distribution of data (with 0s in)
-ftable(agoutiselect_t$n)
-testdist1 <- fitdist(agoutiselect_t$n, "pois")
+ftable(agoutisequence_c$n)
+testdist1 <- fitdist(agoutisequence_c$n, "pois")
+plot(agoutisequence_c$n)
 plot(testdist1)
 
-testdist2 <- fitdist(agoutiselect_t$n, "gamma", "mme")
+testdist2 <- fitdist(agoutisequence_c$n, "gamma", "mme")
 plot(testdist2)
-
-hist(agoutiselect_t$n)
 
 ## zero inflated poisson makes sense
 # or potentially gamma
 
 ## distribution of data (only capuchin sequences)
-testdist1.2 <- fitdist(onlycap_t$n, "pois")
+testdist1.2 <- fitdist(agoutisequence_c$n[which(agoutisequence_c$capuchin == 1)], "pois")
 plot(testdist1.2)
 
-testdist2.2 <- fitdist(onlycap_t$n, "gamma", "mme")
+testdist2.2 <- fitdist(agoutisequence_c$n[which(agoutisequence_c$capuchin == 1)], "gamma", "mme")
 plot(testdist2.2)
 
-ftable(onlycap_t$n)
-## poisson makes sense or gamma makes sense
+## poisson makes sense
 
 ## just plots of number of capuchins per hour by tool use vs non tool use
 
@@ -250,8 +251,8 @@ c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
 c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
 
 ### Tool users vs non tool users
-histtool <- hist(onlycap_t$hour[onlycap_t$tool_site == 1 & onlycap_t$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
-histnotool <- hist(onlycap_t$hour[onlycap_t$tool_site == 0 & onlycap_t$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+histtool <- hist(agoutisequence_c$hour[agoutisequence_c$tool_site == 1 & agoutisequence_c$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
+histnotool <- hist(agoutisequence_c$hour[agoutisequence_c$tool_site == 0 & agoutisequence_c$capuchin == 1], breaks = seq(from = 0, to = 24, by = 1), xlim = c(0, 24), freq = FALSE)
 
 plot(histnotool, col = c2, freq = FALSE, main = "Tool users (blue) vs non-tool users (red)", xlab = "Time of Day", ylab = "Proportion of sequences with capuchins", ylim = c(0, 0.3))
 plot(histtool, col = c1, freq = FALSE, add = TRUE)
@@ -266,7 +267,7 @@ plot(histtool, col = c1, freq = FALSE, add = TRUE)
 
 ## Model 1: number of capuchins in sequences with capuchins depending on hour of day, by tool use/vs non tool users
 am1 <- gam(n ~ s(hour, by = toolusers, k = 15) + toolusers,
-           family = poisson(), data = onlycap_t, method = "REML")
+           family = poisson(), data = agoutisequence_c[which(agoutisequence_c$capuchin == 1),], method = "REML")
 summary(am1) 
 # visualize
 plot(am1, all.terms = TRUE, pages = 1)
@@ -275,13 +276,13 @@ draw(am1)
 gam.check(am1) # k too low? need to find k that works
 
 # with factor smooth instead of by smooth
-am1.2 <- gam(n ~ s(hour, toolusers, bs = "fs"), family = poisson(), data = onlycap_t, method = "REML")
+am1.2 <- gam(n ~ s(hour, toolusers, bs = "fs"), family = poisson(), data = agoutisequence_c[which(agoutisequence_c$capuchin == 1),], method = "REML")
 summary(am1.2)
 plot(am1.2, all.terms = TRUE)
 draw(am1.2)
 
 ## Model 2: including location as random effect
-am2 <- gam(n ~ s(hour, by = toolusers, k = 12) +  toolusers + s(locationfactor, bs = "re"), family = poisson(), data = onlycap_t, method = "REML")
+am2 <- gam(n ~ s(hour, by = toolusers, k = 12) +  toolusers + s(locationfactor, bs = "re"), family = poisson(), data = agoutisequence_c[which(agoutisequence_c$capuchin == 1),], method = "REML")
 summary(am2)
 
 draw(am2)
@@ -295,6 +296,96 @@ am2.2 <- gam(n ~ s(hour, toolusers, bs = "fs") + s(locationfactor, bs = "re"), f
 summary(am2.2)
 plot(am2.2, all.terms = TRUE, pages = 1)
 draw(am2.2)
+
+## Model 3: including season
+agoutisequence_c$seasonF <- as.factor(agoutisequence_c$season)
+am3 <- gam(n ~ s(hour, by = interaction(toolusers, seasonF), k = 12) +  toolusers + seasonF + s(locationfactor, bs = "re"), 
+           family = poisson(), data = agoutisequence_c[which(agoutisequence_c$capuchin == 1),], method = "REML")
+summary(am3)
+
+draw(am3)
+plot(am3, all.terms = TRUE, pages = 1)
+# check assumptions
+gam.check(am3) 
+
+#### Timing of tool use
+# should maybe do how many instances of tool using capuchins we see per hour, could then add in the 0's
+# where 0 is every hour the camera was running but not triggered
+# so then can supplement the zero's and run a model on when tool use occurs (e.g. gam with time of day) with 0's in
+# alternative could onyl look at when foraging occurs and contrast tool using to non tol using foraging
+# or compare fluctuations in how many capuchins use tools (and exclude 0s)
+
+hist(agoutisequence_c$n_tooluse)
+tooltiming_m1 <- gam(n_tooluse ~ s(hour, by = seasonF, k = 12) + seasonF + s(locationfactor, bs = "re"), 
+           family = poisson(), data = agoutisequence_c[which(agoutisequence_c$n_tooluse >0),], method = "REML")
+summary(tooltiming_m1)
+
+draw(tooltiming_m1)
+
+## agoutiselect2 is dataframe with 0's in
+# make number of tool using capuchins per hour aggregated dataset
+## create variable for nr of capuchins per hour
+# could do mean number of capuchins using tools per hour, or total number of capuchins using tools per hour
+# try bouth?
+agoutiselect2$dayhour <- paste(agoutiselect2$seqday, agoutiselect2$hour, sep = " ")
+agoutidayhour <- aggregate(agoutiselect2$n_tooluse, by = list(dayhour = agoutiselect2$dayhour, uniqueloctag = agoutiselect2$uniqueloctag), FUN = sum)
+agoutidayhour_mean <- aggregate(agoutiselect2$n_tooluse, by = list(dayhour = agoutiselect2$dayhour, uniqueloctag = agoutiselect2$uniqueloctag), FUN = mean)
+
+colnames(agoutidayhour) <- c("dayhour", "uniqueloctag", "n_toolshoursum")
+colnames(agoutidayhour_mean) <- c("dayhour", "uniqueloctag", "n_toolshourmean")
+
+agouti_dh <- agoutiselect2[!duplicated(agoutiselect2$dayhour) & agoutiselect2$toolusers == "Tool-users" & agoutiselect2$island == "Jicaron",]
+agouti_dh <- left_join(agouti_dh, agoutidayhour, c("uniqueloctag", "dayhour"))
+agouti_dh <- left_join(agouti_dh, agoutidayhour_mean, c("uniqueloctag", "dayhour"))
+
+# remove only na rows
+agouti_dh <-agouti_dh[which(is.na(agouti_dh$uniqueloctag) == FALSE),]
+# get season correct
+agouti_dh$seasonF <- as.factor(agouti_dh$season)
+agouti_dh$locationfactor <- as.factor(agouti_dh$locationName)
+
+hist(agouti_dh$n_toolshoursum[which(agouti_dh$n_toolshoursum >0)])
+# there are some crazy high numbers in there (336) so I dont know if this is the best metric. Average may be better. 
+
+# with sum of number of tool users per hour
+tooltiming_m2 <- gam(list(n_toolshoursum ~ s(hour, by = seasonF, k = 15) + seasonF + s(locationfactor, bs = "re"),
+                          ~s(hour, by = seasonF, k = 15) + seasonF + s(locationfactor, bs = "re")), family = ziplss(), data = agouti_dh,
+                     method = "REML")
+
+summary(tooltiming_m2)
+draw(tooltiming_m2)
+plot(tooltiming_m2)
+
+gam.check(tooltiming_m2)
+
+tooltiming_m2.5 <- gam(list(n_toolshoursum ~ s(hour, seasonF, bs = "fs", k = 15) + s(locationfactor, bs = "re"),
+                          ~s(hour, seasonF, bs = "fs", k = 15) + s(locationfactor, bs = "re")), family = ziplss(), data = agouti_dh,
+                     method = "REML")
+
+summary(tooltiming_m2.5)
+draw(tooltiming_m2.5)
+plot(tooltiming_m2.5)
+
+gam.check(tooltiming_m2.5)
+
+
+# with mean instead of sum
+hist(agouti_dh$n_toolshourmean)
+tooltiming_m3 <- gam(n_toolshourmean ~ s(hour, by = seasonF, k = 15) + seasonF + s(locationfactor, bs = "re"), data = agouti_dh, family = gaussian(),
+                     method = "REML")
+
+summary(tooltiming_m3)
+draw(tooltiming_m3)
+gam.check(tooltiming_m3)
+?draw
+## NOTES
+## consider whether you'd want common hour spline and then hour by season spline
+# fs or by?
+# look at pedersen paper again too. 
+# I currently am leaning towards mean instead of sum
+# it is predicting negative stuff but we don't wwant it too, how do iiiiiii prevent this. 
+# gaussian is not best family though, would maybe need to go in brms and do gamma or gamma hurdle even? we have a lot of 0's and are interested in absence/presence of tool use as well as increases in tool userss
+# go to brms so you can also see if there are less tool users in wet/dry season etc
 
 ########################################
 #### NOTES #######
