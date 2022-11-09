@@ -25,13 +25,14 @@ setwd("~/Git/camtrap_coiba")
 #   then see if you have activity at several camera traps within the same hour (hour might be too large of a timescale). Need spatial depth for this. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20220829094812/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20221109154617/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20220829094812/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20221109154617/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
+# also have "caution" flag for deployments that might need some modification/fixing. 
 depl_keys$flag <- ifelse(grepl("Flag", depl_keys$tags) | grepl("Test", depl_keys$tags) | depl_keys$tags == "", 1, 0 )
 agoutigross <- left_join(agoutigross, depl_keys, "deploymentID")
 agoutigross <- agoutigross[agoutigross$flag == 0,]
@@ -43,7 +44,7 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20220829094812/media.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20221109154617/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -446,6 +447,8 @@ agoutisequence_c <- droplevels.data.frame(agoutisequence_c)
 agoutisequence_c$hour <- hour(agoutisequence_c$seq_start)
 agoutisequence_c$toolusers <- factor(agoutisequence_c$tool_site, levels = c(0,1), labels = c("Non-tool-users", "Tool-users"))
 agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
+agoutisequence_c$depdays <- as.numeric(difftime(agoutisequence_c$seq_startday, agoutisequence_c$dep_startday, units = "days"))
+agoutisequence_c$depnr <- as.numeric(unlist(regmatches(agoutisequence_c$tags, gregexpr("[[:digit:]]+", agoutisequence_c$tags))))
 
 ##### generating 0's ####
 ## NOTE: this does not yet take into consideration that some cameras may not be active at night (this is only later deployments).
