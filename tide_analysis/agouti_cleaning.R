@@ -522,3 +522,41 @@ agoutiselect2$season <- ifelse(agoutiselect2$month == 12 | agoutiselect2$month =
 
 agoutiselect2$locationfactor <- as.factor(agoutiselect2$locationName)
 agoutiselect2$tooluse[agoutiselect2$noanimal == 1] <- 0
+
+
+
+
+####################################
+## clean for Lester DONT RUN
+
+agouticlean$n_agouti <- ifelse(agouticlean$scientificName == "Dasyprocta coibae", agouticlean$count, 0)
+agoutis <- aggregate(agouticlean$count[which(agouticlean$scientificName  == "Dasyprocta coibae" )], by = list(sequenceID = agouticlean$sequenceID[which(agouticlean$scientificName  == "Dasyprocta coibae")]), FUN = max)
+agouticlean2 <- left_join(agouticlean, agoutis, by ="sequenceID")
+ftable(agouticlean2$x)
+ftable(agouticlean$n_agouti)
+
+agouticlean2$x[is.na(agouticlean2$x)] <- 0
+agouticlean2$n_agouti <- agouticlean2$x
+agouticlean2$n_capuchin <- agouticlean$n
+
+agoutisequence2 <- agouticlean2[!duplicated(agouticlean2$sequenceID),]
+agoutisequence2$agouti <- ifelse(agoutisequence2$n_agouti > 0, 1, 0)
+
+# need to filter out deployments that are not fully coded
+# have a lot of unclassified sequences in --> these seem to largely be the 00:00:00 automated timecapture moments, that weren't coded
+# so have two variables for this, whether a sequence is a timelapse sequence (1 yes, 0 no) and whether it is uncoded (1 yes, 0 no)
+# want to exclude deployments that have uncoded sequences
+# can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
+cd2 <- as.data.frame(ftable(agoutisequence2$uniqueloctag, agoutisequence2$uncoded))
+codeddeployments_total2 <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5]) # deployments that miss less than 5 sequences
+
+# subset only fully coded deployments 
+agoutisequence_c2 <- agoutisequence2[(agoutisequence2$uniqueloctag %in% codeddeployments_total2),]
+agoutisequence_c2 <- droplevels.data.frame(agoutisequence_c2)
+
+agoutisequence_c2 <- agoutisequence_c2[,c("deploymentID", "dep_start", "dep_end", "dep_length_hours", "sequenceID", "seq_start", "seq_end", "seq_length",
+                                     "cameraSetup", "scientificName", "comments.x", "locationName", "longitude", "latitude", "tags",
+                                     "mediatype", "month", "season", "island", "tool_anvil", "tool_site", "capuchin", "agouti", "n_capuchin",
+                                     "n_agouti", "uncoded", "timelapse", "uniqueloctag")]
+
+saveRDS(agoutisequence_c2, "tide_analysis/ModelRDS/agoutisequence_c2.rds")
