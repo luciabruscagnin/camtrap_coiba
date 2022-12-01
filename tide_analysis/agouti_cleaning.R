@@ -526,8 +526,7 @@ agoutiselect2$tooluse[agoutiselect2$noanimal == 1] <- 0
 
 
 
-####################################
-## clean for Lester DONT RUN
+## clean for Lester DONT RUN #########
 
 agouticlean$n_agouti <- ifelse(agouticlean$scientificName == "Dasyprocta coibae", agouticlean$count, 0)
 agoutis <- aggregate(agouticlean$count[which(agouticlean$scientificName  == "Dasyprocta coibae" )], by = list(sequenceID = agouticlean$sequenceID[which(agouticlean$scientificName  == "Dasyprocta coibae")]), FUN = max)

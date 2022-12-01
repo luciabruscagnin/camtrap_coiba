@@ -128,7 +128,7 @@ sdhour <- sd(onlycap_tj$hour)
 # priors for tidal models
 tidal_prior <- c(prior(normal(0, 2), class = Intercept),
                  prior(normal(0,2), class = b),
-                 prior(normal(0,2), class = sds))
+                 prior(exponential(1), class = sds))
 
 ######### run until here to prepare for running or loading models #######
 
@@ -289,12 +289,12 @@ mcmc_plot(tbm1_prior)
 tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
               s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = onlycap_tj, 
-            chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE), seed = 1237472189,
             control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
-#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 5000) 
-#saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_z.rds")
-# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_z.rds")
+#tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 4000) 
+#saveRDS(tbm1, "tide_analysis/ModelRDS/tbm1_final.rds")
+# tbm1 <- readRDS("tide_analysis/ModelRDS/tbm1_final.rds")
 
 mcmc_plot(tbm1,type = "trace")
 mcmc_plot(tbm1) #plot posterior intervals
@@ -314,7 +314,7 @@ loo_R2(tbm1)
 bayes_R2(tbm1)
 
 # compare nr of capuchins per sequence for tu vs ntu
-hyp1 <- hypothesis(tbm1, "Intercept = Intercept + toolusersToolMusers")
+hypothesis(tbm1, "Intercept = Intercept + toolusersToolMusers")
 
 # Visualize: Compute posterior predictions with posterior_epred and plot contourplot from that
 predict_tbm1_p <- posterior_smooths(tbm1, smooth = 't2(tidedif_z,distcoast_z,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
