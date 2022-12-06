@@ -94,7 +94,7 @@ tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), fu
             control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
 # to add loo, loo_R2 and bayes_R2
-tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 5000) 
+# tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model after it ran. Change to location where you'd want to save the object
 #saveRDS(tbm1, "ModelRDS/tbm1_final.rds")
@@ -162,15 +162,15 @@ cam1  + theme_bw() +
 tbm2 <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
               s(locationfactor, bs = "re"), family = poisson(), data = tooltides[tooltides$toolusers == "Tool-users",], 
-            knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
-            control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+            knots = list(tidedif_z =c(-1.8,1.8)), chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE),
+            control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior, seed = 182435600)
 
 # to add loo, loo_R2 and bayes_R2
-# tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
+# tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model after it ran
-#saveRDS(tbm2, "ModelRDS/tbm2_z.rds")
-#tbm2 <- readRDS("ModelRDS/tbm2_z.rds")
+#saveRDS(tbm2, "ModelRDS/tbm2_final.rds")
+#tbm2 <- readRDS("ModelRDS/tbm2_final.rds")
 
 # Diagnostics
 mcmc_plot(tbm2,type = "trace")
@@ -230,15 +230,15 @@ cam2  + theme_bw() +
 tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                s(locationfactor, bs = "re"), family = poisson(), data = tooltides[tooltides$toolusers == "Non-tool-users",], 
-             knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
-             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+             knots = list(tidedif_z =c(-1.8,1.8)), chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE),
+             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior, seed = 1702647515)
 
 # Add loo, loo_R2 and Bayes_R2
-#tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
+#tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model object
-#saveRDS(tbm2a, "ModelRDS/tbm2a_z.rds")
-#tbm2a <- readRDS("ModelRDS/tbm2a_z.rds")
+#saveRDS(tbm2a, "ModelRDS/tbm2a_final.rds")
+#tbm2a <- readRDS("ModelRDS/tbm2a_final.rds")
 
 # Diagnostics
 mcmc_plot(tbm2a,type = "trace")
@@ -297,15 +297,15 @@ cam3  + theme_bw() +
 tbm2_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
                 t2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                 s(locationfactor, bs = "re"), family = poisson(), data = tooltides[tooltides$toolusers == "Tool-users",], 
-              chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+              chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE), seed = 2047142692,
               control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # Add loo, loo_R2 and bayes_R2
-# tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
+# tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model object
-#saveRDS(tbm2_h, "ModelRDS/tbm2_hz.rds")
-#tbm2_h <- readRDS("ModelRDS/tbm2_hz.rds")
+#saveRDS(tbm2_h, "ModelRDS/tbm2_hfinal.rds")
+#tbm2_h <- readRDS("ModelRDS/tbm2_hfinal.rds")
 
 # Diagnostics
 mcmc_plot(tbm2_h,type = "trace")
@@ -349,15 +349,15 @@ ggplot(data = d2h, aes(x = hour, y = distcoast, z = fit)) +
 tbm2a_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
                  t2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                  s(locationfactor, bs = "re"), family = poisson(), data = tooltides[tooltides$toolusers == "Non-tool-users",], 
-               chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+               chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE), seed = 447521392,
                control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # Adding loo, loo_R2 and Bayes_R2
 #tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
 
 # Saving and loading model object
-#saveRDS(tbm2a_h, "ModelRDS/tbm2a_hz.rds")
-#tbm2a_h <- readRDS("ModelRDS/tbm2a_hz.rds")
+#saveRDS(tbm2a_h, "ModelRDS/tbm2a_hfinal.rds")
+#tbm2a_h <- readRDS("ModelRDS/tbm2a_hfinal.rds")
 
 # Diagnostics
 mcmc_plot(tbm2a_h,type = "trace")

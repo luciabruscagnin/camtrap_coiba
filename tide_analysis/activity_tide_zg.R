@@ -370,12 +370,12 @@ cam1  + theme_bw() +
 tbm2 <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
             t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
             s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-          knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
-          control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+          knots = list(tidedif_z =c(-1.8,1.8)), chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE),
+          control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior, seed = 182435600)
 
-# tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
-#saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_z.rds")
-#tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_z.rds")
+# tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
+#saveRDS(tbm2, "tide_analysis/ModelRDS/tbm2_final.rds")
+tbm2 <- readRDS("tide_analysis/ModelRDS/tbm2_final.rds")
 
 mcmc_plot(tbm2,type = "trace")
 mcmc_plot(tbm2) #plot posterior intervals
@@ -457,17 +457,27 @@ cam2  + theme_bw() +
         legend.title = element_text(size =16), axis.text = element_text(size = 12))
 #dev.off()  
 
+## more intuitive plot
+head(d2)
+
+# plot with 3 distances of coast as separate lines
+d2$distcoast2 <- as.factor(ifelse(d2$distcoast < 10 | d2$distcoast == 10, "<10 meters from coast", 
+                        ifelse(d2$distcoast > 10 & d2$distcoast < 25, "11-25 meters from the coast", ">25 meters from the coast" )))
+ggplot(d2, aes(x = tidedif, y = exp(fit), group = distcoast2, color = distcoast2)) + geom_smooth() + facet_wrap(~seasonF)
+str(d2$distcoast2)
+
+
 ###### Non tool users ####
 tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
-             knots = list(tidedif_z =c(-1.8,1.8)), chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
-             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
+             knots = list(tidedif_z =c(-1.8,1.8)), chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE),
+             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior, seed = 1702647515)
 
 # tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 2000) 
 # check add criterion, gives error longer object length is not a multiple of shorter object length
-# saveRDS(tbm2a, "tide_analysis/ModelRDS/tbm2a_z.rds")
-# tbm2a <- readRDS("tide_analysis/ModelRDS/tbm2a_z.rds")
+# saveRDS(tbm2a, "tide_analysis/ModelRDS/tbm2a_final.rds")
+# tbm2a <- readRDS("tide_analysis/ModelRDS/tbm2a_final.rds")
 
 mcmc_plot(tbm2a,type = "trace")
 mcmc_plot(tbm2a) #plot posterior intervals
@@ -535,17 +545,23 @@ cam3  + theme_bw() +
         legend.title = element_text(size =16), axis.text = element_text(size = 12))
 #dev.off()  
 
+# more intuitive plot
+d2a$distcoast2 <- as.factor(ifelse(d2a$distcoast < 10 | d2a$distcoast == 10, "<10 meters from coast", 
+                                  ifelse(d2a$distcoast > 10 & d2a$distcoast < 25, "11-25 meters from the coast", ">25 meters from the coast" )))
+ggplot(d2a, aes(x = tidedif, y = exp(fit), group = distcoast2, color = distcoast2)) + geom_smooth() + facet_wrap(~seasonF)
+str(d2$distcoast2)
+
 ##### TIME OF DAY ######
 ###### Tool users ####
 tbm2_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
               t2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
               s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Tool-users",], 
-            chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE), seed = 2047142692,
             control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
-#saveRDS(tbm2_h, "tide_analysis/ModelRDS/tbm2_hz.rds")
-# tbm2_h <- readRDS("tide_analysis/ModelRDS/tbm2_hz.rds")
+#saveRDS(tbm2_h, "tide_analysis/ModelRDS/tbm2_hfinal.rds")
+# tbm2_h <- readRDS("tide_analysis/ModelRDS/tbm2_hfinal.rds")
 
 mcmc_plot(tbm2_h,type = "trace")
 mcmc_plot(tbm2_h) #plot posterior intervals
@@ -598,12 +614,12 @@ ggplot(data = d2h, aes(x = hour, y = distcoast, z = fit)) +
 tbm2a_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full = TRUE) +
                 t2(hour_z, distcoast_z, bs = c("tp", "tp"), by = seasonF, k = c(10,6), m = 1) + seasonF +
                 s(locationfactor, bs = "re"), family = poisson(), data = onlycap_tj[onlycap_tj$toolusers == "Non-tool-users",], 
-              chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+              chain = 3, core = 3, iter = 4000, save_pars = save_pars(all = TRUE), seed = 447521392,
               control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
-# tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
-# saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_hz.rds")
-# tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_hz.rds")
+# tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
+# saveRDS(tbm2a_h, "tide_analysis/ModelRDS/tbm2a_hfinal.rds")
+# tbm2a_h <- readRDS("tide_analysis/ModelRDS/tbm2a_hfinal.rds")
 
 mcmc_plot(tbm2a_h,type = "trace")
 mcmc_plot(tbm2a_h) #plot posterior intervals
@@ -2549,5 +2565,3 @@ ggplot() +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
-
-
