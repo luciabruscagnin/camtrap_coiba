@@ -388,9 +388,6 @@ for (i in 1:nrow(agoutisequence)) {
   agoutisequence$tidedifabs[i] <- min(abs(difftime(agoutisequence$seq_start[i], TidesLow$TIDE_TIME, units = "hours")))
 }
 
-hist(agoutisequence$tidedifabs) 
-plot(agoutisequence$tidedifabs, agoutisequence$count)
-
 # Both positive and negative
 
 agoutisequence$tidedif <- NA
@@ -400,8 +397,6 @@ for (i in 1:nrow(agoutisequence)) {
 }
 
 # get an error but it does seem to work... 
-hist(agoutisequence$tidedif)
-plot(agoutisequence$tidedif, agoutisequence$count)
 
 ## time to high tide instead of low
 agoutisequence$tidedif2 <- NA
@@ -534,6 +529,10 @@ agouticlean2 <- left_join(agouticlean, agoutis, by ="sequenceID")
 ftable(agouticlean2$x)
 ftable(agouticlean$n_agouti)
 
+# adding whether they were eating anvil debris or not
+agoutis <- agoutigross[agoutigross$scientificName == "Dasyprocta coibae", ]
+unique(agoutis$behaviour)
+
 agouticlean2$x[is.na(agouticlean2$x)] <- 0
 agouticlean2$n_agouti <- agouticlean2$x
 agouticlean2$n_capuchin <- agouticlean$n
@@ -556,6 +555,6 @@ agoutisequence_c2 <- droplevels.data.frame(agoutisequence_c2)
 agoutisequence_c2 <- agoutisequence_c2[,c("deploymentID", "dep_start", "dep_end", "dep_length_hours", "sequenceID", "seq_start", "seq_end", "seq_length",
                                      "cameraSetup", "scientificName", "comments.x", "locationName", "longitude", "latitude", "tags",
                                      "mediatype", "month", "season", "island", "tool_anvil", "tool_site", "capuchin", "agouti", "n_capuchin",
-                                     "n_agouti", "uncoded", "timelapse", "uniqueloctag")]
+                                     "n_agouti", "uncoded", "timelapse", "uniqueloctag", "tooluse")]
 
 saveRDS(agoutisequence_c2, "tide_analysis/ModelRDS/agoutisequence_c2.rds")

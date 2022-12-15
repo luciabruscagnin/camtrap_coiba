@@ -1,7 +1,14 @@
-# Distance to coast
-## run only from line 24
+## Calculating distance to coast 
 
-## code from Kate to get to this from tif
+# Supplemental Code for “Tool Use and Tidal Cycles: Exploitation of Coastal 
+# Habitat by Island-living White-faced Capuchin Monkeys"
+
+# Zoë Goldsborough, Margaret Crofoot, Shauhin Alavi, Sylvia Garza, 
+# Evelyn Del Rosario, Kate Tiedeman, Claudio Monteza & Brendan Barrett
+# 2023
+
+# Convert tiff of coastal vegetation boundary to shapefile
+# Tiff created by use of Google Earth Engine (see script)
 library(raster)
 library(terra)
 

@@ -82,7 +82,7 @@ str(onlycap_tj)
 tooltides <- onlycap_tj[,c("seq_start", "seq_end", "seq_length", "dep_start", "dep_end", "dep_length_hours",
                            "month", "seasonF", "tool_anvil", "toolusers", "locationfactor", "uniqueloctag", "n", "tidedif","hour", "distcoast")]
 
-write.csv(tooltides, "tide_analysis/tooltides.csv", row.names = FALSE)
+#write.csv(tooltides, "tide_analysis/tooltides.csv", row.names = FALSE)
 
 # do z_scoring in other script. 
 
@@ -2276,7 +2276,8 @@ mean(as.matrix(ftable(locations_t$locationfactor)))
 # did we see capuchins on all cameras
 agoutiselect_tj <- agoutiselect_t[agoutiselect_t$island == "Jicaron" & agoutiselect_t$locationfactor != "CEBUS-03" & 
                                     agoutiselect_t$locationfactor != "JIC-STREAM-CAMP-NO-T-01" & agoutiselect_t$locationfactor != "JIC-STREAM-CAMP-NO-T-02",]
-table(agoutiselect_tj$capuchin, agoutiselect_tj$uniqueloctag)
+p <- as.data.frame(table(agoutiselect_tj$capuchin, agoutiselect_tj$uniqueloctag))
+
 round(mean(onlycap_tj$n),2)
 max(onlycap_tj$n)
 round(sd(onlycap_tj$n),2)
