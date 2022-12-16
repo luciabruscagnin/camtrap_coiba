@@ -3,12 +3,11 @@
 
 # Zoë Goldsborough, Margaret Crofoot, Shauhin Alavi, Sylvia Garza, 
 # Evelyn Del Rosario, Kate Tiedeman, Claudio Monteza & Brendan Barrett
-# 2022
+# 2023
 
 # setwd("~/Git/camtrap_coiba/tide_analysis")
 
 ## Packages required
-# check if all of these package are still necessary
 library(viridis)
 library(fitdistrplus)
 library(brms)
@@ -18,6 +17,7 @@ library(reshape2)
 library(ggplot2)
 library(ggnewscale)
 library(cowplot)
+library(dplyr)
 
 # Load dataset of capuchin detections by camera traps
 tooltides <- read.csv("tooltides.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -44,7 +44,7 @@ sdtide <- sd(tooltides$tidedif)
 meanhour <- mean(tooltides$hour)
 sdhour <- sd(tooltides$hour)
 
-## for plotting, create universal colorpalette for the heatmap with predefined breaks
+## for plotting, create universal colorpalette for the heatmaps with predefined breaks
 inferncol <- viridis_pal(option = "B")(10)
 mybreaks <- seq(-0.5, 0.5, length.out = 11)
 breaklabel <- function(x){
@@ -113,7 +113,7 @@ summary(tbm1)
 mcmc_plot(tbm1) #plot posterior intervals
 plot(conditional_effects(tbm1))
 plot(conditional_smooths(tbm1))
-# compare nr of capuchins per sequence for tu vs ntu
+# compare nr of capuchins per sequence for tool-users vs non-tool-users
 hypothesis(tbm1, "Intercept = Intercept + toolusersToolMusers")
 
 # Visualization of activity and tidal cycles: Compute posterior predictions and plot contourplot from those
@@ -1308,3 +1308,15 @@ summary(as.numeric(locations_t$dep_days))
 # number of deployments per location
 max(as.matrix(ftable(locations_t$locationfactor)))
 mean(as.matrix(ftable(locations_t$locationfactor)))
+
+# distances to coast
+min(tooltides$distcoast[which(tooltides$toolusers == "Tool-users")])
+max(tooltides$distcoast[which(tooltides$toolusers == "Tool-users")])
+min(tooltides$distcoast[which(tooltides$toolusers == "Non-tool-users")])
+max(tooltides$distcoast[which(tooltides$toolusers == "Non-tool-users")])
+
+# number of capuchins per sequence 
+round(mean(tooltides$n),2)
+min(tooltides$n)
+max(tooltides$n)
+round(sd(tooltides$n),2)
