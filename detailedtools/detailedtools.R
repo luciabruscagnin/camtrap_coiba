@@ -218,10 +218,12 @@ detseq <- dettools_r2[!duplicated(dettools_r2$sequenceID),]
 detseq_o <- detseq[detseq$outcome == "opened",]
 
 boxplot(detseq_o$seqduration ~ detseq_o$Age)
-ggplot(detseq_o, aes(x=age_of, y=seqduration)) + 
-  geom_violin()
+
 # age as ordered factor?
 detseq_o$age_of <- factor(detseq_o$Age, ordered = TRUE, levels = c("Juvenile", "Subadult", "Adult"))
+
+ggplot(detseq_o, aes(x=age_of, y=seqduration)) + 
+  geom_violin()
 
 m_e1 <- brm(seqduration ~ age_of, data = detseq_o)
 summary(m_e1)

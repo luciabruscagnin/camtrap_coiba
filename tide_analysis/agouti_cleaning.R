@@ -25,10 +25,10 @@ setwd("~/Git/camtrap_coiba")
 #   then see if you have activity at several camera traps within the same hour (hour might be too large of a timescale). Need spatial depth for this. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20221109154617/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20230109131205/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20221109154617/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20230109131205/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
@@ -44,7 +44,7 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20221109154617/media.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20230109131205/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -142,6 +142,20 @@ agoutigross$capuchin <- ifelse(agoutigross$scientificName == "Cebus imitator", 1
 agoutigross$sex[which(agoutigross$capuchin == TRUE & agoutigross$sex == "")] <- "unknown"
 agoutigross$lifeStage[which(agoutigross$capuchin == TRUE & agoutigross$lifeStage == "")] <- "unknown"
 
+## for ID'd juvenile and subadult capuchins, code when their ages change 
+# for now only did this for the ones that we have seen at various lifestages
+# SPT, RIC, INK, LAR, YOD (not coded later yet)
+# need to find their agouti codes
+# SPT = 66437816-fdf4-4fde-9dbd-8591bfe8cb1c
+# LAR = c6114eb1-b53e-4494-9565-0dd621ff88b9
+# YOD = cbf8f2a0-f1ed-425b-9a71-8b59227b5546
+# RIC = 108f3544-b14a-43d9-a3a0-b805f35ae2db
+# INK =  db68538d-ff60-433a-bf94-e9a886a6d23c
+agoutigross$lifeStage <- ifelse(agoutigross$individualID == "66437816-fdf4-4fde-9dbd-8591bfe8cb1c" & year(agoutigross$seq_start) > 2018 & year(agoutigross$seq_start) < 2022, "subadult", 
+                                ifelse(agoutigross$individualID == "66437816-fdf4-4fde-9dbd-8591bfe8cb1c" & year(agoutigross$seq_start) > 2021, "adult",
+                                       ifelse(agoutigross$individualID == "db68538d-ff60-433a-bf94-e9a886a6d23c" & year(agoutigross$seq_start) > 2020, "adult", agoutigross$lifeStage)))
+
+
 # make agesex variable that is paste of sex and life stage
 agoutigross$agesex <- ifelse(agoutigross$capuchin == TRUE, 
                              paste(agoutigross$lifeStage, agoutigross$sex, sep = " "), NA)
@@ -156,7 +170,7 @@ agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
 # replace NAs with 0 for the capuchin count
 agoutigross$n[is.na(agoutigross$n)] <- 0
 
-### Age/sex classes ####
+##### Age/sex classes #####
 # make frequency table of agesex per sequence
 cap_agesex <- as.data.frame(as.matrix(ftable(agoutigross_cap$sequenceID, agoutigross_cap$agesex)))
 colnames(cap_agesex) <- c("nAF", "nAM", "nAU", "nJF", "nJM", "nJU", "nSF", "nSM", "nSU", 
@@ -174,6 +188,7 @@ agoutigross$nJuvenile <- agoutigross$nJF + agoutigross$nJM + agoutigross$nJU
 agoutigross$nFemales <- agoutigross$nAF + agoutigross$nSF + agoutigross$nJF + agoutigross$nUF
 agoutigross$nMales <- agoutigross$nAM + agoutigross$nSM + agoutigross$nJM + agoutigross$nUM
 
+##### Inspections #####
 # add nr or capuchins inspecting camera trap
 agoutigross_capinsp <- agoutigross[agoutigross$capuchin == 1 & str_detect(agoutigross$behaviour, "Inspecting"), ]
 cap_numbers_insp <- agoutigross_capinsp %>%
@@ -184,7 +199,31 @@ head(cap_numbers_insp)
 agoutigross <- left_join(agoutigross, cap_numbers_insp, "sequenceID")
 agoutigross$n_inspect[is.na(agoutigross$n_inspect)] <- 0
 
-##### Foraging items #####
+##### Displacements #####
+# info we'd like to have for analyses and need to extract now
+# very broadly could do whether displacement occurs in a sequence 1/0 and then see if there are adult females present
+agoutigross_disp <- agoutigross[str_detect(agoutigross$comments.x, "displace"), c("agesex", "lifeStage", "sex", "sequenceID", "comments.x", "comments.y")]
+
+agoutigross$displacement <- ifelse(agoutigross$sequenceID %in% agoutigross_disp$sequenceID, 1, 0)
+
+# agesex of displacer based on comments
+# agesex of displacee based on comments
+agoutigross_disp$victim_as <- ifelse(str_detect(agoutigross_disp$comments.x, "displaced"), agoutigross_disp$agesex, NA)
+agoutigross_disp$aggressor_as <- ifelse(str_detect(agoutigross_disp$comments.x, "displaced") == FALSE, agoutigross_disp$agesex, NA)
+victims <- agoutigross_disp[!is.na(agoutigross_disp$victim_as),c("sequenceID", "victim_as")]
+aggressors <- agoutigross_disp[!is.na(agoutigross_disp$aggressor_as),c("sequenceID", "aggressor_as")]
+displacements <- full_join(victims, aggressors, "sequenceID")
+# so don't have all victims/aggressors but something is better than nothing!
+
+displacements$victim_as[is.na(displacements$victim_as) | displacements$victim_as == "unknown unknown"] <- "unknown"
+displacements$aggressor_as[is.na(displacements$aggressor_as)| displacements$aggressor_as == "unknown unknown"] <- "unknown"
+
+agoutigross <- left_join(agoutigross, displacements, "sequenceID")
+
+ftable(agoutigross$victim_as)
+# so get some information from this! (this is still multiple times per sequence, need to drop down to sequence level ofc)
+
+#### Foraging items ####
 # what is being foraged on per sequence
 # check if one individual forages on more things
 multipleitems <- agoutigross[which(str_count(agoutigross$behaviour, "F:")> 1),]
@@ -349,6 +388,24 @@ all_items2 <- all_items[,c("sequenceID", "nr_almendra", "nr_coconut", "nr_fruit"
 
 agoutigross <- left_join(agoutigross, all_items2, "sequenceID")
 
+##### Tolerated scrounging and foraging on anvil debris ######
+cap_scrounge <- agoutigross[str_detect(agoutigross$behaviour, "scroung") & agoutigross$n_tooluse >0,]
+cap_scrounge_as <- as.data.frame(as.matrix(ftable(cap_scrounge$sequenceID, cap_scrounge$agesexF)))
+colnames(cap_scrounge_as) <- c("sc_nAF", "sc_nAM", "sc_nAU", "sc_nJF", "sc_nJM", "sc_nJU", "sc_nSF", "sc_nSM", "sc_nSU", 
+                               "sc_nUF", "sc_nUM", "sc_nUU")
+cap_scrounge_as$sequenceID <- rownames(cap_scrounge_as)
+
+agoutigross <- left_join(agoutigross, cap_scrounge_as, "sequenceID")
+
+# anvil debris
+cap_debris <- agoutigross[str_detect(agoutigross$behaviour, "debris") & agoutigross$capuchin == 1,]
+cap_debris_as <- as.data.frame(as.matrix(ftable(cap_debris$sequenceID, cap_debris$agesexF)))
+colnames(cap_debris_as) <- c("ad_nAF", "ad_nAM", "ad_nAU", "ad_nJF", "ad_nJM", "ad_nJU", "ad_nSF", "ad_nSM", "ad_nSU", 
+                               "ad_nUF", "ad_nUM", "ad_nUU")
+cap_debris_as$sequenceID <- rownames(cap_debris_as)
+
+agoutigross <- left_join(agoutigross, cap_debris_as, "sequenceID")
+
 #### Cleaning and to sequence-level ##### 
 # create column to flag the timelapse triggers at 12:00:00 and 00:00:00
 agoutigross$timelapse <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$classificationTimestamp == "" & str_detect(agoutigross$seq_start, "00:00") == "TRUE", 1, 0)
@@ -360,7 +417,10 @@ agoutigross <- agoutigross %>%
   mutate_at(vars("n", "nAF", "nAM", "nAU", "nJF", "nJM", "nJU", "nSF", "nSM", "nSU", "nUF", "nUM", "nUU", "nAdult",
                  "nSubadult", "nJuvenile", "nFemales", "nMales", "tu_nAF", "tu_nAM", "tu_nAU", "tu_nJF", "tu_nJM", 
                  "tu_nJU", "tu_nSF", "tu_nSM", "tu_nSU", "tu_nUF", "tu_nUM", "tu_nUU", "tu_nAdult", "tu_nSubadult", 
-                 "tu_nJuvenile", "nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate", "nr_other", "nr_unknown"), ~replace_na(.,0))
+                 "tu_nJuvenile", "nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate", "nr_other", "nr_unknown",
+                 "sc_nAF", "sc_nAM", "sc_nAU", "sc_nJF", "sc_nJM", "sc_nJU", "sc_nSF", "sc_nSM", "sc_nSU", 
+                 "sc_nUF", "sc_nUM", "sc_nUU", "ad_nAF", "ad_nAM", "ad_nAU", "ad_nJF", "ad_nJM", "ad_nJU", "ad_nSF", 
+                 "ad_nSM", "ad_nSU", "ad_nUF", "ad_nUM", "ad_nUU"), ~replace_na(.,0))
 
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
