@@ -13,6 +13,11 @@ require(lme4)
 require(tidybayes)
 require(modelr)
 library(ggthemes)
+require(dplyr)
+require(ggplot2)
+require(mgcv)
+require(gratia)
+require(reshape2)
 
 ## Questions/Hypotheses
 
@@ -72,6 +77,7 @@ agoutiseq_jto$Nadults <- agoutiseq_jto$nAF + agoutiseq_jto$nAM
 
 s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype + (1|locationfactor), data = agoutiseq_jto, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(s_bm1, "tide_analysis/ModelRDS/s_bm1.RDS")
+#s_bm1 <- readRDS("tide_analysis/ModelRDS/s_bm1.RDS")
 summary(s_bm1)
 mcmc_plot(s_bm1)
 
@@ -92,14 +98,15 @@ ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + geom_violin
   scale_y_continuous(lim = c(0,1)) +
   guides(color = "none", fill = "none") +
   labs(x = "Locationtype", y = "Female:male ratio") +
-  theme_clean() +
-  theme_bw(base_family = "ArcherPro Book")
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+ 
 
 ## include month to account for seasonality
 ## gam with month by locationtype
 s_gam1 <- gam(nAF/Nadults ~ s(month, by = locationtype, bs = "cc", k = 12) + s(locationfactor, bs= "re"), weights = Nadults, data = agoutiseq_jto, family = binomial())
 plot(s_gam1)
-require(gratia)
+
 plot(s_gam1)
 
 ## potentially could include distance to coast of cameras (so distcoast*locationtype)
@@ -107,7 +114,6 @@ plot(s_gam1)
 
 ### CONCLUSION: adult females and adult males are seen just as frequently at random cameras, but at streambeds and anvils males are much more frequent
 ## females are not less likely to be on the ground
-
 
 #### H2: Females are rarely observed tool-using because of within-group competition ####
 ## P2a: Displacements at anvils are common
@@ -119,14 +125,38 @@ ftable(agoutiseq_jto$displacement[which(agoutiseq_jto$locationtype == "anvil" & 
 # so no, displacements at anvils are actually rare
 
 ## additionally, if you look at who is being displaced
-ftable(agoutiseq_jto$victim_as)
+dis_vics <- as.data.frame(as.matrix(ftable(agoutiseq_jto$victim_as)))
+dis_vics$juvenile <- dis_vics$`juvenile male` + dis_vics$`juvenile unknown`
+dis_vics$subadult <- dis_vics$`subadult male`+dis_vics$`subadult unknown`
+
+dis_vics <- melt(dis_vics[, c("adult female", "adult male", "subadult", "juvenile", "unknown")])
+dis_vics$prop <- dis_vics$value / 94
+
+cbbPalette <- c("#CC79A7",  "#56B4E9", "#E69F00", "#009E73", "#F0E442" )
+
+ggplot(dis_vics, aes(x = variable, y = value, fill = variable)) + geom_bar(stat = "identity") + 
+  geom_text(aes(label=value), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs( x = "Age-sex class", y = "Number of times being displaced", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
+
 4/95 * 100 # only in 4% of the cases was a female being displaced, mostly juveniles are being displaced
+
+## just for fun, who is the aggressor
+dis_agg <- as.data.frame(as.matrix(ftable(agoutiseq_jto$aggressor_as)))
+dis_agg$juvenile <- dis_agg$`juvenile male` + dis_agg$`juvenile unknown`
+
+dis_agg <- melt(dis_agg[, c("adult female", "adult male", "subadult male", "juvenile", "unknown")])
+dis_agg$prop <- dis_agg$value / 94
+
+ggplot(dis_agg, aes(x = variable, y = value, fill = variable)) + geom_bar(stat = "identity") + 
+  geom_text(aes(label=value), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs( x = "Age-sex class", y = "Number of times displacing others", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+  theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
 
 ftable(agoutiseq_jto$nAF[which(agoutiseq_jto$locationtype == "anvil")]) # really hardly even see adult females at anvils
 
 ## CONCLUSION: so no, displacements at anvils are not common, and females are not often displaced. 
 # in the vast majority of the cases, tool users are "alone" at the anvil
-# need to make nice visualizations of this. (stacked bar graphs?)
 
 ## P2b: See female tool use (if we do at all) at opportunistic anvils e.g. in streambeds
 # only have one case of female tool use so far
@@ -135,18 +165,87 @@ ftable(agoutiseq_jto$nAF[which(agoutiseq_jto$locationtype == "anvil")]) # really
 agoutiseq_jto$scrounging <- ifelse(rowSums(agoutiseq_jto[,c("sc_nAF", "sc_nAM", "sc_nAU", 
                                                             "sc_nJF","sc_nJM","sc_nJU", "sc_nSF",
                                                             "sc_nSM", "sc_nSU", "sc_nUF", "sc_nUM",
-                                                            "sc_nUU")])> 0, 1, 0) 
+                                                            "sc_nUU")])> 0 & agoutiseq_jto$n_tooluse >0, 1, 0) 
+
 ftable(agoutiseq_jto$sc_nAF[which(agoutiseq_jto$scrounging == 1)])
+
 ## of ~103 sequences with scrounging observed, in 8 of them were adult females present
 ## only saw scrounging by adult females 2x at an anvil, so atm not really worthy of a further analysis (though if we'd want to do one, see method below)
+agoutiseq_jto$nUnknown <- agoutiseq_jto$nUF + agoutiseq_jto$nUM + agoutiseq_jto$nUU
+agoutiseq_jto$sc_nJuvenile <- agoutiseq_jto$sc_nJF + agoutiseq_jto$sc_nJM + agoutiseq_jto$sc_nJU
+agoutiseq_jto$sc_nSubadult <- agoutiseq_jto$sc_nSF + agoutiseq_jto$sc_nSM + agoutiseq_jto$sc_nSU
+agoutiseq_jto$sc_nUnknown <- agoutiseq_jto$sc_nUF + agoutiseq_jto$sc_nUM + agoutiseq_jto$sc_nUU
+
+# nr of scrounging by adult females
+scrounge_jto <-  colSums(agoutiseq_jto[agoutiseq_jto$scrounging == 1, c("sc_nAF", "sc_nAM", 
+                                                                        "sc_nSubadult", "sc_nJuvenile", 
+                                                                        "sc_nUnknown")])
+
+scrounging <- data.frame(agesex = c("adult female", "adult male", "subadult", "juvenile", "unknown"), 
+                         n_scrounge = scrounge_jto)
+
+# add opportunity for scrounging
+## nr of sequences that X was present and Y was tool using
+# females that means nAF > 0 & n_tooluse >0. 
+# juveniles /adults/subadults could be the tool users themselves. So it means nJuvenile >0, n_tooluse >0, and either nJuvenile >1,nadultmale >0 or nsubadult >0
+scrounging$n_opp[which(scrounging$agesex == "adult female")] <- nrow(agoutiseq_jto[agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$nAF > 0 & agoutiseq_jto$n_tooluse > 0,])
+scrounging$n_opp[which(scrounging$agesex == "adult male")] <- nrow(agoutiseq_jto[agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$nAM > 0 & agoutiseq_jto$n_tooluse > 0 &
+                                                                                   rowSums(agoutiseq_jto[,c("nAM", "nSubadult", "nJuvenile")]) > 1,])
+scrounging$n_opp[which(scrounging$agesex == "subadult")] <- nrow(agoutiseq_jto[agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$nSubadult > 0 & agoutiseq_jto$n_tooluse > 0 &
+                                                                                   rowSums(agoutiseq_jto[,c("nAM", "nSubadult", "nJuvenile")]) > 1,])
+scrounging$n_opp[which(scrounging$agesex == "juvenile")] <- nrow(agoutiseq_jto[agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$nJuvenile > 0 & agoutiseq_jto$n_tooluse > 0 &
+                                                                                   rowSums(agoutiseq_jto[,c("nAM", "nSubadult", "nJuvenile")]) > 1,])
+scrounging$n_opp[which(scrounging$agesex == "unknown")] <- nrow(agoutiseq_jto[agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$nUnknown > 0 & agoutiseq_jto$n_tooluse > 0 &
+                                                                                 rowSums(agoutiseq_jto[,c("nAM", "nSubadult", "nJuvenile")]) > 1,])
+
+scrounging$prop <- scrounging$n_scrounge / scrounging$n_opp
+scrounging$agesex <- factor(scrounging$agesex, levels = c("adult female", "adult male","subadult", "juvenile", "unknown")) 
+
+ggplot(scrounging, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label=paste(n_scrounge, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs( x = "Age-sex class", y = "Proportion of opportunities spent scrounging", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+  theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
+
+
+## right now it is number of scroungers / nr of sequences thye could have scrounged in. 
+## i think we dont often have multiple scroungers per sequence, but neater way to do this would be nr of sequences with scrounging by this age sex class/ sequences with opportunity
+## or alternatively, nr of scroungers/ nr of this age sex class that could have been scroungers 
+#(so colsums of the subset above I think, though then how do you rule out if it's 2 juveniles and one is tool using not to count them both?)
+# this is imperfect but the error is minor so eh. All preliminary. 
+
 
 ## consumption of anvil debris
 agoutiseq_jto$anvildebris <- ifelse(rowSums(agoutiseq_jto[,c("ad_nAF", "ad_nAM", "ad_nAU", 
                                                              "ad_nJF","ad_nJM","ad_nJU", "ad_nSF",
                                                              "ad_nSM", "ad_nSU", "ad_nUF", "ad_nUM",
                                                              "ad_nUU")])> 0, 1, 0) 
-ftable(agoutiseq_jto$agesexF[which(agoutiseq_jto$anvildebris == 1)])
-ftable(agoutiseq_jto$ad_nAF[which(agoutiseq_jto$anvildebris == 1)])
+
+# nr of consumption of anvil debris
+agoutiseq_jto$ad_nJuvenile <- agoutiseq_jto$ad_nJF + agoutiseq_jto$ad_nJM + agoutiseq_jto$ad_nJU
+agoutiseq_jto$ad_nSubadult <- agoutiseq_jto$ad_nSF + agoutiseq_jto$ad_nSM + agoutiseq_jto$ad_nSU
+agoutiseq_jto$ad_nUnknown <- agoutiseq_jto$ad_nUF + agoutiseq_jto$ad_nUM + agoutiseq_jto$ad_nUU
+
+anvildebris_jto <-  colSums(agoutiseq_jto[agoutiseq_jto$anvildebris == 1, c("ad_nAF", "ad_nAM", 
+                                                                        "ad_nSubadult", "ad_nJuvenile", 
+                                                                        "ad_nUnknown")])
+
+# add opportunity for consuming anvil debris (total nr of this age/sex class observed)
+opp_jto <-  colSums(agoutiseq_jto[agoutiseq_jto$locationtype == "anvil", c("nAF", "nAM", 
+                                                                           "nSubadult", "nJuvenile", 
+                                                                           "nUnknown")])
+
+anvildebris <- data.frame(agesex = c("adult female", "adult male", "subadult", "juvenile", "unknown"), 
+                         n_debris = anvildebris_jto, n_opp = opp_jto)
+
+anvildebris$prop <- anvildebris$n_debris / anvildebris$n_opp
+anvildebris$agesex <- factor(anvildebris$agesex, levels = c("adult female", "adult male","subadult", "juvenile", "unknown")) 
+
+ggplot(anvildebris, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label=paste(n_debris, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs( x = "Age-sex class", y = "Proportion of opportunities spent consuming anvil debris", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+  theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
+
+
 
 # of the 1180 sequences with foraging on anvil debris, 48 times were by adult females
 
