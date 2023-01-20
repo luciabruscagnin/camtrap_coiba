@@ -177,8 +177,17 @@ colnames(cap_agesex) <- c("nAF", "nAM", "nAU", "nJF", "nJM", "nJU", "nSF", "nSM"
                           "nUF", "nUM", "nUU")
 cap_agesex$sequenceID <- rownames(cap_agesex)
 
+# number of adult females carrying infant
+cap_agesex_infant <- as.data.frame(as.matrix(ftable(agoutigross_cap$sequenceID[which(str_detect(agoutigross_cap$behaviour, "Infant Care") == TRUE)], 
+                                             agoutigross_cap$agesex[which(str_detect(agoutigross_cap$behaviour, "Infant Care") == TRUE)])))
+colnames(cap_agesex_infant) <- c("nAF_infant", "nAM_infant", "nAU_infant", "nJF_infant", "nJM_infant", "nJU_infant", "nSF_infant", "nSM_infant", "nSU_infant", 
+                          "nUF_infant", "nUM_infant", "nUU_infant")
+cap_agesex_infant$sequenceID <- rownames(cap_agesex_infant)
+
+
 # add this to agoutigross dataframe
 agoutigross <- left_join(agoutigross, cap_agesex, "sequenceID")
+agoutigross <- left_join(agoutigross, cap_agesex_infant, "sequenceID")
 
 # make new colum for total number of males, total number of females,
 # total adults, total subadults, total juveniles per sequence
@@ -420,7 +429,8 @@ agoutigross <- agoutigross %>%
                  "tu_nJuvenile", "nr_almendra", "nr_coconut", "nr_fruit", "nr_invertebrate", "nr_other", "nr_unknown",
                  "sc_nAF", "sc_nAM", "sc_nAU", "sc_nJF", "sc_nJM", "sc_nJU", "sc_nSF", "sc_nSM", "sc_nSU", 
                  "sc_nUF", "sc_nUM", "sc_nUU", "ad_nAF", "ad_nAM", "ad_nAU", "ad_nJF", "ad_nJM", "ad_nJU", "ad_nSF", 
-                 "ad_nSM", "ad_nSU", "ad_nUF", "ad_nUM", "ad_nUU"), ~replace_na(.,0))
+                 "ad_nSM", "ad_nSU", "ad_nUF", "ad_nUM", "ad_nUU", "nAF_infant", "nAM_infant", "nAU_infant", "nJF_infant", "nJM_infant", "nJU_infant", "nSF_infant", "nSM_infant", "nSU_infant", 
+                 "nUF_infant", "nUM_infant", "nUU_infant"), ~replace_na(.,0))
 
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
@@ -577,9 +587,6 @@ agoutiselect2$season <- ifelse(agoutiselect2$month == 12 | agoutiselect2$month =
 
 agoutiselect2$locationfactor <- as.factor(agoutiselect2$locationName)
 agoutiselect2$tooluse[agoutiselect2$noanimal == 1] <- 0
-
-
-
 
 ## clean for Lester DONT RUN #########
 

@@ -6,6 +6,8 @@ require(magrittr)
 require(rlist)
 require(reshape2)
 
+Sys.setlocale("LC_ALL", "C")
+
 # check if working directory is set okay
 setwd("~/Git/camtrap_coiba")
 

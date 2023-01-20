@@ -44,11 +44,6 @@ require(reshape2)
 ## Analyses to do to test these predictions
 ## subset to only jicaron tool-site data
 
-#### H1 : Females are less terrestrial than males in general #####
-## P1a: see less adult females on camera traps than adult males (and juveniles?)
-## P1b: females especially being unlikely to be on the ground in open spaces such as in streams and near the coast
-
-# Attempt one, using only sequences with capuchins in and comparing female/male ratios at the three different location types
 head(agoutisequence_c)
 agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron"),]
 
@@ -56,6 +51,27 @@ agoutiseq_jt$locationtype <- as.factor(ifelse(agoutiseq_jt$tool_anvil == 1, "anv
                                               ifelse(agoutiseq_jt$streambed == 1, "streambed", "random")))
 agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
 
+# look at whether there is seasonality in the birthpeak. When do we mostly see adult females with infants? Maybe consider ratio
+agoutiseq_jt$year <- year(agoutiseq_jt$seqday)
+agoutiseq_jt$yrday <- yday(agoutiseq_jt$seqday)
+agoutiseq_jt$week <- week(agoutiseq_jt$seqday)
+
+ggplot(data = agoutiseq_jt, aes(x = month, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean")   + theme_bw()
+ggplot(data = agoutiseq_jt, aes(x = week, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean") + facet_wrap(~year)  + theme_bw()
+
+
+s_gam1 <- gam(nAF_infant/nAF ~ s(yrday, bs = "cc") + factor(year) + s(month, bs = "cc"), data = agoutiseq_jt)
+plot(s_gam1)
+summary(s_gam1)
+
+# differentiate adult females with and without infants
+agoutiseq_jt$nAF_noinfant <- agoutiseq_jt$nAF - agoutiseq_jt$nAF_infant
+
+#### H1 : Females are less terrestrial than males in general #####
+## P1a: see less adult females on camera traps than adult males (and juveniles?)
+## P1b: females especially being unlikely to be on the ground in open spaces such as in streams and near the coast
+
+# Attempt one, using only sequences with capuchins in and comparing female/male ratios at the three different location types
 # only sequences with capuchins
 agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
 agoutiseq_jto <- droplevels.data.frame(agoutiseq_jto)
@@ -70,6 +86,13 @@ model2 <- glmer(cbind(nAM, nAF) ~ locationtype + (1|locationfactor), data = agou
 summary(model2)
 em2 <- emmeans(model2, "locationtype")
 summary(em2, type = "response")
+
+# is ratio of females with and without infants different at different locations?
+model2b <- glmer(cbind(nAF_noinfant, nAF_infant) ~ locationtype + (1|locationfactor), data = agoutiseq_jto, family = binomial)
+summary(model2b)
+em2b <- emmeans(model2b, "locationtype")
+summary(em2b, type = "response")
+# no 
 
 agoutiseq_jto$Nadults <- agoutiseq_jto$nAF + agoutiseq_jto$nAM
 
@@ -100,7 +123,35 @@ ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + geom_violin
   labs(x = "Locationtype", y = "Female:male ratio") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
- 
+
+
+## ratio of females with infants to females without
+s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype + (1|locationfactor), data = agoutiseq_jto, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+#saveRDS(s_bm1b, "tide_analysis/ModelRDS/s_bm1b.RDS")
+#s_bm1b <- readRDS("tide_analysis/ModelRDS/s_bm1b.RDS")
+summary(s_bm1b)
+mcmc_plot(s_bm1b)
+
+plot(conditional_effects(s_bm1b))
+
+m_type_predb <- s_bm1b %>% 
+  epred_draws(newdata = tibble(nAF = agoutiseq_jto$nAF,
+                               locationtype = agoutiseq_jto$locationtype,
+                               locationfactor = agoutiseq_jto$locationfactor)) %>% 
+  mutate(.epred_prop = .epred/nAF) # change to proportion
+
+ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
+  stat_summary(agoutiseq_jto, inherit.aes = FALSE, mapping=aes(x = locationtype, y = nAF_infant/nAF, color = locationtype), geom = "point", fun = "mean",
+               size = 4) + 
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", size = 1, alpha = 0.5) +
+  scale_y_continuous(lim = c(0,1)) +
+  guides(color = "none", fill = "none") +
+  labs(x = "Locationtype", y = "Ratio females with infants:females without infants") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
 
 ## include month to account for seasonality
 ## gam with month by locationtype
@@ -292,6 +343,11 @@ summary(em3, type = "response")
 ### Displacement rates at anvils and who is being displaced
 
 
+#### H3: Females have different diet than males ####
+
+# use dataset per day with 0's in
+head(agoutiselect2)
+agoutiselect2_jt <- agoutiselect2[agoutiselect2$island == "Jicaron" & agoutiselect2$tool_site == 1,]
 
 
 

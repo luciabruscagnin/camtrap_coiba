@@ -129,15 +129,17 @@ agoutiselect_full$year <- year(agoutiselect_full$seqday)
 agoutiselect_full <- agoutiselect_full %>%
   mutate_at(vars("toolusedurationday", "nr_almendraday", "nr_coconutday", "nr_fruitday", "nr_invertebrateday", "nr_otherday", 
                  "nr_unknownday", "nday"), ~replace_na(.,0))
+# this is outdated I think
+#selection_seasontools <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-01-R6",
+#                           "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5", "CEBUS-02-R6",
+#                           "CEBUS-04-R4", "CEBUS-04-R5", "CEBUS-04-R6",
+#                           "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-05-R6", 
+#                           "CEBUS-06-R4", "CEBUS-06-R5", "CEBUS-06-R6",
+#                           "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", 
+#                           "CEBUS-09-R2", "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
+#agoutiselect <- agoutiselect_full[agoutiselect_full$uniqueloctag %in% selection_seasontools,]
 
-selection_seasontools <- c("CEBUS-01-R1", "CEBUS-01-R2", "CEBUS-01-R3", "CEBUS-01-R5", "CEBUS-01-R6",
-                           "CEBUS-02-R1", "CEBUS-02-R2", "CEBUS-02-R3", "CEBUS-02-R4", "CEBUS-02-R5", "CEBUS-02-R6",
-                           "CEBUS-04-R4", "CEBUS-04-R5", "CEBUS-04-R6",
-                           "CEBUS-05-R3", "CEBUS-05-R5", "CEBUS-05-R6", 
-                           "CEBUS-06-R4", "CEBUS-06-R5", "CEBUS-06-R6",
-                           "CEBUS-08-R2", "CEBUS-08-R3", "CEBUS-08-R4", "CEBUS-08-R5", 
-                           "CEBUS-09-R2", "CEBUS-09-R3", "CEBUS-09-R4", "CEBUS-09-R5")
-agoutiselect <- agoutiselect_full[agoutiselect_full$uniqueloctag %in% selection_seasontools,]
+agoutiselect <- agoutiselect_full
 
 ## exclude deployment start and end days as our presence and setting up/picking up cameras may have affected the animals' behavior
 agoutiselect <- agoutiselect[agoutiselect$exposure == 24, ]

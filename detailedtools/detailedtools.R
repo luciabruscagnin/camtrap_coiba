@@ -27,6 +27,8 @@ dettools_r <- data.frame("videoID" = dettools$Observation.id, "codingdate" = det
                            dettools$Coder.ID, "subjectID" = dettools$Subject, "behavior" = dettools$Behavior,
                          "modifiers" = dettools$Modifiers, "starttime" = dettools$Start..s., "comment" = dettools$Comment.start)
 
+dettools_r <- dettools_r[!dettools_r$videoID == "femaletooluse1",]
+
 ## creature unique sequence ID that is same for sequences continuing across multiple videos
 ## and different for 2 or 3 sequences in the same video
 ### NOTE: it is crucial that seq_start is the first thing and seq_end the last thing in each sequence!!!! 
@@ -358,6 +360,12 @@ ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color =
   labs(x = "Item type", y = "Number of pounds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
+
+### FROM HERE ON OUT NEED TO CHANGE TO NOT USING DETSEQ_O BUT JUST DETSEQ. 
+# doesnt need to just be opened sequences but can do all?
+range(detseq_o$n_pounds[which(str_detect(detseq_o$item, "almendra") == TRUE & detseq_o$Age == "Juvenile")])
+mean(detseq_o$n_pounds[which(str_detect(detseq_o$item, "almendra") == TRUE & detseq_o$Age == "Juvenile")])
+
 
 ## Age differences in efficiency (number of mistakes)
 boxplot(detseq_o$n_miss ~ detseq_o$Age)
