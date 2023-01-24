@@ -153,6 +153,9 @@ ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violi
                      axis.title = element_text(size = 14)) 
 
 
+# both plots together
+
+
 ## include month to account for seasonality
 ## gam with month by locationtype
 s_gam1 <- gam(nAF/Nadults ~ s(month, by = locationtype, bs = "cc", k = 12) + s(locationfactor, bs= "re"), weights = Nadults, data = agoutiseq_jto, family = binomial())
@@ -257,6 +260,7 @@ ggplot(scrounging, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = "
   labs( x = "Age-sex class", y = "Proportion of opportunities spent scrounging", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
   theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
 
+head(scrounging)
 
 ## right now it is number of scroungers / nr of sequences thye could have scrounged in. 
 ## i think we dont often have multiple scroungers per sequence, but neater way to do this would be nr of sequences with scrounging by this age sex class/ sequences with opportunity
@@ -295,7 +299,6 @@ ggplot(anvildebris, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = 
   geom_text(aes(label=paste(n_debris, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
   labs( x = "Age-sex class", y = "Proportion of opportunities spent consuming anvil debris", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
   theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
-
 
 
 # of the 1180 sequences with foraging on anvil debris, 48 times were by adult females
@@ -349,7 +352,7 @@ summary(em3, type = "response")
 head(agoutiselect2)
 agoutiselect2_jt <- agoutiselect2[agoutiselect2$island == "Jicaron" & agoutiselect2$tool_site == 1,]
 
-
+head(agouticlean)
 
 
 
