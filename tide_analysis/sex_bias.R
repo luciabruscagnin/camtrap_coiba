@@ -348,16 +348,210 @@ summary(em3, type = "response")
 
 #### H3: Females have different diet than males ####
 
-# use dataset per day with 0's in
-head(agoutiselect2)
-agoutiselect2_jt <- agoutiselect2[agoutiselect2$island == "Jicaron" & agoutiselect2$tool_site == 1,]
-
+# use agouticlean dataset
 head(agouticlean)
 
+# this is repurposed code from agouti_cleaning script. Are doing the same thing as before but now separately for adult males and females.
+
+#subset agouti gross dataset to only adult male and adult female sightings
+# only jicaron and tool users
+# drop out uncoded deployments
+agouti_mf <- subset(agoutigross, (agoutigross$agesex == "adult male" | agoutigross$agesex == "adult female") & agoutigross$island == "Jicaron" & agoutigross$tool_site == 1 & 
+                      agoutigross$uniqueloctag %in% codeddeployments_total)
+agouti_mf <- droplevels.data.frame(agouti_mf)
+# now per sequence we want:
+# nr of adult males and females eating almendra, coconut, fruit, invertebrate, other, unknown. --> still need to make
+# nr of adult males and females present (nAF and nAM)
+
+### APPROACH 1: get sequence-level variable of what is mostly being processed in that sequence
+# also get number of capuchins consuming each item per sequence 
+# tool items
+agouti_mf_tools <- agouti_mf[agouti_mf$tooluse == TRUE,]
+tool_items_mf <- as.data.frame(as.matrix(ftable(agouti_mf_tools$sequenceID, agouti_mf_tools$tool_item)))
+# set unknown tool use to 1 for all rows, so that when there are two things being processed (e.g. one unknown, one almendra) you keep the almendra
+# this is crude solution but works
+tool_items_mf$unknown <- 1
+tool_items_mf$seq_toolitem_mf <- colnames(tool_items_mf)[max.col(tool_items_mf,ties.method="first")]  
+# now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
+tool_items_mf$sequenceID <- rownames(tool_items_mf)
+tool_items_mf2 <- tool_items_mf[,c("sequenceID", "seq_toolitem_mf")]
+
+agouti_mf <- left_join(agouti_mf, tool_items_mf2, "sequenceID")
+
+# normal items
+agouti_mf_foraging <- agouti_mf[str_detect(agouti_mf$behaviour, "\\bF:"),]
+normal_items_mf <- as.data.frame(as.matrix(ftable(agouti_mf_foraging$sequenceID, agouti_mf_foraging$normal_item)))
+# set unknown foraging to 1 for all rows, so that when there are two things being processed (e.g. one unknown, one almendra) you keep the almendra
+# this is crude solution but works
+normal_items_mf$unknown <- 1
+normal_items_mf$seq_normalitem_mf <- colnames(normal_items_mf)[max.col(normal_items_mf,ties.method="first")]  
+# now gets the most frequently processed item in that sequence. If they tie it takes the first one first (so almendra, then coconut etc)
+normal_items_mf$sequenceID <- rownames(normal_items_mf)
+normal_items_mf2 <- normal_items_mf[,c("sequenceID", "seq_normalitem_mf")]
+
+agouti_mf <- left_join(agouti_mf, normal_items_mf2, "sequenceID")
+
+# see whether they both forage with and without tools and create variable with most information
+# so what's being foraged irrespective of with or without tools
+agouti_mf$bothforage <- ifelse(is.na(agouti_mf$seq_toolitem_mf) == FALSE & is.na(agouti_mf$seq_normalitem_mf) == FALSE, 1, 0)
+
+# how many cases in which they forage with and without tools
+unique(agouti_mf$behaviour[which(agouti_mf$bothforage == 1)])
+
+# make general item one, if they both use tools and forage normally, tools take precedent
+agouti_mf$seq_item <- ifelse(agouti_mf$bothforage == 0 & is.na(agouti_mf$seq_toolitem_mf) == FALSE, agouti_mf$seq_toolitem_mf,
+                               ifelse(agouti_mf$bothforage == 0 & is.na(agouti_mf$seq_normalitem_mf) == FALSE, agouti_mf$seq_normalitem_mf,
+                                      ifelse(agouti_mf$bothforage == 1 & agouti_mf$seq_toolitem_mf == "unknown", agouti_mf$seq_normalitem_mf,
+                                             ifelse(agouti_mf$bothforage == 1 & agouti_mf$seq_toolitem_mf != "unknown", agouti_mf$seq_toolitem_mf, NA))))
+
+# simplify to categories that overlap
+agouti_mf$seq_item <- ifelse(str_detect(agouti_mf$seq_item, "crab"), "crab", agouti_mf$seq_item)
+
+### APPROACH 2: get number of capuchins foraging certain resource per sequence for each itemtype
+# for how many capuchins are normal item and tool item the same?
+agouti_mf[which(agouti_mf$normal_item == agouti_mf$tool_item),]
+# wouldn't want to inflate this
+agouti_mf$foraging_item1 <- agouti_mf$normal_item
+agouti_mf$foraging_item2 <- agouti_mf$tool_item
+agouti_mf$foraging_item2[which(agouti_mf$normal_item == agouti_mf$tool_item)] <- NA
+
+agouti_mf[which(is.na(agouti_mf$foraging_item1) == FALSE & is.na(agouti_mf$foraging_item2) == FALSE),]
+
+# combine both tool_items and normal_items (if they are not the same)
+# sum normal and tool items. This means that if a capuchin eats two different things they are counted twice
+# so if 4 out of 5 capuchins eat insects in a sequence, still 3 could be eating almendras (cause they eat several things at once)
+# this seems fair. Can also do this otherwise. 
+
+# now do separately for males and females
+agouti_mf_allforaging_f <- agouti_mf[str_detect(agouti_mf$behaviour, "F:") == TRUE & agouti_mf$agesex == "adult female",]
+agouti_mf_allforaging_m <- agouti_mf[str_detect(agouti_mf$behaviour, "F:") == TRUE & agouti_mf$agesex == "adult male",]
+
+
+d1_f <- as.data.frame(as.matrix(ftable(agouti_mf_allforaging_f$sequenceID, agouti_mf_allforaging_f$foraging_item1)))
+d1_m <- as.data.frame(as.matrix(ftable(agouti_mf_allforaging_m$sequenceID, agouti_mf_allforaging_m$foraging_item1)))
+d2_f <- as.data.frame(as.matrix(ftable(agouti_mf_allforaging_f$sequenceID, agouti_mf_allforaging_f$foraging_item2)))
+d2_m <- as.data.frame(as.matrix(ftable(agouti_mf_allforaging_m$sequenceID, agouti_mf_allforaging_m$foraging_item2)))
+d1_f$sequenceID <- rownames(d1_f)
+d2_f$sequenceID <- rownames(d2_f)
+d1_m$sequenceID <- rownames(d1_m)
+d2_m$sequenceID <- rownames(d2_m)
+
+all_items_f <- full_join(d1_f, d2_f, by = "sequenceID")
+all_items_m <- full_join(d1_m, d2_m, by = "sequenceID")
+
+# only make the four categories now
+all_items_f$nr_almendra_f <- all_items_f$almendra.x + all_items_f$almendra.y
+all_items_f$nr_coconut_f <- all_items_f$coconut
+all_items_f$nr_fruit_f <- all_items_f$fruit
+all_items_f$nr_invertebrate_f <- all_items_f$crab + all_items_f$insect
+all_items_f$nr_other_f <- all_items_f$other
+all_items_f$nr_unknown_f <- all_items_f$unknown.x + all_items_f$unknown.y
+
+all_items_f2 <- all_items_f[,c("sequenceID", "nr_almendra_f", "nr_coconut_f", "nr_fruit_f", "nr_invertebrate_f",
+                           "nr_other_f", "nr_unknown_f")]
+
+agouti_mf <- left_join(agouti_mf, all_items_f2, "sequenceID")
+
+all_items_m$nr_almendra_m <- all_items_m$almendra.x + all_items_m$almendra.y
+all_items_m$nr_coconut_m <- all_items_m$coconut.x + all_items_m$coconut.y
+all_items_m$nr_fruit_m <- all_items_m$fruit.x + all_items_m$fruit.y + all_items_m$palm
+all_items_m$nr_invertebrate_m <- all_items_m$hecrab + all_items_m$hwcrab + all_items_m$insect.x + 
+  all_items_m$insect.y + all_items_m$snail + all_items_m$crab
+all_items_m$nr_other_m <- all_items_m$other.x + all_items_m$other.y
+all_items_m$nr_unknown_m <- all_items_m$unknown.x + all_items_m$unknown.y
+
+all_items_m2 <- all_items_m[,c("sequenceID", "nr_almendra_m", "nr_coconut_m", "nr_fruit_m", "nr_invertebrate_m",
+                           "nr_other_m", "nr_unknown_m")]
+str(all_items_m2)
+
+agouti_mf <- left_join(agouti_mf, all_items_m2, "sequenceID")
+
+# drop to sequence level
+agouticlean_mf <- agouti_mf[, !names(agouti_mf) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
+                                                        "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item", "foraging_item1", "foraging_item2",
+                                                        "countNew", "cameraHeading")]
+
+# drop duplicated sequences, necessary form for tidal analyses and data exploration
+agoutisequence_mf <- agouticlean_mf[!duplicated(agouticlean_mf$sequenceID),]
+
+agoutimelt_mf <- melt(agoutisequence_mf, measure.vars = c("nr_almendra_m", "nr_coconut_m", "nr_fruit_m", "nr_invertebrate_m", 
+                                         "nr_almendra_f", "nr_coconut_f", "nr_fruit_f", "nr_invertebrate_f"))
+head(agoutimelt_mf)
+
+agoutimelt_mf$adultsex <- ifelse(agoutimelt_mf$variable %in% c("nr_almendra_m", "nr_coconut_m", "nr_fruit_m", "nr_invertebrate_m"), "male", "female")
+head(agoutimelt_mf)
+agoutimelt_mf$value[which(is.na(agoutimelt_mf$value) == TRUE)] <- 0
+agoutimelt_mf$itemtype <-  sapply(str_split(agoutimelt_mf$variable, "_"), '[', 2)
+agoutimelt_mf$yrday <- yday(agoutimelt_mf$seq_start)
+agoutimelt_mf$npresent <- ifelse(agoutimelt_mf$adultsex == "male", agoutimelt_mf$nAM, agoutimelt_mf$nAF)
+agoutimelt_mf$locationfactor <- as.factor(agoutimelt_mf$locationName)
+agoutimelt_mf$value[which(agoutimelt_mf$value > agoutimelt_mf$npresent)] <- agoutimelt_mf$npresent[which(agoutimelt_mf$value > agoutimelt_mf$npresent)]
+agoutimelt_mf$valueop <- agoutimelt_mf$npresent - agoutimelt_mf$value
+
+for_m1 <- glmer(cbind(value, valueop) ~ adultsex*itemtype+ (1|locationfactor), data = agoutimelt_mf, family = binomial)
+summary(for_m1)
+emmip(for_m1, adultsex ~ itemtype)
+em_form1 <- emmeans(for_m1, ~ adultsex * itemtype)
+summary(em_form1, type = "response")
+
+resfor_gam1 <- gam(value ~ s(yrday, bs = "cc", k = 15, by = interaction(itemtype, adultsex)) + itemtype + adultsex + s(locationfactor, bs = "re") + offset(npresent), 
+                 data = agoutimelt_mf, family = poisson(), method = "REML", knots = list(yrday = c(0.5,366.5)))
+#saveRDS(resfor_gam1, "tide_analysis/ModelRDS/resfor_gam1.RDS")
+summary(resfor_gam1)
+draw(resfor_gam1)
+
+gam.check(resfor_gam1)
+
+
+agoutimelt_mf$locationtype <- as.factor(ifelse(agoutimelt_mf$tool_anvil == 1, "anvil", 
+                                              ifelse(agoutimelt_mf$streambed == 1, "streambed", "random")))
+
+# proportion of individuals foraging on a given item out of those present
+# so if 3 males are present, how many of them are eating almendra, coconut etc
+# look per itemtype sex interaction
+# taking into account that there are different camera locations of different types
+# can them compare proportion of diet taken up by each item for the two sexes
+
+## CHECK THIS WITH BRENDAN! ESPECIALLY THE RANDOM EFFECT STRUCTURE. Do you need to include sex in the random effect? like account for fact that males specifically would be eating a lot of almendras at anvils
+for_bm1 <- brm(value | trials(npresent) ~ adultsex*itemtype + (1|locationtype:locationfactor), data = agoutimelt_mf, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+#saveRDS(for_bm1, "tide_analysis/ModelRDS/for_bm1.RDS")
+summary(for_bm1)
+mcmc_plot(for_bm1)
+plot(conditional_effects(for_bm1))
+mcmc_plot(for_bm1,type = "trace")
+mcmc_plot(for_bm1, type = "acf_bar") # autocorrelation
+pp_check(for_bm1, ndraw = 100) 
+
+# potentially still drop the 0 npresent 0 observations for  females when only males are present and vice versa
+# dont care about when no one is present for the category, so drop all npresent == 0
+agoutimelt_mf_r <- agoutimelt_mf[!agoutimelt_mf$npresent == 0,]
+
+for_bm2 <- brm(value | trials(npresent) ~ adultsex*itemtype + (1|locationtype:locationfactor), data = agoutimelt_mf_r, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+#saveRDS(for_bm2, "tide_analysis/ModelRDS/for_bm2.RDS")
+summary(for_bm2)
+mcmc_plot(for_bm2)
+plot(conditional_effects(for_bm2))
+mcmc_plot(for_bm2,type = "trace")
+mcmc_plot(for_bm2, type = "acf_bar") # autocorrelation
+pp_check(for_bm2, ndraw = 100) 
+
+dietplot <- plot(conditional_effects(for_bm2), plot = FALSE)[[3]]
+
+dietplot  + theme_bw() + 
+  stat_summary(data = agoutimelt_mf_r, inherit.aes = FALSE, aes(x = adultsex, y = value/npresent, fill = itemtype), 
+               geom = "point", fun = "mean", size = 4, shape = 24, alpha = 0.5) +
+  labs(y = "Proportion of capuchins in sequence foraging on item", x = "Sex of adult capuchin") +
+  theme( strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
 
 
 
+sum(agoutisequence_mf$nAF)
+sum(agoutisequence_mf$nr_almendra_f, na.rm = TRUE)
+sum(agoutisequence_mf$nr_invertebrate_f, na.rm = TRUE)
+sum(agoutisequence_mf$nr_coconut_f, na.rm = TRUE)
+sum(agoutisequence_mf$nr_fruit_f, na.rm = TRUE)
 
-
-
-
+# can go to per day if we want to include the 0's. (see script from seasonality analysis script)
+# for more crude analysis on all adult male/female sightings
