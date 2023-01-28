@@ -51,6 +51,13 @@ agoutiseq_jt$locationtype <- as.factor(ifelse(agoutiseq_jt$tool_anvil == 1, "anv
                                               ifelse(agoutiseq_jt$streambed == 1, "streambed", "random")))
 agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
 
+picksetupdays2 <- unique(agoutiseq_jt$seqday[which(agoutiseq_jt$seqday == date(agoutiseq_jt$dep_start) | agoutiseq_jt$seqday == date(agoutiseq_jt$dep_end) | agoutiseq_jt$cameraSetup ==  "True")] )
+agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
+
+# exclude days on which cameras were deployed or picked up (to take away that bias)
+# did not do this now because then we only have 80 displacements vs 94. discuss what we want
+#agoutiseq_jt <- agoutiseq_jt[(agoutiseq_jt$picksetup == 0),]
+
 # look at whether there is seasonality in the birthpeak. When do we mostly see adult females with infants? Maybe consider ratio
 agoutiseq_jt$year <- year(agoutiseq_jt$seqday)
 agoutiseq_jt$yrday <- yday(agoutiseq_jt$seqday)
@@ -104,6 +111,18 @@ s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype + (1|locationfactor), data = a
 summary(s_bm1)
 mcmc_plot(s_bm1)
 
+hypothesis(s_bm1, "Intercept > Intercept + locationtypeanvil", alpha = 0.05)
+hypothesis(s_bm1, "Intercept > Intercept + locationtypestreambed")
+hypothesis(s_bm1, "Intercept +locationtypeanvil < Intercept + locationtypestreambed")
+?hypothesis
+logit2prob <- function(logit){
+  odds <- exp(logit)
+  prob <- odds / (1 + odds)
+  return(prob)
+}
+
+round(logit2prob(0.26-1.46),2)
+
 plot(conditional_effects(s_bm1))
 
 m_type_pred <- s_bm1 %>% 
@@ -112,12 +131,14 @@ m_type_pred <- s_bm1 %>%
                                locationfactor = agoutiseq_jto$locationfactor)) %>% 
   mutate(.epred_prop = .epred/Nadults) # change to proportion
 
-ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
+ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + 
+  geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", size = 1, alpha = 0.5) +
+  geom_hline(yintercept = 0.55, linetype = "dashed", color = "black", size = 1, alpha = 0.5) +
+  geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
   stat_summary(agoutiseq_jto, inherit.aes = FALSE, mapping=aes(x = locationtype, y = nAF/Nadults, color = locationtype), geom = "point", fun = "mean",
                size = 4) + 
   scale_fill_viridis_d(option = "plasma", end = 0.8) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
-  geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", size = 1, alpha = 0.5) +
   scale_y_continuous(lim = c(0,1)) +
   guides(color = "none", fill = "none") +
   labs(x = "Locationtype", y = "Female:male ratio") +
@@ -132,7 +153,13 @@ s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype + (1|locationfactor), data
 summary(s_bm1b)
 mcmc_plot(s_bm1b)
 
+round(logit2prob(-0.48),2)
+
 plot(conditional_effects(s_bm1b))
+
+hypothesis(s_bm1b, "Intercept > Intercept + locationtypeanvil", alpha = 0.05)
+hypothesis(s_bm1b, "Intercept > Intercept + locationtypestreambed", alpha = 0.05)
+hypothesis(s_bm1b, "Intercept + locationtypestreambed > Intercept + locationtypeanvil", alpha = 0.05)
 
 m_type_predb <- s_bm1b %>% 
   epred_draws(newdata = tibble(nAF = agoutiseq_jto$nAF,
@@ -145,7 +172,6 @@ ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violi
                size = 4) + 
   scale_fill_viridis_d(option = "plasma", end = 0.8) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
-  geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", size = 1, alpha = 0.5) +
   scale_y_continuous(lim = c(0,1)) +
   guides(color = "none", fill = "none") +
   labs(x = "Locationtype", y = "Ratio females with infants:females without infants") +
@@ -209,8 +235,32 @@ ggplot(dis_agg, aes(x = variable, y = value, fill = variable)) + geom_bar(stat =
 
 ftable(agoutiseq_jto$nAF[which(agoutiseq_jto$locationtype == "anvil")]) # really hardly even see adult females at anvils
 
+head(dis_agg)
+dis_graph <- rbind(dis_agg, dis_vics)
+dis_graph$type <- c(rep("aggressor", 5), rep("victim", 5))
+dis_opp <- as.data.frame(ftable(agoutiseq_jto$agesex[which(agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$n > 1)]))
+# extract opportunity from above either manually or automatically
+
+dis_graph$opportunity <- c(dis_opp$Freq[1], dis_opp$Freq[2], 
+                           (dis_opp$Freq[6] + dis_opp$Freq[7]+dis_opp$Freq[8]),
+                             (dis_opp$Freq[4] + dis_opp$Freq[5]), 0 ,rep("",5))
+#exclude unknown
+dis_graph <- dis_graph[-c(5,10),]
+dis_graph$variable[3] <-"subadult"
+dis_graph$agesex <- factor(dis_graph$variable, levels = c("adult female", "adult male", "subadult", "juvenile"))
+
+ggplot(dis_graph, aes(x = agesex, y = value, group = type, fill = type)) + geom_bar(stat = "identity", position = position_dodge()) + 
+  geom_text(aes(label=value), position=position_dodge(width=0.9), vjust=-0.25) +
+  geom_text(aes(label = opportunity), position = position_dodge(width = 0), vjust = 1.5) +
+  labs( x = "Age-sex class", y = "Number of times observed", fill = "Role in displacement" ) +   scale_fill_manual(values = cbbPalette) +
+  theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14), legend.text = element_text(size=10)) 
+
 ## CONCLUSION: so no, displacements at anvils are not common, and females are not often displaced. 
 # in the vast majority of the cases, tool users are "alone" at the anvil
+# when are females alone at anvils?
+ftable(agoutiseq_jto$tooluse[which(agoutiseq_jto$nAF > 0 & agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$nAM == 0)])
+# 761 observations of a single adult female at an anvil without adult males there or other adult females
+# 814 observations of adult females at anvils without adult males there: 712 of times no tool use either, 102 times tool use by juveniles
 
 ## P2b: See female tool use (if we do at all) at opportunistic anvils e.g. in streambeds
 # only have one case of female tool use so far
@@ -471,7 +521,7 @@ agouticlean_mf <- agouti_mf[, !names(agouti_mf) %in% c("timestamp","mediaID", "c
                                                         "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item", "foraging_item1", "foraging_item2",
                                                         "countNew", "cameraHeading")]
 
-# drop duplicated sequences, necessary form for tidal analyses and data exploration
+# drop duplicated sequences
 agoutisequence_mf <- agouticlean_mf[!duplicated(agouticlean_mf$sequenceID),]
 
 agoutimelt_mf <- melt(agoutisequence_mf, measure.vars = c("nr_almendra_m", "nr_coconut_m", "nr_fruit_m", "nr_invertebrate_m", 
@@ -528,6 +578,7 @@ agoutimelt_mf_r <- agoutimelt_mf[!agoutimelt_mf$npresent == 0,]
 
 for_bm2 <- brm(value | trials(npresent) ~ adultsex*itemtype + (1|locationtype:locationfactor), data = agoutimelt_mf_r, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(for_bm2, "tide_analysis/ModelRDS/for_bm2.RDS")
+#for_bm2 <- readRDS("tide_analysis/ModelRDS/for_bm2.RDS")
 summary(for_bm2)
 mcmc_plot(for_bm2)
 plot(conditional_effects(for_bm2))
@@ -535,23 +586,26 @@ mcmc_plot(for_bm2,type = "trace")
 mcmc_plot(for_bm2, type = "acf_bar") # autocorrelation
 pp_check(for_bm2, ndraw = 100) 
 
+hypothesis(for_bm2, "Intercept + itemtypecoconut = Intercept + adultsexmale:itemtypecoconut", alpha = 0.05)
+hypothesis(for_bm2, "Intercept + itemtypefruit = Intercept + adultsexmale:itemtypefruit", alpha = 0.05)
+hypothesis(for_bm2, "Intercept + itemtypeinvertebrate = Intercept + adultsexmale:itemtypeinvertebrate", alpha = 0.05)
+
+
 dietplot <- plot(conditional_effects(for_bm2), plot = FALSE)[[3]]
 
 dietplot  + theme_bw() + 
   stat_summary(data = agoutimelt_mf_r, inherit.aes = FALSE, aes(x = adultsex, y = value/npresent, fill = itemtype), 
-               geom = "point", fun = "mean", size = 4, shape = 24, alpha = 0.5) +
+               geom = "point", fun = "mean", size = 2, shape = 24, alpha = 0.5) +
   labs(y = "Proportion of capuchins in sequence foraging on item", x = "Sex of adult capuchin") +
-  theme( strip.text.x = element_text(size = 14), 
-        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
-        legend.title = element_text(size =16), axis.text = element_text(size = 12))
-
-
+  theme( strip.text.x = element_text(size = 12), 
+        axis.title = element_text(size = 14), legend.text =  element_text(size = 10), 
+        legend.title = element_text(size =12), axis.text = element_text(size = 12))
 
 sum(agoutisequence_mf$nAF)
 sum(agoutisequence_mf$nr_almendra_f, na.rm = TRUE)
 sum(agoutisequence_mf$nr_invertebrate_f, na.rm = TRUE)
 sum(agoutisequence_mf$nr_coconut_f, na.rm = TRUE)
 sum(agoutisequence_mf$nr_fruit_f, na.rm = TRUE)
-
+?stat_summary
 # can go to per day if we want to include the 0's. (see script from seasonality analysis script)
 # for more crude analysis on all adult male/female sightings
