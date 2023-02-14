@@ -46,11 +46,6 @@ require(reshape2)
 
 head(agoutisequence_c)
 agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron"),]
-
-agoutiseq_jt$locationtype <- as.factor(ifelse(agoutiseq_jt$tool_anvil == 1, "anvil", 
-                                              ifelse(agoutiseq_jt$streambed == 1, "streambed", "random")))
-agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
-
 picksetupdays2 <- unique(agoutiseq_jt$seqday[which(agoutiseq_jt$seqday == date(agoutiseq_jt$dep_start) | agoutiseq_jt$seqday == date(agoutiseq_jt$dep_end) | agoutiseq_jt$cameraSetup ==  "True")] )
 agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
 
@@ -58,27 +53,18 @@ agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
 # did not do this now because then we only have 80 displacements vs 94. discuss what we want
 #agoutiseq_jt <- agoutiseq_jt[(agoutiseq_jt$picksetup == 0),]
 
-# look at whether there is seasonality in the birthpeak. When do we mostly see adult females with infants? Maybe consider ratio
-agoutiseq_jt$year <- year(agoutiseq_jt$seqday)
-agoutiseq_jt$yrday <- yday(agoutiseq_jt$seqday)
-agoutiseq_jt$week <- week(agoutiseq_jt$seqday)
-
-ggplot(data = agoutiseq_jt, aes(x = month, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean")   + theme_bw()
-ggplot(data = agoutiseq_jt, aes(x = week, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean") + facet_wrap(~year)  + theme_bw()
-
-
-s_gam1 <- gam(nAF_infant/nAF ~ s(yrday, bs = "cc") + factor(year) + s(month, bs = "cc"), data = agoutiseq_jt)
-plot(s_gam1)
-summary(s_gam1)
-
-# differentiate adult females with and without infants
-agoutiseq_jt$nAF_noinfant <- agoutiseq_jt$nAF - agoutiseq_jt$nAF_infant
-
 #### H1 : Females are less terrestrial than males in general #####
 ## P1a: see less adult females on camera traps than adult males (and juveniles?)
 ## P1b: females especially being unlikely to be on the ground in open spaces such as in streams and near the coast
 
 # Attempt one, using only sequences with capuchins in and comparing female/male ratios at the three different location types
+agoutiseq_jt$locationtype <- as.factor(ifelse(agoutiseq_jt$tool_anvil == 1, "anvil", 
+                                              ifelse(agoutiseq_jt$streambed == 1, "streambed", "random")))
+agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
+# differentiate adult females with and without infants
+agoutiseq_jt$nAF_noinfant <- agoutiseq_jt$nAF - agoutiseq_jt$nAF_infant
+agoutiseq_jto$Nadults <- agoutiseq_jto$nAF + agoutiseq_jto$nAM
+
 # only sequences with capuchins
 agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
 agoutiseq_jto <- droplevels.data.frame(agoutiseq_jto)
@@ -86,49 +72,62 @@ agoutiseq_jto <- droplevels.data.frame(agoutiseq_jto)
 ## still need to add in all the grids as random cameras (have way fewer random cams than other locations now)
 ftable(agoutiseq_jto$locationtype)
 
+## add distance to coast (dist2coast.R script for getting distance per camera)
+dist2coast_all <- read.csv("tide_analysis/allcams_gps.csv", header = TRUE)
+dist2coast_all <- dist2coast_all[ , c(2,5)]
+
+agoutiseq_jto <- left_join(agoutiseq_jto, dist2coast_all, by = c("locationfactor" = "camera_id"))
+# standardize distance to coast
+agoutiseq_jto$distcoast_z <- scale(agoutiseq_jto$distcoast, center = TRUE, scale = TRUE)
+
 # so when capuchins are present, what is the ratio of adult females to adult males at the three different location types?
-# what can affect this ratio is: locationfactor, locationtype, season (?)
-
-model2 <- glmer(cbind(nAM, nAF) ~ locationtype + (1|locationfactor), data = agoutiseq_jto, family = binomial)
-summary(model2)
-em2 <- emmeans(model2, "locationtype")
-summary(em2, type = "response")
-
-# is ratio of females with and without infants different at different locations?
-model2b <- glmer(cbind(nAF_noinfant, nAF_infant) ~ locationtype + (1|locationfactor), data = agoutiseq_jto, family = binomial)
-summary(model2b)
-em2b <- emmeans(model2b, "locationtype")
-summary(em2b, type = "response")
-# no 
-
-agoutiseq_jto$Nadults <- agoutiseq_jto$nAF + agoutiseq_jto$nAM
+# what can affect this ratio is: locationfactor, locationtype, season (?), distance from coast
 
 ## stil need to set appropriate priors
+sexbias_prior <- c(prior(normal(0, 1), class = Intercept),
+                 prior(normal(0,1), class = b),
+                 prior(exponential(1), class = sd))
 
-s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype + (1|locationfactor), data = agoutiseq_jto, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+# prior predictive simulation
+sbm1_prior <- brm(nAF | trials(Nadults) ~ locationtype*distcoast_z +  (1|locationfactor), data = agoutiseq_jto, family = binomial, 
+               prior = sexbias_prior, sample_prior = "only", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+
+summary(sbm1_prior)
+prior_summary(sbm1_prior)
+mcmc_plot(sbm1_prior)
+plot(sbm1_prior)
+
+s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast +  (1|locationfactor), data = agoutiseq_jto, family = binomial, 
+             prior = sexbias_prior, iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(s_bm1, "tide_analysis/ModelRDS/s_bm1.RDS")
 #s_bm1 <- readRDS("tide_analysis/ModelRDS/s_bm1.RDS")
 summary(s_bm1)
 mcmc_plot(s_bm1)
+pp_check(s_bm1)
+plot(s_bm1)
+plot(conditional_effects(s_bm1))
 
 hypothesis(s_bm1, "Intercept > Intercept + locationtypeanvil", alpha = 0.05)
 hypothesis(s_bm1, "Intercept > Intercept + locationtypestreambed")
 hypothesis(s_bm1, "Intercept +locationtypeanvil < Intercept + locationtypestreambed")
-?hypothesis
+
+hypothesis(s_bm1, "distcoast < distcoast + locationtypeanvil:distcoast")
+hypothesis(s_bm1, "distcoast < distcoast + locationtypestreambed:distcoast")
+hypothesis(s_bm1, "distcoast + locationtypeanvil:distcoast < distcoast + locationtypestreambed:distcoast")
+
 logit2prob <- function(logit){
   odds <- exp(logit)
   prob <- odds / (1 + odds)
   return(prob)
 }
 
-round(logit2prob(0.26-1.46),2)
-
-plot(conditional_effects(s_bm1))
+round(logit2prob(0.0),2)
 
 m_type_pred <- s_bm1 %>% 
   epred_draws(newdata = tibble(Nadults = agoutiseq_jto$Nadults,
                                locationtype = agoutiseq_jto$locationtype,
-                               locationfactor = agoutiseq_jto$locationfactor)) %>% 
+                               locationfactor = agoutiseq_jto$locationfactor,
+                               distcoast = agoutiseq_jto$distcoast)) %>% 
   mutate(.epred_prop = .epred/Nadults) # change to proportion
 
 ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + 
@@ -145,15 +144,32 @@ ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+# showing effect of distance to coast compared to real data (for now just conditional effects plot with real data overlaid)
+sbm1_distcoast <- plot(conditional_effects(s_bm1), plot = FALSE)[[3]]
+
+#png("tide_analysis/ModelRDS/sbm1_distcoast.png", width = 11, height = 7, units = 'in', res = 300)
+sbm1_distcoast  + theme_bw() + 
+  stat_summary(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
+               geom = "point", fun = "mean", size = 4, alpha = 0.5) +
+  labs(y = "Female:male ratio", x = "Distance to coast", fill = "locationtype") +
+  theme(strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
+#dev.off()  
+
+# can probably also make plot with m_type_pred ( but still have to find out how)
+ggplot(data = m_type_pred, aes(x= distcoast, y = .epred_prop, group = locationtype, color = locationtype)) +
+ stat_summary(geom = "line", fun = "mean")
 
 ## ratio of females with infants to females without
-s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype + (1|locationfactor), data = agoutiseq_jto, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor), data = agoutiseq_jto, family = binomial, 
+              prior = sexbias_prior, iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(s_bm1b, "tide_analysis/ModelRDS/s_bm1b.RDS")
 #s_bm1b <- readRDS("tide_analysis/ModelRDS/s_bm1b.RDS")
 summary(s_bm1b)
 mcmc_plot(s_bm1b)
 
-round(logit2prob(-0.48),2)
+round(logit2prob(-1.45+1.11),2)
 
 plot(conditional_effects(s_bm1b))
 
@@ -164,7 +180,8 @@ hypothesis(s_bm1b, "Intercept + locationtypestreambed > Intercept + locationtype
 m_type_predb <- s_bm1b %>% 
   epred_draws(newdata = tibble(nAF = agoutiseq_jto$nAF,
                                locationtype = agoutiseq_jto$locationtype,
-                               locationfactor = agoutiseq_jto$locationfactor)) %>% 
+                               locationfactor = agoutiseq_jto$locationfactor,
+                               distcoast = agoutiseq_jto$distcoast)) %>% 
   mutate(.epred_prop = .epred/nAF) # change to proportion
 
 ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
@@ -178,19 +195,19 @@ ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violi
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+# distance to coast
+# showing effect of distance to coast compared to real data (for now just conditional effects plot with real data overlaid)
+sbm1b_distcoast <- plot(conditional_effects(s_bm1b), plot = FALSE)[[3]]
 
-# both plots together
-
-
-## include month to account for seasonality
-## gam with month by locationtype
-s_gam1 <- gam(nAF/Nadults ~ s(month, by = locationtype, bs = "cc", k = 12) + s(locationfactor, bs= "re"), weights = Nadults, data = agoutiseq_jto, family = binomial())
-plot(s_gam1)
-
-plot(s_gam1)
-
-## potentially could include distance to coast of cameras (so distcoast*locationtype)
-
+#png("tide_analysis/ModelRDS/sbm1b_distcoast.png", width = 11, height = 7, units = 'in', res = 300)
+sbm1b_distcoast  + theme_bw() + 
+  stat_summary(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF, group = locationtype, color = locationtype, shape = locationtype), 
+               geom = "point", fun = "mean", size = 4, alpha = 0.5) +
+  labs(y = "Ratio females with infants:females without infants", x = "Distance to coast", fill = "locationtype") +
+  theme(strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
+#dev.off()  
 
 ### CONCLUSION: adult females and adult males are seen just as frequently at random cameras, but at streambeds and anvils males are much more frequent
 ## females are not less likely to be on the ground
@@ -395,9 +412,22 @@ summary(em3, type = "response")
 
 ### Displacement rates at anvils and who is being displaced
 
+############################ CODE GRAVEYARD DON'T RUN ###############
+
+# look at whether there is seasonality in the birthpeak. When do we mostly see adult females with infants? Maybe consider ratio
+agoutiseq_jt$year <- year(agoutiseq_jt$seqday)
+agoutiseq_jt$yrday <- yday(agoutiseq_jt$seqday)
+agoutiseq_jt$week <- week(agoutiseq_jt$seqday)
+
+ggplot(data = agoutiseq_jt, aes(x = month, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean")   + theme_bw()
+ggplot(data = agoutiseq_jt, aes(x = week, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean") + facet_wrap(~year)  + theme_bw()
+
+
+s_gam1 <- gam(nAF_infant/nAF ~ s(yrday, bs = "cc") + factor(year) + s(month, bs = "cc"), data = agoutiseq_jt)
+plot(s_gam1)
+summary(s_gam1)
 
 #### H3: Females have different diet than males ####
-
 # use agouticlean dataset
 head(agouticlean)
 
@@ -561,6 +591,10 @@ agoutimelt_mf$locationtype <- as.factor(ifelse(agoutimelt_mf$tool_anvil == 1, "a
 # look per itemtype sex interaction
 # taking into account that there are different camera locations of different types
 # can them compare proportion of diet taken up by each item for the two sexes
+
+agoutimelt_mf$locationtype <- as.factor(ifelse(agoutimelt_mf$tool_anvil == 1, "anvil", 
+                                              ifelse(agoutimelt_mf$streambed == 1, "streambed", "random")))
+agoutimelt_mf$locationtype <- relevel(agoutimelt_mf$locationtype, ref = "random")
 
 ## CHECK THIS WITH BRENDAN! ESPECIALLY THE RANDOM EFFECT STRUCTURE. Do you need to include sex in the random effect? like account for fact that males specifically would be eating a lot of almendras at anvils
 for_bm1 <- brm(value | trials(npresent) ~ adultsex*itemtype + (1|locationtype:locationfactor), data = agoutimelt_mf, family = binomial, iter = 1000, chain = 2, core = 2, backend = "cmdstanr")

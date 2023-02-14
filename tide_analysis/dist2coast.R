@@ -22,7 +22,7 @@ r3 <- as.polygons(r2, dissolve = T, na.rm=T)
 plot(r3)
 
 r4 <-fillHoles(r3, inverse=FALSE)
-writeVector(r4,"tide_analysis/jicaron-ndvi-shoreline-noholes.shp" )
+#writeVector(r4,"tide_analysis/jicaron-ndvi-shoreline-noholes.shp" )
 
 plot(r4)
 
@@ -31,6 +31,9 @@ plot(r4)
 ## NOTE: GPS locations of camera traps have not been shared for conservation purposes
 
 #tidalcams <- read.csv("tide_analysis/tidal_cams_gps.csv", header = TRUE)
+# now added for getting distance to coast for all cameras instead of just tidal cameras. 
+allcams <- read.csv("coiba_camtrap_ids_gps.csv", header =TRUE)
+tidalcams <- allcams[allcams$island == "Jicaron",2:4] #  so this is all cameras now, just for running script below easier. 
 
 coordinates(tidalcams) <- ~longitude + latitude
 plot(tidalcams)
@@ -40,7 +43,7 @@ proj4string(tidalcams) <- CRS("+proj=longlat +datum=WGS84") #first way
 
 # sp transform to get to units with meters
 # project to meters specific to where we are
-tidalcampts <- spTransform(tidalcams, CRS("+init=EPSG:32617"))
+tidalcampts <- sp::spTransform(tidalcams, sp::CRS("+init=EPSG:32617"))
 
 # load in spatial polygon
 r4 <- shapefile("tide_analysis/jicaron-ndvi-shoreline-noholes.shp")
@@ -53,7 +56,10 @@ crs(r4)
 library(rgeos)
 
 d <- gDistance(tidalcampts, as(r5, "SpatialLines"), byid = TRUE) # dist to line
+
+tidalcams2 <- tidalcams
 tidalcams2$distcoast <- as.vector(d)
 
 # write file with distance in meters per camera, to include in dataset
 #write.csv(tidalcams2, "tide_analysis/tidalcams2.csv")
+write.csv(tidalcams2, "tide_analysis/allcams_gps.csv")
