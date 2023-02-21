@@ -9,7 +9,7 @@ require(reshape2)
 Sys.setlocale("LC_ALL", "C")
 
 # check if working directory is set okay
-setwd("~/Git/camtrap_coiba")
+setwd("~/GitHub/camtrap_coiba")
 
 # make list of all tidal csvs in folder
 tidal_files <- list.files(path = "cebaco_island_tide_charts/csvs")

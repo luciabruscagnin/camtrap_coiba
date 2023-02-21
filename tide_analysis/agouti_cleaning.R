@@ -8,7 +8,7 @@ require(magrittr)
 library(tidyverse)
 
 # check if working directory is set okay
-setwd("~/Git/camtrap_coiba")
+setwd("~/GitHub/camtrap_coiba") # change to Git 
 
 #### GENERAL CLEANING ####
 ### SOME NOTES ON UNDERSTANDING THE OUTPUT FROM AGOUTI:

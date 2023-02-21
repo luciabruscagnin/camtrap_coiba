@@ -63,10 +63,11 @@ agoutiseq_jt$locationtype <- as.factor(ifelse(agoutiseq_jt$tool_anvil == 1, "anv
 agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
 # differentiate adult females with and without infants
 agoutiseq_jt$nAF_noinfant <- agoutiseq_jt$nAF - agoutiseq_jt$nAF_infant
-agoutiseq_jto$Nadults <- agoutiseq_jto$nAF + agoutiseq_jto$nAM
+agoutiseq_jt$Nadults <- agoutiseq_jt$nAF + agoutiseq_jt$nAM
 
-# only sequences with capuchins
-agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
+# only sequences with adult capuchins
+# so if we see adults, what is the rate of males to females 
+agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$Nadults > 0,] # CHECK do we want tthis or also include sequences with capuchins, without adults?
 agoutiseq_jto <- droplevels.data.frame(agoutiseq_jto)
 
 ## still need to add in all the grids as random cameras (have way fewer random cams than other locations now)
@@ -105,7 +106,7 @@ summary(s_bm1)
 mcmc_plot(s_bm1)
 pp_check(s_bm1)
 plot(s_bm1)
-plot(conditional_effects(s_bm1))
+plot(conditional_effects(s_bm1, re_formula = NULL)) # re_formula = NULL to include random effects
 
 hypothesis(s_bm1, "Intercept > Intercept + locationtypeanvil", alpha = 0.05)
 hypothesis(s_bm1, "Intercept > Intercept + locationtypestreambed")
@@ -121,18 +122,18 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-round(logit2prob(0.0),2)
+round(logit2prob(0.08),2)
 
 m_type_pred <- s_bm1 %>% 
   epred_draws(newdata = tibble(Nadults = agoutiseq_jto$Nadults,
                                locationtype = agoutiseq_jto$locationtype,
                                locationfactor = agoutiseq_jto$locationfactor,
                                distcoast = agoutiseq_jto$distcoast)) %>% 
-  mutate(.epred_prop = .epred/Nadults) # change to proportion
+  mutate(.epred_prop = .epred/Nadults)
 
 ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + 
-  geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", size = 1, alpha = 0.5) +
-  geom_hline(yintercept = 0.55, linetype = "dashed", color = "black", size = 1, alpha = 0.5) +
+  geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
+  geom_hline(yintercept = 0.55, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
   geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
   stat_summary(agoutiseq_jto, inherit.aes = FALSE, mapping=aes(x = locationtype, y = nAF/Nadults, color = locationtype), geom = "point", fun = "mean",
                size = 4) + 
@@ -158,8 +159,24 @@ sbm1_distcoast  + theme_bw() +
 #dev.off()  
 
 # can probably also make plot with m_type_pred ( but still have to find out how)
-ggplot(data = m_type_pred, aes(x= distcoast, y = .epred_prop, group = locationtype, color = locationtype)) +
- stat_summary(geom = "line", fun = "mean")
+ce2 = m_type_pred %>%
+  group_by(distcoast, locationtype) %>%
+  reframe(enframe(quantile(.epred_prop, probs=c(0.025,0.5,0.975)))) %>%
+  pivot_wider(names_from=name, values_from=value) %>%
+  ggplot(aes(distcoast, colour=locationtype, fill= locationtype)) +
+  geom_point(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, colour = locationtype), alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
+               geom = "point", fun = "mean", size = 4, alpha = 0.5) +
+  geom_ribbon(aes(ymin=`2.5%`, ymax=`97.5%`), alpha=0.3, size=0) +
+  geom_line(aes(y=`50%`)) +
+  labs(title="Reproduce conditional_effects",
+       fill="grade", colour="grade", y=NULL) +
+  guides(colour="none", fill="none") + facet_wrap(~locationtype) + theme_bw()
+
+plot(ce2)
+
+## is jagged because this is taking into account the random effects. Need to fix this? Discuss with Brendan
+# https://discourse.mc-stan.org/t/difference-between-conditional-effects-plot-and-predicted-probability-plot/27312/3
 
 ## ratio of females with infants to females without
 s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor), data = agoutiseq_jto, family = binomial, 
