@@ -18,6 +18,10 @@ require(ggplot2)
 require(mgcv)
 require(gratia)
 require(reshape2)
+require(tidyverse)
+require(marginaleffects)
+require(broom.mixed)
+require(janitor)
 
 ## Questions/Hypotheses
 
@@ -98,6 +102,9 @@ prior_summary(sbm1_prior)
 mcmc_plot(sbm1_prior)
 plot(sbm1_prior)
 
+#### Model 1: comparing female to male sex ratio at different locationtypes #######
+
+## NOTE: still consider running it with 1 + locationtype*distcoast instead, so not having random cameras as intercept but having a grand mean as intercept
 s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast +  (1|locationfactor), data = agoutiseq_jto, family = binomial, 
              prior = sexbias_prior, iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(s_bm1, "tide_analysis/ModelRDS/s_bm1.RDS")
@@ -106,7 +113,7 @@ summary(s_bm1)
 mcmc_plot(s_bm1)
 pp_check(s_bm1)
 plot(s_bm1)
-plot(conditional_effects(s_bm1, re_formula = NULL)) # re_formula = NULL to include random effects
+plot(conditional_effects(s_bm1, re_formula = NA)) # re_formula = NULL to include random effects
 
 hypothesis(s_bm1, "Intercept > Intercept + locationtypeanvil", alpha = 0.05)
 hypothesis(s_bm1, "Intercept > Intercept + locationtypestreambed")
@@ -178,7 +185,235 @@ plot(ce2)
 ## is jagged because this is taking into account the random effects. Need to fix this? Discuss with Brendan
 # https://discourse.mc-stan.org/t/difference-between-conditional-effects-plot-and-predicted-probability-plot/27312/3
 
-## ratio of females with infants to females without
+##### MARGINAL EFFECTS ####
+
+# working with s_bm1
+summary(s_bm1)
+# want to get to marginal effects (average across all cameras) instead of conditional effect (effect at average camera)
+
+# pull out parameters that we care about
+r_fit <- s_bm1 %>%
+  tidy() %>%
+  split(~term)
+
+B0 <- r_fit$`(Intercept)`$estimate # average sex ratio across all sequences in random cams
+B1 <- r_fit$locationtypeanvil$estimate # effect of anvil on sex ratio across all sequences
+B2 <- r_fit$locationtypestreambed$estimate # effect of streambed across all sequences
+B3 <- r_fit$distcoast$estimate # effect of distcoast on random cams
+B4 <- r_fit$`locationtypeanvil:distcoast`$estimate # interaction anvil and distcoast
+B5 <- r_fit$`locationtypestreambed:distcoast`$estimate #interaction streambed and distcoast
+sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
+
+# visualize camera-specific offsets 
+# per location type?
+s_bm1 %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor[which(agoutiseq_jto$locationtype == "random")],
+                       locationtype = "random",
+                       Nadults = agoutiseq_jto$Nadults[which(agoutiseq_jto$locationtype =="random")],
+                       distcoast = agoutiseq_jto$distcoast[which(agoutiseq_jto$locationtype == "random")])) %>%
+  mutate(offset = B0 - .linpred) %>%
+  ungroup() %>% 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), offset, .fun = mean)) %>% 
+  ggplot(aes(x = offset, y = locationfactor)) +
+  geom_vline(xintercept = 0, color = "black") +
+  stat_pointinterval(color = "red") +
+  labs(x = "*b*<sub>0</sub> offset from β<sub>0</sub>") 
+
+
+
+s_bm1 %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor[which(agoutiseq_jto$locationtype == "random")],
+                       locationtype = "random",
+                       Nadults = agoutiseq_jto$Nadults[which(agoutiseq_jto$locationtype =="random")],
+                       distcoast = agoutiseq_jto$distcoast[which(agoutiseq_jto$locationtype == "random")])) %>%
+  mutate(linpredprob = logit2prob(.linpred)) %>%
+  mutate(offset = B0 + linpredprob) %>%
+  ungroup() %>% 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), offset, .fun = mean)) %>% 
+  ggplot(aes(x = offset, y = locationfactor)) +
+  geom_vline(xintercept = 0, color = "black") +
+  stat_pointinterval(color = "red") +
+  labs(x = "*b*<sub>0</sub> offset from β<sub>0</sub>") 
+
+mean(agoutiseq_jto$nAF[which(agoutiseq_jto$locationfactor == "J-RAN-05")]/agoutiseq_jto$Nadults[which(agoutiseq_jto$locationfactor == "J-RAN-05")])
+B0
+test <- s_bm1 %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor[which(agoutiseq_jto$locationtype == "random")],
+                       locationtype = "random",
+                       Nadults = agoutiseq_jto$Nadults[which(agoutiseq_jto$locationtype =="random")],
+                       distcoast = agoutiseq_jto$distcoast[which(agoutiseq_jto$locationtype == "random")])) %>%
+  mutate(linpredprob = logit2prob(.linpred)) %>%
+  mutate(offset = B0 - linpredprob)
+mean(test$.linpred[which(test$locationfactor == "J-RAN-05")]) - B0
+mean(test$offset[which(test$locationfactor == "J-RAN-05")])
+
+
+s_bm1 %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor,
+                       locationtype = agoutiseq_jto$locationtype,
+                       Nadults = agoutiseq_jto$Nadults,
+                       distcoast = agoutiseq_jto$distcoast)) %>%
+  mutate(offset = B0 + .linpred) %>%
+  ungroup() %>% 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), offset, .fun = mean)) %>%
+  ggplot(aes(x = offset, y = locationfactor, color = locationtype)) +
+  geom_vline(xintercept = 0, color = "red", linewidth = 1) +
+  geom_vline(xintercept = B1 - B0, color = "green", linewidth = 1) +
+  geom_vline(xintercept = B2 - B0, color = "blue", linewidth = 1) +
+  stat_pointinterval() +
+  theme_bw() +
+  labs(x = "Camera offset from sex ratio at average streambed camera (0)")
+## this is not great
+## need to consider making 3 separate plots, where 0 reflects the average of that specific camera type
+# and the offset is each offset from that point
+# now this information IS in here but it is not totally clear. Now the green line is average anvil cam (offset to the average streambed cam)
+# and the red line is the average streambed cam
+
+## alternatively I could imagine not plotting the offset but rather something like this??? 
+s_bm1 %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor,
+                       locationtype = agoutiseq_jto$locationtype,
+                       Nadults = agoutiseq_jto$Nadults,
+                       distcoast = agoutiseq_jto$distcoast)) %>%
+  ungroup() %>% 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
+  ggplot(aes(x = logit2prob(.linpred), y = locationfactor, color = locationtype)) +
+  geom_vline(xintercept = logit2prob(B0), color = "red", linewidth = 1) +
+  geom_vline(xintercept = logit2prob(B1+B0), color = "green", linewidth = 1) +
+  geom_vline(xintercept = logit2prob(B2+B0), color = "blue", linewidth = 1) +
+  stat_pointinterval() +
+  theme_bw() +
+  labs(x = "Variation in sex ratio at each camera location, horizontal lines represent the average cameras")
+### but this also does not look correct!! need to figure out how to do this on the logit scale. 
+# logically each camera should have a normal distribution around the mean for that camera (but distcoast is playing into this!! that's the problem I think)
+
+
+## LINK FUNCTION TO GET TO LINEAR SPACE
+ggplot() +
+  stat_function(fun = ~dnorm(., mean = B0, sd = sigma_0^2),
+                geom = "area", fill = "grey") +
+  labs(x = "Possible cluster-specific intercepts", y = "Density")
+# the example guy https://www.andrewheiss.com/blog/2022/11/29/conditional-marginal-marginaleffects/#magnussons-data-and-model-the-effect-of-a-treatment-on-gambling-losses has a normal distribution
+# whereas I have an exponential. huh
+
+## use marginal effects to marginalize across existing random effects
+predictions(s_bm1,
+            newdata = datagrid(locationtype = c("random", "anvil", "streambed"),
+                               locationfactor = unique,
+                               distcoast = unique),
+            by = "locationtype",
+            re_formula = NULL)
+## NOT SURE HOW TO INCORPORATE DISTCOAST HERE, IN ORIGINAL EXAMPLE WOULD ONLY HAVE LOCATIONTYPE AND LOCATIONFACTOR
+predictions(s_bm1,
+            newdata = datagrid(locationtype = "random",
+                               locationfactor = unique,
+                               distcoast = unique),
+            by = "distcoast",
+            re_formula = NULL)
+
+
+
+
+marginal_preds <- predictions(
+  s_bm1,
+  newdata = datagrid(locationtype = c("random", "anvil", "streambed"),
+                     locationfactor = unique),
+  by = "locationtype",
+  re_formula = NULL
+) %>% 
+  posteriordraws()
+
+head(marginal_preds)
+
+## this is the first violin plot but then differently
+p_marginal_preds <- marginal_preds %>% 
+  ggplot(aes(x = draw, fill = locationtype)) +
+  stat_halfeye() +
+  labs(x = "Sex ratio female to male", y = "Density", fill = "Location type",
+       title = "Marginal population-level means",
+       subtitle = "Random effects averaged / marginalized / integrated") +
+  theme_bw()
+p_marginal_preds
+
+## if we do it per locationtype 
+# this is assuming each camera can be at each distance at each locationtype (so also simulating distant anvil cameras)
+marginal_preds2 <- predictions(
+  s_bm1,
+  newdata = datagrid(locationtype = "random",
+                     locationfactor = unique,
+                     distcoast = unique),
+  by = "distcoast",
+  re_formula = NULL
+) %>% 
+  posteriordraws()
+
+head(marginal_preds2)
+
+p_random <- ggplot(data = marginal_preds2, aes(x = distcoast, col = "red")) +
+  geom_point(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, col = "red"), alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, col = "red"), 
+               geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill = "red"), alpha=0.3) +
+  geom_line(aes(y=estimate), linewidth = 1) +
+  labs(subtitle="Random cameras",
+       y = "Female:male ratio", x = NULL) +
+  guides(colour="none", fill="none") + theme_bw()
+p_random
+
+# anvil
+marginal_preds3 <- predictions(
+  s_bm1,
+  newdata = datagrid(locationtype = "anvil",
+                     locationfactor = unique,
+                     distcoast = unique),
+  by = "distcoast",
+  re_formula = NULL
+) %>% 
+  posteriordraws()
+
+head(marginal_preds3)
+
+p_anvil <- ggplot(data = marginal_preds3, aes(x = distcoast)) +
+  geom_point(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = "darkgreen", alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = "darkgreen", 
+               geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = "darkgreen", colour = "darkgreen", alpha=0.3) +
+  geom_line(aes(y=estimate), linewidth = 1, colour = "darkgreen") +
+  labs(subtitle="Anvil cameras",
+         y=NULL, x ="Distance of camera from coast (meters)") +
+  guides(colour="none", fill="none") + theme_bw() +  theme(axis.title.y=element_blank(),
+                                                           axis.text.y=element_blank(),
+                                                           axis.ticks.y=element_blank())
+p_anvil
+
+# anvil
+marginal_preds4 <- predictions(
+  s_bm1,
+  newdata = datagrid(locationtype = "streambed",
+                     locationfactor = unique,
+                     distcoast = unique),
+  by = "distcoast",
+  re_formula = NULL
+) %>% 
+  posteriordraws()
+
+head(marginal_preds4)
+
+p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast)) +
+  geom_point(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = "blue", alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = "blue", 
+               geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = "blue", colour = "blue", alpha=0.3) +
+  geom_line(aes(y=estimate), linewidth = 1, colour = "blue") + 
+  labs(subtitle="Streambed cameras", y=NULL, x = NULL, shape = "data_") +
+  theme_bw() +  theme(axis.title.y=element_blank(),
+                                                           axis.text.y=element_blank(),
+                                                           axis.ticks.y=element_blank())
+p_streambed
+
+plot(p_random + p_anvil + p_streambed)
+
+### Model 2: ratio of females with infants to females without #########
 s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor), data = agoutiseq_jto, family = binomial, 
               prior = sexbias_prior, iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(s_bm1b, "tide_analysis/ModelRDS/s_bm1b.RDS")
@@ -428,6 +663,8 @@ summary(em3, type = "response")
 ### Anvil debris consumption of adult females compared to juveniles and adult males
 
 ### Displacement rates at anvils and who is being displaced
+
+
 
 ############################ CODE GRAVEYARD DON'T RUN ###############
 
