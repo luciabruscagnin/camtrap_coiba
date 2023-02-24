@@ -71,8 +71,9 @@ agoutiseq_jt$Nadults <- agoutiseq_jt$nAF + agoutiseq_jt$nAM
 
 # only sequences with adult capuchins
 # so if we see adults, what is the rate of males to females 
-agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$Nadults > 0,] # CHECK do we want tthis or also include sequences with capuchins, without adults?
-agoutiseq_jto <- droplevels.data.frame(agoutiseq_jto)
+agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
+agoutiseq_jto1 <- agoutiseq_jt[agoutiseq_jt$Nadults > 0,] # CHECK do we want tthis or also include sequences with capuchins, without adults?
+agoutiseq_jto1 <- droplevels.data.frame(agoutiseq_jto)
 
 ## still need to add in all the grids as random cameras (have way fewer random cams than other locations now)
 ftable(agoutiseq_jto$locationtype)
@@ -81,9 +82,9 @@ ftable(agoutiseq_jto$locationtype)
 dist2coast_all <- read.csv("tide_analysis/allcams_gps.csv", header = TRUE)
 dist2coast_all <- dist2coast_all[ , c(2,5)]
 
-agoutiseq_jto <- left_join(agoutiseq_jto, dist2coast_all, by = c("locationfactor" = "camera_id"))
+agoutiseq_jto1 <- left_join(agoutiseq_jto1, dist2coast_all, by = c("locationfactor" = "camera_id"))
 # standardize distance to coast
-agoutiseq_jto$distcoast_z <- scale(agoutiseq_jto$distcoast, center = TRUE, scale = TRUE)
+agoutiseq_jto1$distcoast_z <- scale(agoutiseq_jto1$distcoast, center = TRUE, scale = TRUE)
 
 # so when capuchins are present, what is the ratio of adult females to adult males at the three different location types?
 # what can affect this ratio is: locationfactor, locationtype, season (?), distance from coast
@@ -94,7 +95,7 @@ sexbias_prior <- c(prior(normal(0, 1), class = Intercept),
                  prior(exponential(1), class = sd))
 
 # prior predictive simulation
-sbm1_prior <- brm(nAF | trials(Nadults) ~ locationtype*distcoast_z +  (1|locationfactor), data = agoutiseq_jto, family = binomial, 
+sbm1_prior <- brm(nAF | trials(Nadults) ~ locationtype*distcoast_z +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
                prior = sexbias_prior, sample_prior = "only", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
 
 summary(sbm1_prior)
@@ -105,7 +106,7 @@ plot(sbm1_prior)
 #### Model 1: comparing female to male sex ratio at different locationtypes #######
 
 ## NOTE: still consider running it with 1 + locationtype*distcoast instead, so not having random cameras as intercept but having a grand mean as intercept
-s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast +  (1|locationfactor), data = agoutiseq_jto, family = binomial, 
+s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
              prior = sexbias_prior, iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
 # s_bm1 <- add_criterion(s_bm1, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
 # saveRDS(s_bm1, "tide_analysis/ModelRDS/s_bm1.RDS")
@@ -143,19 +144,18 @@ round(logit2prob(-0.09-0.58),2)
 scales::viridis_pal(end = 0.8)(3) 
 cols <- c( "#440154FF", "#7AD151FF", "#2A788EFF" )
 
-
 m_type_pred <- s_bm1 %>% 
-  epred_draws(newdata = tibble(Nadults = agoutiseq_jto$Nadults,
-                               locationtype = agoutiseq_jto$locationtype,
-                               locationfactor = agoutiseq_jto$locationfactor,
-                               distcoast = agoutiseq_jto$distcoast)) %>% 
+  epred_draws(newdata = tibble(Nadults = agoutiseq_jto1$Nadults,
+                               locationtype = agoutiseq_jto1$locationtype,
+                               locationfactor = agoutiseq_jto1$locationfactor,
+                               distcoast = agoutiseq_jto1$distcoast)) %>% 
   mutate(.epred_prop = .epred/Nadults)
 
 ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + 
   geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
   geom_hline(yintercept = 0.55, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
   geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
-  stat_summary(agoutiseq_jto, inherit.aes = FALSE, mapping=aes(x = locationtype, y = nAF/Nadults, color = locationtype), geom = "point", fun = "mean",
+  stat_summary(agoutiseq_jto1, inherit.aes = FALSE, mapping=aes(x = locationtype, y = nAF/Nadults, color = locationtype), geom = "point", fun = "mean",
                size = 4) + 
   scale_fill_manual(values = cols) +
   scale_color_manual(values = cols) +
@@ -170,7 +170,7 @@ sbm1_distcoast <- plot(conditional_effects(s_bm1), plot = FALSE)[[3]]
 
 #png("tide_analysis/ModelRDS/sbm1_distcoast.png", width = 11, height = 7, units = 'in', res = 300)
 sbm1_distcoast  + theme_bw() + 
-  stat_summary(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
+  stat_summary(data = agoutiseq_jto1, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
                geom = "point", fun = "mean", size = 4, alpha = 0.5) +
   labs(y = "Female:male ratio", x = "Distance to coast", fill = "locationtype") +
   theme(strip.text.x = element_text(size = 14), 
@@ -184,8 +184,8 @@ ce2 = m_type_pred %>%
   reframe(enframe(quantile(.epred_prop, probs=c(0.025,0.5,0.975)))) %>%
   pivot_wider(names_from=name, values_from=value) %>%
   ggplot(aes(distcoast, colour=locationtype, fill= locationtype)) +
-  geom_point(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, colour = locationtype), alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
+  geom_point(data = agoutiseq_jto1, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, colour = locationtype), alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto1, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
                geom = "point", fun = "mean", size = 4, alpha = 0.5) +
   geom_ribbon(aes(ymin=`2.5%`, ymax=`97.5%`), alpha=0.3, size=0) +
   geom_line(aes(y=`50%`)) +
@@ -221,10 +221,10 @@ sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex 
 # per location type?
 
 s_bm1 %>%
-  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor[which(agoutiseq_jto$locationtype == "random")],
+  linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor[which(agoutiseq_jto1$locationtype == "random")],
                        locationtype = "random",
-                       Nadults = agoutiseq_jto$Nadults[which(agoutiseq_jto$locationtype =="random")],
-                       distcoast = agoutiseq_jto$distcoast[which(agoutiseq_jto$locationtype == "random")])) %>%
+                       Nadults = agoutiseq_jto1$Nadults[which(agoutiseq_jto1$locationtype =="random")],
+                       distcoast = agoutiseq_jto1$distcoast[which(agoutiseq_jto1$locationtype == "random")])) %>%
   mutate(linpredprob = logit2prob(.linpred)) %>%
   mutate(offset = B0 + linpredprob) %>%
   ungroup() %>% 
@@ -236,10 +236,10 @@ s_bm1 %>%
 
 # this one functions now
 s_bm1 %>%
-  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor,
-                       locationtype = agoutiseq_jto$locationtype,
-                       Nadults = agoutiseq_jto$Nadults,
-                       distcoast = agoutiseq_jto$distcoast)) %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
+                       locationtype = agoutiseq_jto1$locationtype,
+                       Nadults = agoutiseq_jto1$Nadults,
+                       distcoast = agoutiseq_jto1$distcoast)) %>%
   mutate(offset = B0 + .linpred) %>%
   ungroup() %>% 
   mutate(locationfactor = fct_reorder(factor(locationfactor), offset, .fun = mean)) %>%
@@ -259,23 +259,26 @@ s_bm1 %>%
 
 ## alternatively I could imagine not plotting the offset but rather something like this??? 
 s_bm1 %>%
-  linpred_draws(tibble(locationfactor = agoutiseq_jto$locationfactor,
-                       locationtype = agoutiseq_jto$locationtype,
-                       Nadults = agoutiseq_jto$Nadults,
-                       distcoast = agoutiseq_jto$distcoast)) %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
+                       locationtype = agoutiseq_jto1$locationtype,
+                       Nadults = agoutiseq_jto1$Nadults,
+                       distcoast = agoutiseq_jto1$distcoast)) %>%
   ungroup() %>% 
   mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
   ggplot(aes(x = logit2prob(.linpred), y = locationfactor, color = locationtype)) +
   scale_color_manual(values = cols) +
   geom_vline(xintercept = logit2prob(B0), color = cols[1], linewidth = 1) +
-  geom_vline(xintercept = logit2prob(B1+B0), color = cols[2], linewidth = 1) +
-  geom_vline(xintercept = logit2prob(B2+B0), color = cols[3], linewidth = 1) +
+  geom_vline(xintercept = logit2prob(B0+B1), color = cols[2], linewidth = 1) +
+  geom_vline(xintercept = logit2prob(B0+B2), color = cols[3], linewidth = 1) +
   stat_pointinterval() +
   theme_bw() +
-  labs(x = "Variation in sex ratio at each camera location, horizontal lines represent the average cameras")
+  labs(x = "Model estimation of female:male ratio", y = "Camera location", color = "Location type") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16))
 ### but this also does not look correct!! need to figure out how to do this on the logit scale. 
 # logically each camera should have a normal distribution around the mean for that camera (but distcoast is playing into this!! that's the problem I think)
-
 
 ## LINK FUNCTION TO GET TO LINEAR SPACE
 ggplot() +
@@ -339,8 +342,8 @@ marginal_preds2 <- predictions(
 head(marginal_preds2)
 
 p_random <- ggplot(data = marginal_preds2, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults),  col = cols[1], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), col = cols[1], 
+  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults),  col = cols[1], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), col = cols[1], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high), fill = cols[1], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, col = cols[1]) +
@@ -366,8 +369,8 @@ marginal_preds3 <- predictions(
 head(marginal_preds3)
 
 p_anvil <- ggplot(data = marginal_preds3, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[2], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[2], 
+  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[2], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[2], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = cols[2], colour = cols[2], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, colour = cols[2]) +
@@ -396,8 +399,8 @@ marginal_preds4 <- predictions(
 head(marginal_preds4)
 
 p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[3], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto[which(agoutiseq_jto$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[3], 
+  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[3], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[3], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = cols[3], colour = cols[3], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, colour = cols[3]) + 
@@ -474,13 +477,10 @@ r_fit <- s_bm1b %>%
   tidy() %>%
   split(~term)
 
-B0 <- r_fit$`(Intercept)`$estimate # average infant across all sequences in random cams
-B1 <- r_fit$locationtypeanvil$estimate # effect of anvil on sex ratio across all sequences
-B2 <- r_fit$locationtypestreambed$estimate # effect of streambed across all sequences
-B3 <- r_fit$distcoast$estimate # effect of distcoast on random cams
-B4 <- r_fit$`locationtypeanvil:distcoast`$estimate # interaction anvil and distcoast
-B5 <- r_fit$`locationtypestreambed:distcoast`$estimate #interaction streambed and distcoast
-sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
+B0_b <- r_fit$`(Intercept)`$estimate # average infant across all sequences in random cams
+B1_b <- r_fit$locationtypeanvil$estimate # effect of anvil on sex ratio across all sequences
+B2_b <- r_fit$locationtypestreambed$estimate # effect of streambed across all sequences
+sigma_0b <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
 # SOMETHING IS GOING WRONG HERE, FIX THIS!!
@@ -505,6 +505,28 @@ s_bm1b %>%
 # and the offset is each offset from that point
 # now this information IS in here but it is not totally clear. Now the green line is average anvil cam (offset to the average streambed cam)
 # and the red line is the average streambed cam
+
+s_bm1b %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
+                       locationtype = agoutiseq_jto2$locationtype,
+                       nAF = agoutiseq_jto2$nAF,
+                       distcoast = agoutiseq_jto2$distcoast)) %>%
+  ungroup() %>% 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
+  ggplot(aes(x = logit2prob(.linpred), y = locationfactor, color = locationtype)) +
+  scale_color_manual(values = cols) +
+  geom_vline(xintercept = logit2prob(B0_b), color = cols[1], linewidth = 1) +
+  geom_vline(xintercept = logit2prob(B0_b+B1_b), color = cols[2], linewidth = 1) +
+  geom_vline(xintercept = logit2prob(B0_b+B2_b), color = cols[3], linewidth = 1) +
+  stat_pointinterval() +
+  theme_bw() +
+  labs(x = "Model estimation of female with infants:female without infants ratio", y = "Camera location", color = "Location type") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16))
+### but this also does not look correct!! need to figure out how to do this on the logit scale. 
+
 
 test <- s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
@@ -619,7 +641,7 @@ plot(p_randomb + p_anvilb + p_streambedb)
 
 
 
-z### CONCLUSION: adult females and adult males are seen just as frequently at random cameras, but at streambeds and anvils males are much more frequent
+### CONCLUSION: adult females and adult males are seen just as frequently at random cameras, but at streambeds and anvils males are much more frequent
 ## females are not less likely to be on the ground
 
 #### H2: Females are rarely observed tool-using because of within-group competition ####
@@ -640,6 +662,7 @@ dis_vics <- melt(dis_vics[, c("adult female", "adult male", "subadult", "juvenil
 dis_vics$prop <- dis_vics$value / 94
 
 cbbPalette <- c("#CC79A7",  "#56B4E9", "#E69F00", "#009E73", "#F0E442" )
+
 
 ggplot(dis_vics, aes(x = variable, y = value, fill = variable)) + geom_bar(stat = "identity") + 
   geom_text(aes(label=value), position=position_dodge(width=0.9), vjust=-0.25) +
@@ -678,8 +701,8 @@ dis_graph$agesex <- factor(dis_graph$variable, levels = c("adult female", "adult
 
 ggplot(dis_graph, aes(x = agesex, y = value, group = type, fill = type)) + geom_bar(stat = "identity", position = position_dodge()) + 
   geom_text(aes(label=value), position=position_dodge(width=0.9), vjust=-0.25) +
-  geom_text(aes(label = opportunity), position = position_dodge(width = 0), vjust = 1.5) +
-  labs( x = "Age-sex class", y = "Number of times observed", fill = "Role in displacement" ) +   scale_fill_manual(values = cbbPalette) +
+  geom_text(aes(label = opportunity), position = position_dodge(width = 0), vjust = -0.5, fontface = "italic" ) +
+  labs( x = "Age-sex class", y = "Number of times observed", fill = "Role in displacement" ) +   scale_fill_grey() +
   theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14), legend.text = element_text(size=10)) 
 
 ## CONCLUSION: so no, displacements at anvils are not common, and females are not often displaced. 
@@ -739,6 +762,14 @@ ggplot(scrounging, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = "
 
 head(scrounging)
 
+#log odds instead of real scale
+scrounging$logodds <- log(scrounging$prop/(1-scrounging$prop))
+
+ggplot(scrounging, aes(x = agesex, y = logodds, fill = agesex)) + geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label=paste(n_scrounge, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs( x = "Age-sex class", y = "Log-odds of proportion of opportunities spent scrounging", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+  theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
+
 ## right now it is number of scroungers / nr of sequences thye could have scrounged in. 
 ## i think we dont often have multiple scroungers per sequence, but neater way to do this would be nr of sequences with scrounging by this age sex class/ sequences with opportunity
 ## or alternatively, nr of scroungers/ nr of this age sex class that could have been scroungers 
@@ -777,6 +808,13 @@ ggplot(anvildebris, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = 
   labs( x = "Age-sex class", y = "Proportion of opportunities spent consuming anvil debris", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
   theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
 
+#log odds instead of real scale
+anvildebris$logodds <- log(anvildebris$prop/(1-anvildebris$prop))
+
+ggplot(anvildebris, aes(x = agesex, y = logodds, fill = agesex)) + geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label=paste(n_debris, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs( x = "Age-sex class", y =  "Log-odds of proportion of opportunities spent consuming anvil debris", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+  theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
 
 # of the 1180 sequences with foraging on anvil debris, 48 times were by adult females
 
@@ -1055,3 +1093,8 @@ sum(agoutisequence_mf$nr_fruit_f, na.rm = TRUE)
 ?stat_summary
 # can go to per day if we want to include the 0's. (see script from seasonality analysis script)
 # for more crude analysis on all adult male/female sightings
+
+
+agouticlean[which(str_detect(agouticlean$behaviour, "Infant") == TRUE & 
+              str_detect(agouticlean$behaviour,  "TAF") == TRUE),]
+head(agouticlean)
