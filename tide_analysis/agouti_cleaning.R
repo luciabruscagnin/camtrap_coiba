@@ -153,7 +153,11 @@ agoutigross$lifeStage[which(agoutigross$capuchin == TRUE & agoutigross$lifeStage
 # INK =  db68538d-ff60-433a-bf94-e9a886a6d23c
 agoutigross$lifeStage <- ifelse(agoutigross$individualID == "66437816-fdf4-4fde-9dbd-8591bfe8cb1c" & year(agoutigross$seq_start) > 2018 & year(agoutigross$seq_start) < 2022, "subadult", 
                                 ifelse(agoutigross$individualID == "66437816-fdf4-4fde-9dbd-8591bfe8cb1c" & year(agoutigross$seq_start) > 2021, "adult",
-                                       ifelse(agoutigross$individualID == "db68538d-ff60-433a-bf94-e9a886a6d23c" & year(agoutigross$seq_start) > 2020, "adult", agoutigross$lifeStage)))
+                                       ifelse(agoutigross$individualID == "db68538d-ff60-433a-bf94-e9a886a6d23c" & year(agoutigross$seq_start) > 2020, "adult", 
+                                              ifelse(agoutigross$individualID == "c6114eb1-b53e-4494-9565-0dd621ff88b9" & year(agoutigross$seq_start) > 2019 & year(agoutigross$seq_start) < 2022, "subadult",
+                                                     ifelse(agoutigross$individualID == "c6114eb1-b53e-4494-9565-0dd621ff88b9" & year(agoutigross$seq_start) > 2021, "adult", agoutigross$lifeStage)))))
+
+## CHECK THIS!!
 
 
 # make agesex variable that is paste of sex and life stage

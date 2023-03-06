@@ -17,6 +17,8 @@ library(fitdistrplus)
 
 # load tsv file with aggregated BORIS output
 dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.tsv", sep = "\t")
+# Meredith's csv
+#dettools <- read.csv("detailedtools/EXP-ANV-01-R11_MKWC.csv")
 
 # sort so that observations from the same video are clustered together and it's chronological
 dettools <- dettools[order(dettools$Observation.id),]
