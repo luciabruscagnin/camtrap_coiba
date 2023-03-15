@@ -13,7 +13,7 @@ require(tidybayes)
 library(fitdistrplus)
 
 
-## NOTE: add code about catching when anvil type switches (e.g. if it's wooden anvil at comment seq_start, or whe nthey switch back to stone/wood)
+## NOTE: add code about catching when anvil type switches (e.g. if it's wooden anvil at comment seq_start, or when they switch back to stone/wood)
 
 # load tsv file with aggregated BORIS output
 dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.tsv", sep = "\t")
@@ -23,9 +23,12 @@ dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.tsv", sep = "\t")
 # sort so that observations from the same video are clustered together and it's chronological
 dettools <- dettools[order(dettools$Observation.id),]
 
+# It seems like they changed their output to split the modifiers across several columns. Can change our script, but for now let's just change it back to what they did before
+dettools$Modifiers <- paste(dettools$Modifier..1, dettools$Modifier..2, dettools$Modifier..3, dettools$Modifier..4, sep = "|")
+
 # remove unnecessary columns and rename the ones we keep
 dettools_r <- data.frame("videoID" = dettools$Observation.id, "codingdate" = dettools$Observation.date,
-                         "medianame" = dettools$Media.file, "videolength" = dettools$Total.length, "coder" = 
+                         "medianame" = dettools$Media.file.name, "videolength" = dettools$Media.duration..s., "coder" = 
                            dettools$Coder.ID, "subjectID" = dettools$Subject, "behavior" = dettools$Behavior,
                          "modifiers" = dettools$Modifiers, "starttime" = dettools$Start..s., "comment" = dettools$Comment.start)
 
