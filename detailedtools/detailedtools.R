@@ -23,14 +23,12 @@ dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.tsv", sep = "\t")
 # sort so that observations from the same video are clustered together and it's chronological
 dettools <- dettools[order(dettools$Observation.id),]
 
-# It seems like they changed their output to split the modifiers across several columns. Can change our script, but for now let's just change it back to what they did before
-dettools$Modifiers <- paste(dettools$Modifier..1, dettools$Modifier..2, dettools$Modifier..3, dettools$Modifier..4, sep = "|")
-
 # remove unnecessary columns and rename the ones we keep
 dettools_r <- data.frame("videoID" = dettools$Observation.id, "codingdate" = dettools$Observation.date,
                          "medianame" = dettools$Media.file.name, "videolength" = dettools$Media.duration..s., "coder" = 
                            dettools$Coder.ID, "subjectID" = dettools$Subject, "behavior" = dettools$Behavior,
-                         "modifiers" = dettools$Modifiers, "starttime" = dettools$Start..s., "comment" = dettools$Comment.start)
+                         "modifier1" = dettools$Modifier..1,  "modifier2" = dettools$Modifier..2,  "modifier3" = dettools$Modifier..3,  "modifier4" = dettools$Modifier..4, 
+                         "starttime" = dettools$Start..s., "comment" = dettools$Comment.start)
 
 dettools_r <- dettools_r[!dettools_r$videoID == "femaletooluse1",]
 
@@ -39,7 +37,7 @@ dettools_r <- dettools_r[!dettools_r$videoID == "femaletooluse1",]
 ### NOTE: it is crucial that seq_start is the first thing and seq_end the last thing in each sequence!!!! 
 
 # change seq_end to seq_cont if it has the continue modifier
-dettools_r$behavior[which(str_detect(dettools_r$modifiers, "cont") == TRUE)] <- "seqcont"
+dettools_r$behavior[which(str_detect(dettools_r$modifier1, "cont") == TRUE)] <- "seqcont"
 
 # assign unique sequence ID to each sequence (Location + Coder + Ascending number)
 # create ascending number.
@@ -64,8 +62,8 @@ for (i in 1:nrow(dettools_r)) {
 }
 
 # combine with location and date to get unique seq_ID
-dettools_r$location <- ifelse(str_detect(dettools_r$medianame, "EXP-ANV") == TRUE, "EXP-ANV-01", "CEBUS-02")
-dettools_r$mediadate <- sapply(str_split(dettools_r$medianame, "__"), '[', 2)
+dettools_r$location <- ifelse(str_detect(dettools_r$videoID, "EXP-ANV") == TRUE, "EXP-ANV-01", "CEBUS-02")
+dettools_r$mediadate <- sapply(str_split(dettools_r$videoID, "__"), '[', 2)
 dettools_r$sequenceID <- paste(dettools_r$location, dettools_r$mediadate, dettools_r$seqnumber, sep = "_" )
 
 ## pull out all modifiers per sequence
@@ -73,34 +71,33 @@ dettools_r$sequenceID <- paste(dettools_r$location, dettools_r$mediadate, dettoo
 seqdat <- data.frame(sequenceID = unique(dettools_r$sequenceID))
 
 # what item is being consumed
-seqdat$item[which(seqdat$sequenceID == dettools_r[dettools_r$behavior == "seqstart",]$sequenceID)] <-  dettools_r[dettools_r$behavior == "seqstart",]$modifiers[which(seqdat$sequenceID == dettools_r[dettools_r$behavior == "seqstart",]$sequenceID)]
+seqdat$item[which(seqdat$sequenceID == dettools_r[dettools_r$behavior == "seqstart",]$sequenceID)] <-  dettools_r[dettools_r$behavior == "seqstart",]$modifier1[which(seqdat$sequenceID == dettools_r[dettools_r$behavior == "seqstart",]$sequenceID)]
 
 # hammerstone information
+# note: anvil location can be in modifier 3 or modifier 4
 hammers <- dettools_r[dettools_r$behavior == "hammerstone",]
-hammers$h_startloc <- sapply(str_split(hammers$modifiers, "[|]"), '[', 1)
-hammers$h_endloc <- sapply(str_split(hammers$modifiers, "[|]"), '[', 4)
+hammers$h_startloc <- hammers$modifier1
+hammers$h_endloc <- ifelse(hammers$modifier4 == "", hammers$modifier3, hammers$modifier4)
 hammers$h_endloc <- ifelse(hammers$h_endloc == "None",
                            lead(hammers$h_endloc, order_by = hammers$sequenceID),
                            hammers$h_endloc)
 hammers <- hammers[which(hammers$h_startloc != "None"),]
-hammers$nrhammers <- sapply(str_split(hammers$modifiers, "[|]"), '[', 3)
-hammers$nrhammers[which(hammers$nrhammers == "None")] <- 0
 # check that the next line works correctly to identify unmarked and unknown hammerstones
-hammers$hammerID <- ifelse(sapply(str_split(hammers$modifiers, "[|]"), '[', 2) != "None", sapply(str_split(hammers$modifiers, "[|]"), '[', 2), hammers$comment)
-hammers <- hammers[,c("sequenceID", "h_startloc", "h_endloc", "nrhammers", "hammerID")]
+hammers$hammerID <- ifelse(hammers$modifier2 != "None", hammers$modifier2, hammers$comment)
+hammers <- hammers[,c("sequenceID", "h_startloc", "h_endloc", "hammerID")]
 
 seqdat <- left_join(seqdat, hammers, "sequenceID")
 
 # sequence end information
 seqendings <- dettools_r[dettools_r$behavior == "seqend" | dettools_r$behavior == "seqcont",]
 # outcome
-seqendings$outcome <- sapply(str_split(seqendings$modifiers, "[|]"), '[', 1)
+seqendings$outcome <- seqendings$modifier1
 # displacement
-seqendings$displacement <- sapply(str_split(seqendings$modifiers, "[|]"), '[', 3)
+seqendings$displacement <- seqendings$modifier3
 # social attention
-seqendings$socatt <- sapply(str_split(seqendings$modifiers, "[|]"), '[', 4)
+seqendings$socatt <- seqendings$modifier4
 # scrounging
-seqendings$scrounging <- sapply(str_split(seqendings$modifiers, "[|]"), '[', 2)
+seqendings$scrounging <- seqendings$modifier2
 
 # filter out seqcont ones after making sure their information is included
 seqendings <- seqendings[!seqendings$outcome == "seqcont", c("sequenceID", "outcome", "displacement", "socatt", "scrounging")]
@@ -111,20 +108,20 @@ seqdat <- left_join(seqdat, seqendings, "sequenceID")
 dettools_r2 <- left_join(dettools_r, seqdat, "sequenceID")
 
 # specify pound type
-dettools_r2$poundtype <- ifelse(dettools_r2$behavior == "pound", sapply(str_split(dettools_r2$modifiers, "[|]"), '[', 1), NA)
+dettools_r2$poundtype <- ifelse(dettools_r2$behavior == "pound", dettools_r2$modifier1, NA)
 # specify one-footed yes/no
-dettools_r2$onefoot <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifiers, "1foot"), NA)
+dettools_r2$onefoot <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifier2, "1foot"), NA)
 # specify overhead yes/no
-dettools_r2$overhead <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifiers, "overhead"), NA)
+dettools_r2$overhead <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifier3, "overhead"), NA)
 # specify one-handed yes/no
-dettools_r2$onehand <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifiers, "1hand"), NA)
+dettools_r2$onehand <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifier2, "1hand"), NA)
 # specify tail-support yes/no
-dettools_r2$tailsupport <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifiers, "tailsupport"), NA)
+dettools_r2$tailsupport <- ifelse(dettools_r2$behavior == "pound", str_detect(dettools_r2$modifier2, "tailsupport"), NA)
 
 # specify mistake type
-dettools_r2$mistaketype <- ifelse(dettools_r2$behavior == "misstrike", dettools_r2$modifiers, NA)
+dettools_r2$mistaketype <- ifelse(dettools_r2$behavior == "misstrike", dettools_r2$modifier1, NA)
 # specify repositioning type
-dettools_r2$repostype <- ifelse(dettools_r2$behavior == "reposit", dettools_r2$modifiers, NA)
+dettools_r2$repostype <- ifelse(dettools_r2$behavior == "reposit", dettools_r2$modifier1, NA)
 
 # will have to do when there's a hammerswitch that hammerID changes until seq_end (use for loop for it like above)
 currenthammerID <- dettools_r2$hammerID[1]
@@ -132,7 +129,7 @@ currenthammerID <- dettools_r2$hammerID[1]
 for (i in 1:nrow(dettools_r2)) {
   dettools_r2$hammerID2[i] <- currenthammerID
    if(dettools_r2$behavior[i] == "hammerswitch") {
-    currenthammerID <- ifelse(sapply(str_split(dettools_r2$modifiers[i], "[|]"), '[', 2) != "None", sapply(str_split(dettools_r2$modifiers[i], "[|]"), '[', 2), dettools_r2$comment[i])
+    currenthammerID <- ifelse(dettools_r2$modifier2[i] != "None", dettools_r2$modifier2[i], dettools_r2$comment[i])
     dettools_r2$hammerID2[i] <- currenthammerID
   }
 
@@ -143,7 +140,7 @@ for (i in 1:nrow(dettools_r2)) {
 }
 
 # extract location of hammerstone they switched to 
-dettools_r2$h_switchloc <- ifelse(dettools_r2$behavior == "hammerswitch", sapply(str_split(dettools_r2$modifiers, "[|]"), '[', 1), NA)
+dettools_r2$h_switchloc <- ifelse(dettools_r2$behavior == "hammerswitch", dettools_r2$modifier1, NA)
 
 ## incorporate what type of anvil it is
 # default is stone, if it was wood we made a comment at the seqstart
@@ -151,13 +148,13 @@ seqdat$anviltype <- ifelse(seqdat$sequenceID %in% dettools_r2$sequenceID[which(d
 # attach this to main dataframe
 dettools_r2 <- left_join(dettools_r2, seqdat[,c("sequenceID", "anviltype")], "sequenceID")
 
-# will have to do when there's an anvilswitch that anviltype changes until seq_end (use for loop for it like above)
+# when there's an anvilswitch then anviltype changes until seq_end (use for loop for it like above)
 currentanviltype <- dettools_r2$anviltype[1]
 
 for (i in 1:nrow(dettools_r2)) {
   dettools_r2$anviltype2[i] <- currentanviltype
   if(dettools_r2$behavior[i] == "anvilswitch") {
-    currentanviltype <- dettools_r2$modifiers[i]
+    currentanviltype <- dettools_r2$modifier1[i]
     dettools_r2$anviltype2[i] <- currentanviltype
   }
   
@@ -242,7 +239,6 @@ dettools_r2$Sex[which(is.na(dettools_r2$Sex) == TRUE)] <- ifelse(str_detect(dett
 # have some extra  spaces that snuck in
 dettools_r2$Age <- str_trim(dettools_r2$Age)
 dettools_r2$hammerID2 <- str_trim(dettools_r2$hammerID2)
-
 
 # sequence level dataframe (only for analyzing things like nr of pounds/duration. things that are fixed per sequence)
 detseq <- dettools_r2[!duplicated(dettools_r2$sequenceID),]
@@ -482,3 +478,4 @@ ggplot(detseq_o[detseq_o$split == FALSE,], aes(y = seqduration, x = n_pounds, co
   labs(y = "Seconds needed to open item", x = "Number of pounds needed to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
+
