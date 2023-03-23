@@ -34,6 +34,8 @@ plot(r4)
 # now added for getting distance to coast for all cameras instead of just tidal cameras. 
 allcams <- read.csv("coiba_camtrap_ids_gps.csv", header =TRUE)
 tidalcams <- allcams[allcams$island == "Jicaron",2:4] #  so this is all cameras now, just for running script below easier. 
+tidalcams$longitude <- as.numeric(tidalcams$longitude)
+tidalcams$latitude <- as.numeric(tidalcams$latitude)
 
 coordinates(tidalcams) <- ~longitude + latitude
 plot(tidalcams)

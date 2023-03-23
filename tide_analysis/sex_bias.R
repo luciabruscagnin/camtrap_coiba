@@ -25,9 +25,6 @@ require(janitor)
 
 ## Questions/Hypotheses
 
-# H1 : Females are less terrestrial than males
-## P1a: see less adult females on camera traps than adult males (and juveniles?)
-## P1b: females especially being unlikely to be on the ground in open spaces such as in streams and near the coast
 
 # H2: Females are rarely observed tool-using because of within-group competition
 ## P2a: Displacements at anvils are common
@@ -45,23 +42,28 @@ require(janitor)
 ## Case of Joker with howlers not using tools with howler and using tools without
 #???
 
-## Analyses to do to test these predictions
-## subset to only jicaron tool-site data
-
-head(agoutisequence_c)
+### Preparation #####
+## Create two datasets:
+# 1. subset to only Jicaron tool-site data
 agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron"),]
-picksetupdays2 <- unique(agoutiseq_jt$seqday[which(agoutiseq_jt$seqday == date(agoutiseq_jt$dep_start) | agoutiseq_jt$seqday == date(agoutiseq_jt$dep_end) | agoutiseq_jt$cameraSetup ==  "True")] )
-agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
 
 # exclude days on which cameras were deployed or picked up (to take away that bias)
+picksetupdays2 <- unique(agoutiseq_jt$seqday[which(agoutiseq_jt$seqday == date(agoutiseq_jt$dep_start) | agoutiseq_jt$seqday == date(agoutiseq_jt$dep_end) | agoutiseq_jt$cameraSetup ==  "True")] )
+agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
 # did not do this now because then we only have 80 displacements vs 94. discuss what we want
 #agoutiseq_jt <- agoutiseq_jt[(agoutiseq_jt$picksetup == 0),]
 
-#### H1 : Females are less terrestrial than males in general #####
-## P1a: see less adult females on camera traps than adult males (and juveniles?)
-## P1b: females especially being unlikely to be on the ground in open spaces such as in streams and near the coast
+# 2. subset to only Coiba tool-site data
+agoutiseq_ct <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Coiba"),]
+# exclude pick/set up days
+picksetupdays3 <- unique(agoutiseq_ct$seqday[which(agoutiseq_ct$seqday == date(agoutiseq_ct$dep_start) | agoutiseq_ct$seqday == date(agoutiseq_ct$dep_end) | agoutiseq_ct$cameraSetup ==  "True")] )
+agoutiseq_ct$picksetup <- ifelse(agoutiseq_ct$seqday %in% picksetupdays3 , 1, 0)
+#agoutiseq_ct <- agoutiseq_ct[(agoutiseq_ct$picksetup == 0),]
 
-# Attempt one, using only sequences with capuchins in and comparing female/male ratios at the three different location types
+### H1 : Females are less terrestrial than males ####
+
+## Jicaron prep
+# Use only sequences with capuchins in and comparing female/male ratios at the three different location types
 agoutiseq_jt$locationtype <- as.factor(ifelse(agoutiseq_jt$tool_anvil == 1, "anvil", 
                                               ifelse(agoutiseq_jt$streambed == 1, "streambed", "random")))
 agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
@@ -69,16 +71,13 @@ agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
 agoutiseq_jt$nAF_noinfant <- agoutiseq_jt$nAF - agoutiseq_jt$nAF_infant
 agoutiseq_jt$Nadults <- agoutiseq_jt$nAF + agoutiseq_jt$nAM
 
-# only sequences with adult capuchins
-# so if we see adults, what is the rate of males to females 
+# only sequences with adult capuchins and excluding when we didnt sex any of the adults
 agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
-agoutiseq_jto1 <- agoutiseq_jt[agoutiseq_jt$Nadults > 0,] # CHECK do we want tthis or also include sequences with capuchins, without adults?
-agoutiseq_jto1 <- droplevels.data.frame(agoutiseq_jto)
-
-## still need to add in all the grids as random cameras (have way fewer random cams than other locations now)
-ftable(agoutiseq_jto$locationtype)
+agoutiseq_jto1 <- agoutiseq_jt[agoutiseq_jt$Nadults > 0 & (agoutiseq_jt$nAF >0 | agoutiseq_jt$nAM >0),] # CHECK do we want this or also include sequences with capuchins, without adults?
+agoutiseq_jto1 <- droplevels.data.frame(agoutiseq_jto1)
 
 ## add distance to coast (dist2coast.R script for getting distance per camera)
+# only available for Jicaron
 dist2coast_all <- read.csv("tide_analysis/allcams_gps.csv", header = TRUE)
 dist2coast_all <- dist2coast_all[ , c(2,5)]
 
@@ -87,9 +86,9 @@ agoutiseq_jto1 <- left_join(agoutiseq_jto1, dist2coast_all, by = c("locationfact
 agoutiseq_jto1$distcoast_z <- scale(agoutiseq_jto1$distcoast, center = TRUE, scale = TRUE)
 
 # so when capuchins are present, what is the ratio of adult females to adult males at the three different location types?
-# what can affect this ratio is: locationfactor, locationtype, season (?), distance from coast
+# what can affect this ratio is: locationfactor, locationtype, distance from coast
 
-## stil need to set appropriate priors
+## still need to set appropriate priors
 sexbias_prior <- c(prior(normal(0, 1), class = Intercept),
                  prior(normal(0,1), class = b),
                  prior(exponential(1), class = sd))
@@ -103,14 +102,28 @@ prior_summary(sbm1_prior)
 mcmc_plot(sbm1_prior)
 plot(sbm1_prior)
 
-#### Model 1: comparing female to male sex ratio at different locationtypes #######
+## Coiba prep
+# Use only sequences with capuchins in and comparing female/male ratios at the three different location types
+# differentiate adult females with and without infants
+agoutiseq_ct$nAF_noinfant <- agoutiseq_ct$nAF - agoutiseq_ct$nAF_infant
+agoutiseq_ct$Nadults <- agoutiseq_ct$nAF + agoutiseq_ct$nAM
 
-## NOTE: still consider running it with 1 + locationtype*distcoast instead, so not having random cameras as intercept but having a grand mean as intercept
+# only sequences with adult capuchins
+# also dropping sequences that only contain unsexed adults (so no adults recognized as males or females) 
+# could potentially do imputation of missing data https://github.com/rmcelreath/rethinking see here about discrete imputation
+agoutiseq_cto <- agoutiseq_ct[agoutiseq_ct$capuchin == 1,]
+agoutiseq_cto1 <- agoutiseq_ct[agoutiseq_ct$Nadults > 0 & (agoutiseq_ct$nAF >0 | agoutiseq_ct$nAM >0),] 
+agoutiseq_cto1 <- droplevels.data.frame(agoutiseq_cto1)
+
+### P1a: see less adult females on camera traps than adult males 
+### P1b: females are especially unlikely to be on the ground in open spaces such as in streams and near the coast 
+
+#### Model 1: on Jicaron, comparing female to male sex ratio at different locationtypes #######
 s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
              prior = sexbias_prior, iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
 # s_bm1 <- add_criterion(s_bm1, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
 # saveRDS(s_bm1, "tide_analysis/ModelRDS/s_bm1.RDS")
-#s_bm1 <- readRDS("tide_analysis/ModelRDS/s_bm1.RDS")
+# s_bm1 <- readRDS("tide_analysis/ModelRDS/s_bm1.RDS")
 summary(s_bm1)
 mcmc_plot(s_bm1)
 
@@ -119,7 +132,6 @@ pp_check(s_bm1, ndraw = 100)
 loo(s_bm1)
 loo_R2(s_bm1)
 bayes_R2(s_bm1)
-
 
 plot(s_bm1)
 plot(conditional_effects(s_bm1, re_formula = NULL)) # re_formula = NULL to include random effects
@@ -413,6 +425,47 @@ p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast)) +
 p_streambed
 
 plot(p_random + p_anvil + p_streambed)
+
+#### Model 1coiba: on Coiba, ratio of adult females to adult males (only streambeds) #####
+s_bm1coiba <- brm(nAF | trials(Nadults) ~ 1 + (1|locationfactor), data = agoutiseq_cto1, family = binomial, 
+             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
+# s_bm1coiba <- add_criterion(s_bm1coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
+# saveRDS(s_bm1coiba, "tide_analysis/ModelRDS/s_bm1coiba.RDS")
+#s_bm1coiba <- readRDS("tide_analysis/ModelRDS/s_bm1coiba.RDS")
+summary(s_bm1coiba)
+mcmc_plot(s_bm1coiba)
+
+## Checks
+pp_check(s_bm1coiba, ndraw = 100) 
+loo(s_bm1coiba)
+loo_R2(s_bm1coiba)
+bayes_R2(s_bm1coiba)
+
+round(logit2prob(1.83),2)
+
+plot(s_bm1coiba)
+
+## Plot for supplements of sex ratio at each camera. 
+# pull out parameters that we care about
+r_fitc <- s_bm1coiba %>%
+  tidy() %>%
+  split(~term)
+
+B0c <- r_fitc$`(Intercept)`$estimate # average sex ratio across all sequences 
+sigma_0c <- r_fitc$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
+
+s_bm1coiba %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_cto1$locationfactor,
+                       Nadults = agoutiseq_cto1$Nadults)) %>%
+  mutate(linpredprob = logit2prob(.linpred)) %>%
+  ungroup() %>% 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), linpredprob, .fun = mean)) %>% 
+  ggplot(aes(x = linpredprob, y = locationfactor)) +
+  geom_vline(xintercept = logit2prob(B0c), color = "black") +
+  stat_pointinterval(color = "red") +
+  labs(x = "Average ") 
+
+
 
 ### Model 2: ratio of females with infants to females without #########
 agoutiseq_jto2 <- agoutiseq_jto[which(agoutiseq_jto$nAF >0),]
