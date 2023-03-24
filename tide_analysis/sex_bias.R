@@ -88,20 +88,6 @@ agoutiseq_jto1$distcoast_z <- scale(agoutiseq_jto1$distcoast, center = TRUE, sca
 # so when capuchins are present, what is the ratio of adult females to adult males at the three different location types?
 # what can affect this ratio is: locationfactor, locationtype, distance from coast
 
-## still need to set appropriate priors
-sexbias_prior <- c(prior(normal(0, 1), class = Intercept),
-                 prior(normal(0,1), class = b),
-                 prior(exponential(1), class = sd))
-
-# prior predictive simulation
-sbm1_prior <- brm(nAF | trials(Nadults) ~ locationtype*distcoast_z +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
-               prior = sexbias_prior, sample_prior = "only", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
-
-summary(sbm1_prior)
-prior_summary(sbm1_prior)
-mcmc_plot(sbm1_prior)
-plot(sbm1_prior)
-
 ## Coiba prep
 # Use only sequences with capuchins in and comparing female/male ratios at the three different location types
 # differentiate adult females with and without infants
@@ -114,6 +100,21 @@ agoutiseq_ct$Nadults <- agoutiseq_ct$nAF + agoutiseq_ct$nAM
 agoutiseq_cto <- agoutiseq_ct[agoutiseq_ct$capuchin == 1,]
 agoutiseq_cto1 <- agoutiseq_ct[agoutiseq_ct$Nadults > 0 & (agoutiseq_ct$nAF >0 | agoutiseq_ct$nAM >0),] 
 agoutiseq_cto1 <- droplevels.data.frame(agoutiseq_cto1)
+
+## need to set appropriate priors
+sexbias_prior <- c(prior(normal(0, 1), class = Intercept),
+                   prior(normal(0,1), class = b),
+                   prior(exponential(1), class = sd))
+
+# prior predictive simulation
+sbm1_prior <- brm(nAF | trials(Nadults) ~ locationtype*distcoast_z +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
+                  prior = sexbias_prior, sample_prior = "only", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+
+summary(sbm1_prior)
+prior_summary(sbm1_prior)
+mcmc_plot(sbm1_prior)
+plot(sbm1_prior)
+
 
 ### P1a: see less adult females on camera traps than adult males 
 ### P1b: females are especially unlikely to be on the ground in open spaces such as in streams and near the coast 
@@ -150,12 +151,13 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-round(logit2prob(-0.09-0.58),2)
+round(logit2prob(-0.04-0.81),2)
 
 ## set viridis color palette
 scales::viridis_pal(end = 0.8)(3) 
 cols <- c( "#440154FF", "#7AD151FF", "#2A788EFF" )
 
+## Figure 1: violin plot of sex ratio across location types
 m_type_pred <- s_bm1 %>% 
   epred_draws(newdata = tibble(Nadults = agoutiseq_jto1$Nadults,
                                locationtype = agoutiseq_jto1$locationtype,
@@ -177,45 +179,8 @@ ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
-# showing effect of distance to coast compared to real data (for now just conditional effects plot with real data overlaid)
-sbm1_distcoast <- plot(conditional_effects(s_bm1), plot = FALSE)[[3]]
-
-#png("tide_analysis/ModelRDS/sbm1_distcoast.png", width = 11, height = 7, units = 'in', res = 300)
-sbm1_distcoast  + theme_bw() + 
-  stat_summary(data = agoutiseq_jto1, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
-               geom = "point", fun = "mean", size = 4, alpha = 0.5) +
-  labs(y = "Female:male ratio", x = "Distance to coast", fill = "locationtype") +
-  theme(strip.text.x = element_text(size = 14), 
-        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
-        legend.title = element_text(size =16), axis.text = element_text(size = 12))
-#dev.off()  
-
-# can probably also make plot with m_type_pred ( but still have to find out how)
-ce2 = m_type_pred %>%
-  group_by(distcoast, locationtype) %>%
-  reframe(enframe(quantile(.epred_prop, probs=c(0.025,0.5,0.975)))) %>%
-  pivot_wider(names_from=name, values_from=value) %>%
-  ggplot(aes(distcoast, colour=locationtype, fill= locationtype)) +
-  geom_point(data = agoutiseq_jto1, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, colour = locationtype), alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto1, inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults, group = locationtype, color = locationtype, shape = locationtype), 
-               geom = "point", fun = "mean", size = 4, alpha = 0.5) +
-  geom_ribbon(aes(ymin=`2.5%`, ymax=`97.5%`), alpha=0.3, size=0) +
-  geom_line(aes(y=`50%`)) +
-  labs(title="Reproduce conditional_effects",
-       fill="grade", colour="grade", y=NULL) +
-  guides(colour="none", fill="none") + facet_wrap(~locationtype) + theme_bw()
-
-plot(ce2)
-
-## is jagged because this is taking into account the random effects. Need to fix this? Discuss with Brendan
-# https://discourse.mc-stan.org/t/difference-between-conditional-effects-plot-and-predicted-probability-plot/27312/3
-
-##### MARGINAL EFFECTS ####
-
-# working with s_bm1
-summary(s_bm1)
+### Marginal effects plots
 # want to get to marginal effects (average across all cameras) instead of conditional effect (effect at average camera)
-
 # pull out parameters that we care about
 r_fit <- s_bm1 %>%
   tidy() %>%
@@ -230,46 +195,6 @@ B5 <- r_fit$`locationtypestreambed:distcoast`$estimate #interaction streambed an
 sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
-# per location type?
-
-s_bm1 %>%
-  linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor[which(agoutiseq_jto1$locationtype == "random")],
-                       locationtype = "random",
-                       Nadults = agoutiseq_jto1$Nadults[which(agoutiseq_jto1$locationtype =="random")],
-                       distcoast = agoutiseq_jto1$distcoast[which(agoutiseq_jto1$locationtype == "random")])) %>%
-  mutate(linpredprob = logit2prob(.linpred)) %>%
-  mutate(offset = B0 + linpredprob) %>%
-  ungroup() %>% 
-  mutate(locationfactor = fct_reorder(factor(locationfactor), offset, .fun = mean)) %>% 
-  ggplot(aes(x = offset, y = locationfactor)) +
-  geom_vline(xintercept = 0, color = "black") +
-  stat_pointinterval(color = "red") +
-  labs(x = "*b*<sub>0</sub> offset from β<sub>0</sub>") 
-
-# this one functions now
-s_bm1 %>%
-  linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
-                       locationtype = agoutiseq_jto1$locationtype,
-                       Nadults = agoutiseq_jto1$Nadults,
-                       distcoast = agoutiseq_jto1$distcoast)) %>%
-  mutate(offset = B0 + .linpred) %>%
-  ungroup() %>% 
-  mutate(locationfactor = fct_reorder(factor(locationfactor), offset, .fun = mean)) %>%
-  ggplot(aes(x = offset, y = locationfactor, color = locationtype)) +
-  scale_color_manual(values = cols) +
-  geom_vline(xintercept = 0, color = cols[1], linewidth = 1) +
-  geom_vline(xintercept = B1 - B0, color = cols[2], linewidth = 1) +
-  geom_vline(xintercept = B2 - B0, color = cols[3], linewidth = 1) +
-  stat_pointinterval() +
-  theme_bw() +
-  labs(x = "Camera offset from sex ratio at average streambed camera (0)")
-## this is not great
-## need to consider making 3 separate plots, where 0 reflects the average of that specific camera type
-# and the offset is each offset from that point
-# now this information IS in here but it is not totally clear. Now the green line is average anvil cam (offset to the average streambed cam)
-# and the red line is the average streambed cam
-
-## alternatively I could imagine not plotting the offset but rather something like this??? 
 s_bm1 %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
                        locationtype = agoutiseq_jto1$locationtype,
@@ -289,33 +214,8 @@ s_bm1 %>%
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
-### but this also does not look correct!! need to figure out how to do this on the logit scale. 
-# logically each camera should have a normal distribution around the mean for that camera (but distcoast is playing into this!! that's the problem I think)
-
-## LINK FUNCTION TO GET TO LINEAR SPACE
-ggplot() +
-  stat_function(fun = ~dnorm(., mean = logit2prob(B0), sd = logit2prob(sigma_0)^2),
-                geom = "area", fill = "grey") +
-  labs(x = "Possible cluster-specific intercepts", y = "Density")
-# the example guy https://www.andrewheiss.com/blog/2022/11/29/conditional-marginal-marginaleffects/#magnussons-data-and-model-the-effect-of-a-treatment-on-gambling-losses has a normal distribution
-# whereas I have an exponential. huh
 
 ## use marginal effects to marginalize across existing random effects
-predictions(s_bm1,
-            newdata = datagrid(locationtype = c("random", "anvil", "streambed"),
-                               locationfactor = unique,
-                               distcoast = unique),
-            by = "locationtype",
-            re_formula = NULL)
-## NOT SURE HOW TO INCORPORATE DISTCOAST HERE, IN ORIGINAL EXAMPLE WOULD ONLY HAVE LOCATIONTYPE AND LOCATIONFACTOR
-predictions(s_bm1,
-            newdata = datagrid(locationtype = "random",
-                               locationfactor = unique,
-                               distcoast = unique),
-            by = "distcoast",
-            re_formula = NULL)
-
-
 marginal_preds <- predictions(
   s_bm1,
   newdata = datagrid(locationtype = c("random", "anvil", "streambed"),
@@ -324,8 +224,6 @@ marginal_preds <- predictions(
   re_formula = NULL
 ) %>% 
   posteriordraws()
-
-head(marginal_preds)
 
 ## this is the first violin plot but then differently
 p_marginal_preds <- marginal_preds %>% 
@@ -339,8 +237,10 @@ p_marginal_preds <- marginal_preds %>%
   theme_bw()
 p_marginal_preds
 
-## if we do it per locationtype 
+## distance to coast interaction
 # this is assuming each camera can be at each distance at each locationtype (so also simulating distant anvil cameras)
+
+# random
 marginal_preds2 <- predictions(
   s_bm1,
   newdata = datagrid(locationtype = "random",
@@ -350,8 +250,6 @@ marginal_preds2 <- predictions(
   re_formula = NULL
 ) %>% 
   posteriordraws()
-
-head(marginal_preds2)
 
 p_random <- ggplot(data = marginal_preds2, aes(x = distcoast)) +
   geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults),  col = cols[1], alpha = 0.3) +
@@ -396,8 +294,7 @@ p_anvil <- ggplot(data = marginal_preds3, aes(x = distcoast)) +
                                                            axis.text = element_text(size = 16))
 p_anvil
 
-
-# anvil
+# streambed
 marginal_preds4 <- predictions(
   s_bm1,
   newdata = datagrid(locationtype = "streambed",
@@ -407,8 +304,6 @@ marginal_preds4 <- predictions(
   re_formula = NULL
 ) %>% 
   posteriordraws()
-
-head(marginal_preds4)
 
 p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast)) +
   geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[3], alpha = 0.3) +
@@ -446,7 +341,6 @@ round(logit2prob(1.83),2)
 plot(s_bm1coiba)
 
 ## Plot for supplements of sex ratio at each camera. 
-# pull out parameters that we care about
 r_fitc <- s_bm1coiba %>%
   tidy() %>%
   split(~term)
@@ -457,18 +351,20 @@ sigma_0c <- r_fitc$`sd__(Intercept)`$estimate # between-camera variability of se
 s_bm1coiba %>%
   linpred_draws(tibble(locationfactor = agoutiseq_cto1$locationfactor,
                        Nadults = agoutiseq_cto1$Nadults)) %>%
-  mutate(linpredprob = logit2prob(.linpred)) %>%
   ungroup() %>% 
-  mutate(locationfactor = fct_reorder(factor(locationfactor), linpredprob, .fun = mean)) %>% 
-  ggplot(aes(x = linpredprob, y = locationfactor)) +
-  geom_vline(xintercept = logit2prob(B0c), color = "black") +
-  stat_pointinterval(color = "red") +
-  labs(x = "Average ") 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
+  ggplot(aes(x = logit2prob(.linpred), y = locationfactor)) +
+  geom_vline(xintercept = logit2prob(B0c), color = cols[3], linewidth = 1) +
+  stat_pointinterval(color = cols[3]) +
+  theme_bw() +
+  labs(x = "Model estimation of female:male ratio", y = "Camera location", color = "Location type") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16))
 
-
-
-### Model 2: ratio of females with infants to females without #########
-agoutiseq_jto2 <- agoutiseq_jto[which(agoutiseq_jto$nAF >0),]
+#### Model 2: ratio of females with infants to females without #########
+agoutiseq_jto2 <- agoutiseq_jto1[which(agoutiseq_jto1$nAF >0),]
 
 s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor), data = agoutiseq_jto2, family = binomial, 
               prior = sexbias_prior,  iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
@@ -484,7 +380,7 @@ loo(s_bm1b)
 loo_R2(s_bm1b)
 bayes_R2(s_bm1b)
 
-round(logit2prob(-1.46+1.15),2)
+round(logit2prob(-0.84),2)
 
 plot(conditional_effects(s_bm1b))
 
@@ -510,22 +406,7 @@ ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violi
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
-# distance to coast
-# showing effect of distance to coast compared to real data (for now just conditional effects plot with real data overlaid)
-sbm1b_distcoast <- plot(conditional_effects(s_bm1b), plot = FALSE)[[3]]
-
-#png("tide_analysis/ModelRDS/sbm1b_distcoast.png", width = 11, height = 7, units = 'in', res = 300)
-sbm1b_distcoast  + theme_bw() + 
-  stat_summary(data = agoutiseq_jto, inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF, group = locationtype, color = locationtype, shape = locationtype), 
-               geom = "point", fun = "mean", size = 4, alpha = 0.5) +
-  labs(y = "Ratio females with infants:females without infants", x = "Distance to coast", fill = "locationtype") +
-  theme(strip.text.x = element_text(size = 14), 
-        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
-        legend.title = element_text(size =16), axis.text = element_text(size = 12))
-#dev.off()  
-
-## MARGINAL EFFECTS SBM1B#### 
-# pull out parameters that we care about
+# distance to coast marginal effects plot
 r_fit <- s_bm1b %>%
   tidy() %>%
   split(~term)
@@ -536,29 +417,6 @@ B2_b <- r_fit$locationtypestreambed$estimate # effect of streambed across all se
 sigma_0b <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
-# SOMETHING IS GOING WRONG HERE, FIX THIS!!
-s_bm1b %>%
-  linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
-                       locationtype = agoutiseq_jto2$locationtype,
-                       nAF = agoutiseq_jto2$nAF,
-                       distcoast = agoutiseq_jto2$distcoast)) %>%
-  mutate(offset = B0 - .linpred) %>%
-  ungroup() %>% 
-  mutate(locationfactor = fct_reorder(factor(locationfactor), offset, .fun = mean)) %>%
-  ggplot(aes(x = offset, y = locationfactor, color = locationtype)) +
-  scale_color_manual(values = cols) +
-  geom_vline(xintercept = 0, color = cols[1], linewidth = 1) +
-  geom_vline(xintercept = B0+B1, color = cols[2], linewidth = 1) +
-  geom_vline(xintercept = B0+ B2, color = cols[3], linewidth = 1) +
-  stat_pointinterval() +
-  theme_bw() +
-  labs(x = "Camera offset from sex ratio at average streambed camera (0)")
-## this is not great
-## need to consider making 3 separate plots, where 0 reflects the average of that specific camera type
-# and the offset is each offset from that point
-# now this information IS in here but it is not totally clear. Now the green line is average anvil cam (offset to the average streambed cam)
-# and the red line is the average streambed cam
-
 s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
                        locationtype = agoutiseq_jto2$locationtype,
@@ -578,18 +436,9 @@ s_bm1b %>%
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
-### but this also does not look correct!! need to figure out how to do this on the logit scale. 
 
-
-test <- s_bm1b %>%
-  linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
-                       locationtype = agoutiseq_jto2$locationtype,
-                       nAF = agoutiseq_jto2$nAF,
-                       distcoast = agoutiseq_jto2$distcoast)) %>%
-  mutate(offset = B0 + .linpred) 
-mean(test$offset[which(test$locationfactor == "J-STREAM-08")])
-
-# margina leffects plots
+## visualize distance to coast interaction
+# marginal effects plots
 marginal_predsb <- predictions(
   s_bm1b,
   newdata = datagrid(locationtype = c("random", "anvil", "streambed"),
@@ -691,11 +540,52 @@ p_streambedb
 
 plot(p_randomb + p_anvilb + p_streambedb)
 
+#### Model 2coiba: ratio of females with infants to females without on Coiba (only streambed) #########
+agoutiseq_cto2 <- agoutiseq_cto1[which(agoutiseq_cto1$nAF >0),]
 
+s_bm1b_coiba <- brm(nAF_infant | trials(nAF) ~ 1 + (1|locationfactor), data = agoutiseq_cto2, family = binomial, 
+             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
+# s_bm1b_coiba <- add_criterion(s_bm1b_coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
+# saveRDS(s_bm1b_coiba, "tide_analysis/ModelRDS/s_bm1b_coiba.RDS")
+# s_bm1b_coiba <- readRDS("tide_analysis/ModelRDS/s_bm1b_coiba.RDS")
+summary(s_bm1b_coiba)
+mcmc_plot(s_bm1b_coiba)
 
+## Checks
+pp_check(s_bm1b_coiba, ndraw = 100) 
+loo(s_bm1b_coiba)
+loo_R2(s_bm1b_coiba)
+bayes_R2(s_bm1b_coiba)
+
+round(logit2prob(-2.48),2)
+
+# marginal effects plot
+r_fit <- s_bm1b_coiba %>%
+  tidy() %>%
+  split(~term)
+
+B0_bc <- r_fit$`(Intercept)`$estimate # average infant across all sequences in random cams
+sigma_0bc <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
+
+# visualize camera-specific offsets 
+s_bm1b_coiba %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_cto2$locationfactor,
+                       nAF = agoutiseq_cto2$nAF)) %>%
+  ungroup() %>% 
+  mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
+  ggplot(aes(x = logit2prob(.linpred), y = locationfactor)) +
+  geom_vline(xintercept = logit2prob(B0_bc), color = cols[3], linewidth = 1) +
+  stat_pointinterval(col = cols[3]) +
+  theme_bw() +
+  labs(x = "Model estimation of female with infants:female without infants ratio", y = "Camera location") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16))
 
 ### CONCLUSION: adult females and adult males are seen just as frequently at random cameras, but at streambeds and anvils males are much more frequent
 ## females are not less likely to be on the ground
+
 
 #### H2: Females are rarely observed tool-using because of within-group competition ####
 ## P2a: Displacements at anvils are common
