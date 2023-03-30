@@ -40,7 +40,7 @@ agoutiselect2 <- agoutisequence_c
 
 # create flag for deployment pick up and setup days
 # most of the pickup/setup days were at the start/end of the deployment. But sometimes people came to mess with cameras in middle of deployment. Should exclude those too
-picksetupdays <- unique(agoutiselect2$seqday[which(agoutiselect2$seqday == date(agoutiselect2$dep_start) | agoutiselect2$seqday == date(agoutiselect2$dep_end) | agoutiselect2$cameraSetup ==  "True")] )
+picksetupdays <- unique(agoutiselect2$seqday[which(agoutiselect2$cameraSetup ==  "True")] )
 agoutiselect2$picksetup <- ifelse(agoutiselect2$seqday %in% picksetupdays , 1, 0)
 agoutiselect2 <- agoutiselect2[,c("deploymentID", "sequenceID", "scientificName", "locationName", "longitude", "latitude", "cameraSetup", "seq_start", 
                                                                "seq_end", "seq_length", "temperature", "dep_start", "dep_end", "dep_length_hours", "month", 

@@ -22,9 +22,9 @@ require(tidyverse)
 require(marginaleffects)
 require(broom.mixed)
 require(janitor)
+require(easystats)
 
 ## Questions/Hypotheses
-
 
 # H2: Females are rarely observed tool-using because of within-group competition
 ## P2a: Displacements at anvils are common
@@ -48,7 +48,8 @@ require(janitor)
 agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron"),]
 
 # exclude days on which cameras were deployed or picked up (to take away that bias)
-picksetupdays2 <- unique(agoutiseq_jt$seqday[which(agoutiseq_jt$seqday == date(agoutiseq_jt$dep_start) | agoutiseq_jt$seqday == date(agoutiseq_jt$dep_end) | agoutiseq_jt$cameraSetup ==  "True")] )
+# since not all cameras ran until pick up, need to extract the actual days we were there
+picksetupdays2 <- unique(agoutiseq_jt$seqday[agoutiseq_jt$cameraSetup ==  "True"])
 agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
 # did not do this now because then we only have 80 displacements vs 94. discuss what we want
 #agoutiseq_jt <- agoutiseq_jt[(agoutiseq_jt$picksetup == 0),]
@@ -56,11 +57,26 @@ agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
 # 2. subset to only Coiba tool-site data
 agoutiseq_ct <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Coiba"),]
 # exclude pick/set up days
-picksetupdays3 <- unique(agoutiseq_ct$seqday[which(agoutiseq_ct$seqday == date(agoutiseq_ct$dep_start) | agoutiseq_ct$seqday == date(agoutiseq_ct$dep_end) | agoutiseq_ct$cameraSetup ==  "True")] )
+picksetupdays3 <- unique(agoutiseq_ct$seqday[which(agoutiseq_ct$cameraSetup ==  "True")] )
 agoutiseq_ct$picksetup <- ifelse(agoutiseq_ct$seqday %in% picksetupdays3 , 1, 0)
 #agoutiseq_ct <- agoutiseq_ct[(agoutiseq_ct$picksetup == 0),]
 
-### H1 : Females are less terrestrial than males ####
+### H1: Females are physically incapable of tool use ####
+
+# female tool use events on Jicaron
+tooluse <- agoutiseq_jt[which(agoutiseq_jt$tooluse == "TRUE"),]
+sum(tooluse$tu_nAM)
+sum(tooluse$tu_nJuvenile)
+sum(tooluse$tu_nSubadult)
+
+# tool use events on Coiba
+tooluse_c <- agoutiseq_ct[which(agoutiseq_ct$tooluse == "TRUE"),]
+sum(tooluse_c$tu_nAM)
+sum(tooluse_c$tu_nJuvenile)
+sum(tooluse_c$tu_nSubadult)
+
+
+### H2 : Females are less terrestrial than males ####
 
 ## Jicaron prep
 # Use only sequences with capuchins in and comparing female/male ratios at the three different location types
@@ -132,7 +148,7 @@ mcmc_plot(s_bm1)
 pp_check(s_bm1, ndraw = 100) 
 loo(s_bm1)
 loo_R2(s_bm1)
-bayes_R2(s_bm1)
+round(bayes_R2(s_bm1),2)
 
 plot(s_bm1)
 plot(conditional_effects(s_bm1, re_formula = NULL)) # re_formula = NULL to include random effects
@@ -151,7 +167,10 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-round(logit2prob(-0.04-0.81),2)
+round(logit2prob(-0.01),2)
+
+# to help with reporting results
+report(s_bm1)
 
 ## set viridis color palette
 scales::viridis_pal(end = 0.8)(3) 
@@ -165,6 +184,7 @@ m_type_pred <- s_bm1 %>%
                                distcoast = agoutiseq_jto1$distcoast)) %>% 
   mutate(.epred_prop = .epred/Nadults)
 
+#png("tide_analysis/ModelRDS/s_bm1_ratios.png", width = 8, height = 7, units = 'in', res = 300)
 ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + 
   geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
   geom_hline(yintercept = 0.55, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
@@ -178,6 +198,7 @@ ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) +
   labs(x = "Locationtype", y = "Female:male ratio") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
+#dev.off()
 
 ### Marginal effects plots
 # want to get to marginal effects (average across all cameras) instead of conditional effect (effect at average camera)
@@ -195,6 +216,7 @@ B5 <- r_fit$`locationtypestreambed:distcoast`$estimate #interaction streambed an
 sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
+#png("tide_analysis/ModelRDS/s_bm1_cameras.png", width = 8, height = 7, units = 'in', res = 300)
 s_bm1 %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
                        locationtype = agoutiseq_jto1$locationtype,
@@ -214,6 +236,7 @@ s_bm1 %>%
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
+#dev.off()
 
 ## use marginal effects to marginalize across existing random effects
 marginal_preds <- predictions(
@@ -319,12 +342,14 @@ p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast)) +
                 axis.text = element_text(size = 16)) 
 p_streambed
 
+#png("tide_analysis/ModelRDS/s_bm1_interaction.png", width = 11, height = 7, units = 'in', res = 300)
 plot(p_random + p_anvil + p_streambed)
+#dev.off()
 
 #### Model 1coiba: on Coiba, ratio of adult females to adult males (only streambeds) #####
 s_bm1coiba <- brm(nAF | trials(Nadults) ~ 1 + (1|locationfactor), data = agoutiseq_cto1, family = binomial, 
-             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
-# s_bm1coiba <- add_criterion(s_bm1coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
+             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), control = list(adapt_delta = 0.99))
+# s_bm1coiba <- add_criterion(s_bm1coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", control = list(adapt_delta = 0.99), ndraws = 3000) 
 # saveRDS(s_bm1coiba, "tide_analysis/ModelRDS/s_bm1coiba.RDS")
 #s_bm1coiba <- readRDS("tide_analysis/ModelRDS/s_bm1coiba.RDS")
 summary(s_bm1coiba)
@@ -334,11 +359,13 @@ mcmc_plot(s_bm1coiba)
 pp_check(s_bm1coiba, ndraw = 100) 
 loo(s_bm1coiba)
 loo_R2(s_bm1coiba)
-bayes_R2(s_bm1coiba)
+round(bayes_R2(s_bm1coiba),2)
 
-round(logit2prob(1.83),2)
+round(logit2prob(1.74),2)
 
 plot(s_bm1coiba)
+
+report(s_bm1coiba)
 
 ## Plot for supplements of sex ratio at each camera. 
 r_fitc <- s_bm1coiba %>%
@@ -348,6 +375,7 @@ r_fitc <- s_bm1coiba %>%
 B0c <- r_fitc$`(Intercept)`$estimate # average sex ratio across all sequences 
 sigma_0c <- r_fitc$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
+#png("tide_analysis/ModelRDS/s_bm1coiba_cameras.png", width = 8, height = 7, units = 'in', res = 300)
 s_bm1coiba %>%
   linpred_draws(tibble(locationfactor = agoutiseq_cto1$locationfactor,
                        Nadults = agoutiseq_cto1$Nadults)) %>%
@@ -362,6 +390,7 @@ s_bm1coiba %>%
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
+#dev.off()
 
 #### Model 2: ratio of females with infants to females without #########
 agoutiseq_jto2 <- agoutiseq_jto1[which(agoutiseq_jto1$nAF >0),]
@@ -380,7 +409,7 @@ loo(s_bm1b)
 loo_R2(s_bm1b)
 bayes_R2(s_bm1b)
 
-round(logit2prob(-0.84),2)
+round(logit2prob(-0.28),2)
 
 plot(conditional_effects(s_bm1b))
 
@@ -388,6 +417,9 @@ hypothesis(s_bm1b, "Intercept > Intercept + locationtypeanvil", alpha = 0.05)
 hypothesis(s_bm1b, "Intercept > Intercept + locationtypestreambed", alpha = 0.05)
 hypothesis(s_bm1b, "Intercept + locationtypestreambed > Intercept + locationtypeanvil", alpha = 0.05)
 
+report(s_bm1b)
+
+# plots
 m_type_predb <- s_bm1b %>% 
   epred_draws(newdata = tibble(nAF = agoutiseq_jto2$nAF,
                                locationtype = agoutiseq_jto2$locationtype,
@@ -395,6 +427,7 @@ m_type_predb <- s_bm1b %>%
                                distcoast = agoutiseq_jto2$distcoast)) %>% 
   mutate(.epred_prop = .epred/nAF) # change to proportion
 
+#png("tide_analysis/ModelRDS/s_bm1b_ratios.png", width = 8, height = 7, units = 'in', res = 300)
 ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
   stat_summary(agoutiseq_jto2, inherit.aes = FALSE, mapping=aes(x = locationtype, y = nAF_infant/nAF, color = locationtype), geom = "point", fun = "mean",
                size = 4) + 
@@ -405,6 +438,7 @@ ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violi
   labs(x = "Locationtype", y = "Ratio females with infants:females without infants") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
+#dev.off()
 
 # distance to coast marginal effects plot
 r_fit <- s_bm1b %>%
@@ -417,6 +451,7 @@ B2_b <- r_fit$locationtypestreambed$estimate # effect of streambed across all se
 sigma_0b <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
+#png("tide_analysis/ModelRDS/s_bm1b_cameras.png", width = 8, height = 7, units = 'in', res = 300)
 s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
                        locationtype = agoutiseq_jto2$locationtype,
@@ -436,6 +471,7 @@ s_bm1b %>%
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
+#dev.off()
 
 ## visualize distance to coast interaction
 # marginal effects plots
@@ -458,7 +494,7 @@ p_marginal_predsb <- marginal_predsb %>%
        title = "Marginal population-level means",
        subtitle = "Random effects averaged / marginalized / integrated") +
   theme_bw()
-p_marginal_preds
+p_marginal_predsb
 
 ## if we do it per locationtype 
 # this is assuming each camera can be at each distance at each locationtype (so also simulating distant anvil cameras)
@@ -538,7 +574,9 @@ p_streambedb <- ggplot(data = marginal_preds4b, aes(x = distcoast)) +
                       axis.text = element_text(size = 16)) 
 p_streambedb
 
+#png("tide_analysis/ModelRDS/s_bm1b_interaction.png", width = 11, height = 7, units = 'in', res = 300)
 plot(p_randomb + p_anvilb + p_streambedb)
+#dev.off()
 
 #### Model 2coiba: ratio of females with infants to females without on Coiba (only streambed) #########
 agoutiseq_cto2 <- agoutiseq_cto1[which(agoutiseq_cto1$nAF >0),]
@@ -555,9 +593,11 @@ mcmc_plot(s_bm1b_coiba)
 pp_check(s_bm1b_coiba, ndraw = 100) 
 loo(s_bm1b_coiba)
 loo_R2(s_bm1b_coiba)
-bayes_R2(s_bm1b_coiba)
+round(bayes_R2(s_bm1b_coiba),2)
 
-round(logit2prob(-2.48),2)
+round(logit2prob(-2.45),2)
+
+report(s_bm1b_coiba)
 
 # marginal effects plot
 r_fit <- s_bm1b_coiba %>%
@@ -568,6 +608,7 @@ B0_bc <- r_fit$`(Intercept)`$estimate # average infant across all sequences in r
 sigma_0bc <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
+#png("tide_analysis/ModelRDS/s_bm1bcoiba_cameras.png", width = 8, height = 7, units = 'in', res = 300)
 s_bm1b_coiba %>%
   linpred_draws(tibble(locationfactor = agoutiseq_cto2$locationfactor,
                        nAF = agoutiseq_cto2$nAF)) %>%
@@ -582,15 +623,12 @@ s_bm1b_coiba %>%
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
+#dev.off()
 
-### CONCLUSION: adult females and adult males are seen just as frequently at random cameras, but at streambeds and anvils males are much more frequent
-## females are not less likely to be on the ground
-
-
-#### H2: Females are rarely observed tool-using because of within-group competition ####
-## P2a: Displacements at anvils are common
+### H3: Females are rarely observed tool-using because of within-group competition ####
+## P3a: Displacements at anvils are common
 ftable(agoutiseq_jto$displacement[which(agoutiseq_jto$locationtype == "anvil")])
-## of the 14 300 sequences at anvils, displacement only occurred in 95 of them 
+## of the 14 300 sequences at anvils, displacement only occurred in 94 of them 
 
 ftable(agoutiseq_jto$displacement[which(agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$n > 1)])
 ## even if you filter to only sequences with more than 1 individual in, still see only 95 displacements on ~6300 sequences
@@ -820,7 +858,10 @@ s_gam1 <- gam(nAF_infant/nAF ~ s(yrday, bs = "cc") + factor(year) + s(month, bs 
 plot(s_gam1)
 summary(s_gam1)
 
-#### H3: Females have different diet than males ####
+#### H5: Females have different diet than males ####
+ftable(agoutiseq_ct$tool_item[which(agoutiseq_ct$tu_nAF >0)])
+
+
 # use agouticlean dataset
 head(agouticlean)
 
