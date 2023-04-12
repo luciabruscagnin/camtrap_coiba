@@ -44,8 +44,8 @@ require(easystats)
 
 ### Preparation #####
 ## Create two datasets:
-# 1. subset to only Jicaron tool-site data
-agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron"),]
+# 1. subset to only Jicaron tool-site data and exclude CEBUS-03 as this is on same location as CEBUS-02!
+agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron" & agoutisequence_c$locationfactor != "CEBUS-03"),]
 
 # exclude days on which cameras were deployed or picked up (to take away that bias)
 # since not all cameras ran until pick up, need to extract the actual days we were there
@@ -53,6 +53,7 @@ picksetupdays2 <- unique(agoutiseq_jt$seqday[agoutiseq_jt$cameraSetup ==  "True"
 agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
 # did not do this now because then we only have 80 displacements vs 94. discuss what we want
 #agoutiseq_jt <- agoutiseq_jt[(agoutiseq_jt$picksetup == 0),]
+agoutiseq_jt <- droplevels.data.frame(agoutiseq_jt)
 
 # 2. subset to only Coiba tool-site data
 agoutiseq_ct <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Coiba"),]
@@ -60,6 +61,7 @@ agoutiseq_ct <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutis
 picksetupdays3 <- unique(agoutiseq_ct$seqday[which(agoutiseq_ct$cameraSetup ==  "True")] )
 agoutiseq_ct$picksetup <- ifelse(agoutiseq_ct$seqday %in% picksetupdays3 , 1, 0)
 #agoutiseq_ct <- agoutiseq_ct[(agoutiseq_ct$picksetup == 0),]
+agoutiseq_ct <- droplevels.data.frame(agoutiseq_ct)
 
 ### H1: Females are physically incapable of tool use ####
 
@@ -167,7 +169,7 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-round(logit2prob(-0.01),2)
+round(logit2prob(0.00),2)
 
 # to help with reporting results
 report(s_bm1)
@@ -1082,3 +1084,79 @@ sum(agoutisequence_mf$nr_fruit_f, na.rm = TRUE)
 agouticlean[which(str_detect(agouticlean$behaviour, "Infant") == TRUE & 
               str_detect(agouticlean$behaviour,  "TAF") == TRUE),]
 head(agouticlean)
+
+#### DESCRIPTIVES ####
+## Jicaron
+## How many camera trapping days
+jicdays <- agoutiseq_jt
+jicdays$dayloc <- paste(jicdays$locationfactor, jicdays$seqday, sep = " ")
+jicdays2 <- jicdays[!duplicated(jicdays$dayloc),]
+
+# make overview of deployments we have and their start and end days
+locations_t <- data.frame(uniqueloctag = unique(agoutiseq_jt$uniqueloctag)) 
+locations_t <- left_join(locations_t, agoutiseq_jt[,c("uniqueloctag", "dep_start", "dep_end", "locationfactor", "locationtype")], by = "uniqueloctag")
+locations_t <- locations_t[!duplicated(locations_t$uniqueloctag),]
+# take time off and keep just date variable
+locations_t$dep_startday <- as.Date(locations_t$dep_start, tz = "America/Panama", "%Y-%m-%d")
+locations_t$dep_endday <- as.Date(locations_t$dep_end, tz = "America/Panama", "%Y-%m-%d")
+# calculate days in each deployment (round up)
+locations_t$dep_days <- ceiling(difftime(locations_t$dep_end, locations_t$dep_start, units = c("days")))
+# number of rows in the jicdays2 dataframe (so how many days we have)
+for (i in 1:nrow(locations_t)) {
+  locations_t$nrow[i] <- nrow(jicdays2[jicdays2$uniqueloctag == locations_t$uniqueloctag[i],])
+}
+
+locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, locationtype = locations_t$locationtype), FUN = sum)
+
+sum(locations_t$dep_days[locations_t$locationtype == "anvil"])
+sum(locations_t2$x)
+
+# How many locations
+nrow(locations_t2)
+ftable(locations_t2$locationtype)
+# Average number of trapping days per location
+summary(as.numeric(locations_t2$x))
+# average number of trapping days per deployment
+summary(as.numeric(locations_t$dep_days))
+# number of deployments per location
+max(as.matrix(ftable(locations_t$locationfactor)))
+mean(as.matrix(ftable(locations_t$locationfactor)))
+
+## Coiba
+coidays <- agoutiseq_ct
+coidays$dayloc <- paste(coidays$locationfactor, coidays$seqday, sep = " ")
+coidays2 <- coidays[!duplicated(coidays$dayloc),]
+
+# make overview of deployments we have and their start and end days
+locations_ct <- data.frame(uniqueloctag = unique(agoutiseq_ct$uniqueloctag)) 
+locations_ct <- left_join(locations_ct, agoutiseq_ct[,c("uniqueloctag", "dep_start", "dep_end", "locationfactor")], by = "uniqueloctag")
+locations_ct <- locations_ct[!duplicated(locations_ct$uniqueloctag),]
+# take time off and keep just date variable
+locations_ct$dep_startday <- as.Date(locations_ct$dep_start, tz = "America/Panama", "%Y-%m-%d")
+locations_ct$dep_endday <- as.Date(locations_ct$dep_end, tz = "America/Panama", "%Y-%m-%d")
+# calculate days in each deployment (round up)
+locations_ct$dep_days <- ceiling(difftime(locations_ct$dep_end, locations_ct$dep_start, units = c("days")))
+# number of rows in the coidays2 dataframe (so how many days we have)
+for (i in 1:nrow(locations_ct)) {
+  locations_ct$nrow[i] <- nrow(coidays2[coidays2$uniqueloctag == locations_ct$uniqueloctag[i],])
+}
+
+locations_ct2 <- aggregate(locations_ct$dep_days, list(locationfactor  = locations_ct$locationfactor), FUN = sum)
+
+sum(locations_ct2$x)
+
+# How many locations
+nrow(locations_ct2)
+ftable(locations_ct2$locationtype)
+# Average number of trapping days per location
+summary(as.numeric(locations_ct2$x))
+# average number of trapping days per deployment
+summary(as.numeric(locations_ct$dep_days))
+# number of deployments per location
+max(as.matrix(ftable(locations_ct$locationfactor)))
+mean(as.matrix(ftable(locations_ct$locationfactor)))
+
+# how successful are we at sexing
+ftable(agoutiseq_jt$agesex)
+nrow(agoutiseq_jto)
+nrow(agoutiseq_cto)

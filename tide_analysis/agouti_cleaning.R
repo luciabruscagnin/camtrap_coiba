@@ -25,10 +25,10 @@ setwd("~/GitHub/camtrap_coiba") # change to Git
 #   then see if you have activity at several camera traps within the same hour (hour might be too large of a timescale). Need spatial depth for this. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20230323095839/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20230404085206/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20230323095839/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20230404085206/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
@@ -44,7 +44,7 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20230323095839/media.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20230404085206/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -108,6 +108,9 @@ agoutigross <- left_join(agoutigross, multimedia2, "sequenceID")
 agoutigross$locationName[which(agoutigross$locationName == "SURVEY-CEBUS-24-01")] <- "CEBUS-04"
 # create unique variable (like deployment ID) that is location name + tag
 agoutigross$uniqueloctag <- paste(agoutigross$locationName, agoutigross$tag, sep = "-")
+# remove "caution" from the name and instead create a caution column
+agoutigross$caution <- ifelse(str_detect(agoutigross$uniqueloctag, "-Caution \\| ") == TRUE, 1, 0)
+agoutigross$uniqueloctag <- str_replace(agoutigross$uniqueloctag, "-Caution \\| R", "-")
 startdep <- aggregate(x = list(dep_start = agoutigross$seq_start), by = list(uniqueloctag = agoutigross$uniqueloctag), FUN = min)
 enddep <- aggregate(x = list(dep_end = agoutigross$seq_start), by = list(uniqueloctag = agoutigross$uniqueloctag), FUN = max)
 
@@ -592,8 +595,19 @@ agoutiselect2$season <- ifelse(agoutiselect2$month == 12 | agoutiselect2$month =
 agoutiselect2$locationfactor <- as.factor(agoutiselect2$locationName)
 agoutiselect2$tooluse[agoutiselect2$noanimal == 1] <- 0
 
+## get all dorsal infant sightings
+# flag sequences with infant care
+# keep only one sequence number
+agouticlean$infantpresent <- ifelse(str_detect(agouticlean$behaviour, "Infant") == TRUE, 1, 0)
+infantsequences <- unique(agouticlean$sequenceID[which(agouticlean$infantpresent == 1)])
+neckinfant <- unique(agouticlean$sequenceID[which(str_detect(agouticlean$comments.x, "neck"))])
+howlerinfant <- unique(agouticlean$sequenceID[which(agouticlean$scientificName == "Alouatta palliata")])
 
+infantsequences <- infantsequences[!infantsequences %in% neckinfant & !infantsequences %in% howlerinfant]
+infants <- agouticlean[agouticlean$sequenceID %in% infantsequences,]
 
+unique(agouticlean$behaviour)
+#writeLines(infantsequences, "infants.txt")
 
 ## clean for Lester DONT RUN #########
 
