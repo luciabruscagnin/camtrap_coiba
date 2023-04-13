@@ -9,7 +9,6 @@
 multimedia.csv
 /agouti_output
 /cebaco_island_tide_charts/pdfs
-
+/tide_analysis/ModelRDS
 *.rds
-
 exiftool_metadata/temperature_sequencelength.csv
