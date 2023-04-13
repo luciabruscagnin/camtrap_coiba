@@ -609,6 +609,11 @@ infants <- agouticlean[agouticlean$sequenceID %in% infantsequences,]
 unique(agouticlean$behaviour)
 #writeLines(infantsequences, "infants.txt")
 
+
+
+
+
+
 ## clean for Lester DONT RUN #########
 
 agouticlean$n_agouti <- ifelse(agouticlean$scientificName == "Dasyprocta coibae", agouticlean$count, 0)
