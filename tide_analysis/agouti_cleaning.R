@@ -69,13 +69,15 @@ ftable(multimedia$deploymentID, multimedia$timeflag)
 multimedia$timestamp_correct <- multimedia$timestamp
 multimedia$timestamp_correct[which(multimedia$timeflag == 1)] <- as.character(multimedia$time_file[which(multimedia$timeflag == 1)])
 
-# EXCEPTION: In at least one deployment (CEBUS-09-R3) the filetime is one year off. Also the R9 deployment has this consistently
+# EXCEPTIONS: In at least one deployment (CEBUS-09-R3) the filetime is one year off. Also the R9 deployment has this consistently
 # deployment key of CEBUS-09-R3: 09bcd191-78ec-4ded-a438-cffaa14fa55a. Fix this
+# deployment CEBUS-03-R8: 82cd9f63-8756-4987-bc32-8082090996a3 is 12 hours late
 multimedia$timestamp_correct[which(multimedia$deploymentID == "09bcd191-78ec-4ded-a438-cffaa14fa55a")] <- gsub("2017", "2018", multimedia$timestamp_correct[which(multimedia$deploymentID == "09bcd191-78ec-4ded-a438-cffaa14fa55a")]) 
 multimedia$timestamp_correct <- multimedia$timestamp_correct %>%
   as.character(.) %>%
   str_replace(., "T", " ") %>%
   as.POSIXct(., tz = "America/Panama", format = "%Y-%m-%d %H:%M:%S")
+multimedia$timestamp_correct[which(multimedia$deploymentID == "82cd9f63-8756-4987-bc32-8082090996a3")] <- multimedia$timestamp_correct[which(multimedia$deploymentID == "82cd9f63-8756-4987-bc32-8082090996a3")] - 43200
 
 # create sequence_start, sequence_end and duration column (so this is per sequence)
 startseq <- aggregate(x = list(seq_start = multimedia$timestamp_correct), by = list(sequenceID = multimedia$sequenceID), FUN = min)
