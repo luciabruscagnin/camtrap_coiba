@@ -853,10 +853,9 @@ agoutiseq_jt$year <- year(agoutiseq_jt$seqday)
 agoutiseq_jt$yrday <- yday(agoutiseq_jt$seqday)
 agoutiseq_jt$week <- week(agoutiseq_jt$seqday)
 
-ggplot(data = agoutiseq_jt, aes(x = month, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean")   + theme_bw()
-ggplot(data = agoutiseq_jt, aes(x = week, y = nAF_infant/nAF, col = as.factor(year))) + stat_summary(geom =  "smooth", fun = "mean") + facet_wrap(~year)  + theme_bw()
+ggplot(data = agoutiseq_jt, aes(x = month, y = n_neckinfant, col = as.factor(year))) + geom_point() 
 
-
-s_gam1 <- gam(nAF_infant/nAF ~ s(yrday, bs = "cc") + factor(year) + s(month, bs = "cc"), data = agoutiseq_jt)
+s_gam1 <- gam(n_neckinfant ~ s(month, bs = "cc", k = 12), data = agoutiseq_jt)
 plot(s_gam1)
 summary(s_gam1)
+draw(s_gam1)

@@ -9,11 +9,11 @@ setwd("D:/")
 # IMPORTANT: Make sure all the folders are already fully labeled with their final name, so CEBUS-02-R10. 
 
 # say which directory is the 'station' directory 
-wd_createStationDir <- file.path("/raw_data/", "R12")
+wd_createStationDir <- file.path("raw/", "R12")
 # define where the raw data is
-wd_images_raw<- file.path("/raw_data/R12")
+wd_images_raw<- file.path("raw/R12")
 # define where the renamed data has to go
-wd_images_raw_renamed <- file.path("/renamed_data/R12")
+wd_images_raw_renamed <- file.path("renamed/R12")
 
 # rename the entire folder of R11
 # this will rename all the JPGs, not the MP4s!!
@@ -22,6 +22,6 @@ renaming.table <- imageRename(inDir               = wd_images_raw, #source path
                               hasCameraFolders    = FALSE, #if old files have camera subfolder, need to be set to false
                               copyImages          = TRUE, #if copying will actually happen, set to false to simulate renaminf
                               keepCameraSubfolders = FALSE,
-                              writecsv = TRUE)
+                              writecsv = FALSE)
 
 # after this then run the exiftool shellscript also in this folder manually per video location to rename the MP4s

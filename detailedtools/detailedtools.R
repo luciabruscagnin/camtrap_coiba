@@ -362,6 +362,10 @@ ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color =
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+## including interaction of age and item (once we have more reliable data for each item type)
+#m_e2b <- brm(n_pounds ~ age_of + item + age_of*item + split, data = detseq_o, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "gamma")
+#plot(conditional_effects(m_e2b))
+
 ### FROM HERE ON OUT NEED TO CHANGE TO NOT USING DETSEQ_O BUT JUST DETSEQ. 
 # doesnt need to just be opened sequences but can do all?
 range(detseq_o$n_pounds[which(str_detect(detseq_o$item, "almendra") == TRUE & detseq_o$Age == "Juvenile")])

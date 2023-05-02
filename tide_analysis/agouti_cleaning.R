@@ -25,10 +25,10 @@ setwd("~/GitHub/camtrap_coiba") # change to Git
 #   then see if you have activity at several camera traps within the same hour (hour might be too large of a timescale). Need spatial depth for this. 
 
 # open Agouti output file (observations) that you have downloaded from the agouti website. Use most recent version
-agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20230404085206/observations.csv", header = TRUE)
+agoutigross <- read.csv("agouti_output/coiba-national-park-tool-use-20230502134259/observations.csv", header = TRUE)
 
 # open the associated deployment keys (also downloaded from agouti.eu)
-depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20230404085206/deployments.csv", header = TRUE)
+depl_keys <- read.csv("agouti_output/coiba-national-park-tool-use-20230502134259/deployments.csv", header = TRUE)
 
 # filter out test deployments/not relevant ones (so create variable to filter test ones)
 ## THIS WILL NEED TO BE MORE FINETUNED LATER. THERE ARE SOME TRIAL/WRONG DATA ON THERE THAT MAY NOT BE CAPTURED NOW.
@@ -44,7 +44,7 @@ agoutigross$time <- as.POSIXct(agoutigross$time, tz = "America/Panama", format =
 
 # identify and correct wrong timestamps
 # open the multimedia csv containing the correct timestamps (also from agouti)
-multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20230404085206/media.csv", header = TRUE)
+multimedia <- read.csv("agouti_output/coiba-national-park-tool-use-20230502134259/media.csv", header = TRUE)
 
 # have both timestamps we entered incorrectly (e.g. 1970) and those that shifted 5 hours by accident
 multimedia$time <- str_replace(multimedia$timestamp, "T", " ")
@@ -193,10 +193,14 @@ colnames(cap_agesex_infant) <- c("nAF_infant", "nAM_infant", "nAU_infant", "nJF_
                           "nUF_infant", "nUM_infant", "nUU_infant")
 cap_agesex_infant$sequenceID <- rownames(cap_agesex_infant)
 
+# number of neck infants
+cap_neck_infant <- as.data.frame(ftable(agoutigross$sequenceID[which(str_detect(agoutigross$comments.x, "neck infant") == TRUE)]))
+colnames(cap_neck_infant) <- c("sequenceID", "n_neckinfant")
 
 # add this to agoutigross dataframe
 agoutigross <- left_join(agoutigross, cap_agesex, "sequenceID")
 agoutigross <- left_join(agoutigross, cap_agesex_infant, "sequenceID")
+agoutigross <- left_join(agoutigross, cap_neck_infant, "sequenceID")
 
 # make new colum for total number of males, total number of females,
 # total adults, total subadults, total juveniles per sequence
@@ -439,11 +443,17 @@ agoutigross <- agoutigross %>%
                  "sc_nAF", "sc_nAM", "sc_nAU", "sc_nJF", "sc_nJM", "sc_nJU", "sc_nSF", "sc_nSM", "sc_nSU", 
                  "sc_nUF", "sc_nUM", "sc_nUU", "ad_nAF", "ad_nAM", "ad_nAU", "ad_nJF", "ad_nJM", "ad_nJU", "ad_nSF", 
                  "ad_nSM", "ad_nSU", "ad_nUF", "ad_nUM", "ad_nUU", "nAF_infant", "nAM_infant", "nAU_infant", "nJF_infant", "nJM_infant", "nJU_infant", "nSF_infant", "nSM_infant", "nSU_infant", 
-                 "nUF_infant", "nUM_infant", "nUU_infant"), ~replace_na(.,0))
+                 "nUF_infant", "nUM_infant", "nUU_infant", "n_neckinfant"), ~replace_na(.,0))
+
+### at this point can FILTER OUR THE BLANKS
+# exclude blanks, unclassified and unknown
+ftable(agoutigross$observationType, agoutigross$timelapse)
+# exclude all timelapse triggers, all blanks. Keep the unclassified (uncoded) ones in cause those allow you to filter out which deployments are coded or not
+agoutigross2 <- agoutigross[which(agoutigross$observationType != "blank" & agoutigross$timelapse != 1),]
 
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
-agouticlean <- agoutigross[, !names(agoutigross) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
+agouticlean <- agoutigross2[, !names(agoutigross2) %in% c("timestamp","mediaID", "classificationConfidence", "coordinateUncertainty", "start", "end", "cameraID", "cameraModel", "baitUse", "featureType",
                                             "timestampIssues", "cameraTilt", "session", "array", "habitat", "X_id.y", "X_id.x", "comments.y", "time", "comment_item", "foraging_item1", "foraging_item2",
                                             "countNew", "cameraHeading")]
 
@@ -509,7 +519,8 @@ agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$
 # need to filter out deployments that are not fully coded
 # have a lot of unclassified sequences in --> these seem to largely be the 00:00:00 automated timecapture moments, that weren't coded
 # so have two variables for this, whether a sequence is a timelapse sequence (1 yes, 0 no) and whether it is uncoded (1 yes, 0 no)
-# want to exclude deployments that have uncoded sequences
+# want to exclude deployments that have uncoded sequences (that are not timelapse)
+# I already took the timelapse ones out, so all unclassified left are "real" uncoded sequences
 # can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
 cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
 codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5]) # deployments that miss less than 5 sequences
@@ -596,25 +607,6 @@ agoutiselect2$season <- ifelse(agoutiselect2$month == 12 | agoutiselect2$month =
 
 agoutiselect2$locationfactor <- as.factor(agoutiselect2$locationName)
 agoutiselect2$tooluse[agoutiselect2$noanimal == 1] <- 0
-
-## get all dorsal infant sightings
-# flag sequences with infant care
-# keep only one sequence number
-agouticlean$infantpresent <- ifelse(str_detect(agouticlean$behaviour, "Infant") == TRUE, 1, 0)
-infantsequences <- unique(agouticlean$sequenceID[which(agouticlean$infantpresent == 1)])
-neckinfant <- unique(agouticlean$sequenceID[which(str_detect(agouticlean$comments.x, "neck"))])
-howlerinfant <- unique(agouticlean$sequenceID[which(agouticlean$scientificName == "Alouatta palliata")])
-
-infantsequences <- infantsequences[!infantsequences %in% neckinfant & !infantsequences %in% howlerinfant]
-infants <- agouticlean[agouticlean$sequenceID %in% infantsequences,]
-
-unique(agouticlean$behaviour)
-#writeLines(infantsequences, "infants.txt")
-
-
-
-
-
 
 ## clean for Lester DONT RUN #########
 
