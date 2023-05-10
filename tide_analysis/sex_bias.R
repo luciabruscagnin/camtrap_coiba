@@ -396,6 +396,10 @@ s_bm1coiba %>%
 #dev.off()
 
 #### Model 2: ratio of females with infants to females without #########
+
+### NOTE WHEN RERUNNING:
+# Include the month of the year as a fixed (or random?) effect as there is a seasonal birthpeak. 
+
 agoutiseq_jto2 <- agoutiseq_jto1[which(agoutiseq_jto1$nAF >0),]
 
 s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor), data = agoutiseq_jto2, family = binomial, 
@@ -853,9 +857,65 @@ agoutiseq_jt$year <- year(agoutiseq_jt$seqday)
 agoutiseq_jt$yrday <- yday(agoutiseq_jt$seqday)
 agoutiseq_jt$week <- week(agoutiseq_jt$seqday)
 
-ggplot(data = agoutiseq_jt, aes(x = month, y = n_neckinfant, col = as.factor(year))) + geom_point() 
+ggplot(data = agoutiseq_jt, aes(x = as.Date(agoutiseq_jt$seq_startday), y = n_neckinfant, col = as.factor(year))) + geom_point() 
 
-s_gam1 <- gam(n_neckinfant ~ s(month, bs = "cc", k = 12), data = agoutiseq_jt)
+agoutiseq_jt$Time <- as.numeric(as.Date(agoutiseq_jt$seq_startday)) / 1000
+s_gam <- gamm(n_neckinfant ~ s(month, bs = "cc", k = 12) + s(Time), data = agoutiseq_jt)
+plot(s_gam$gam)
+summary(s_gam$gam)
+
+## would maybe need to do an autocorrelation correction model like below
+# but in general I dont know if we have enough data in the different years to really account for year
+layout(matrix(1:2, ncol = 2))
+acf(resid(s_gam$lme), lag.max = 36, main = "ACF")
+pacf(resid(s_gam$lme), lag.max = 36, main = "pACF")
+layout(1)
+
+ctrl <- list(niterEM = 0, msVerbose = TRUE, optimMethod="L-BFGS-B")
+m1 <- gamm(n_neckinfant ~ s(month, bs = "cc", k = 12) + s(Time), data = agoutiseq_jt, correlation = corARMA(form = ~ 1|year, p = 1),
+              control = ctrl)
+m2 <- gamm(n_neckinfant ~ s(month, bs = "cc", k = 12) + s(Time), data = agoutiseq_jt, correlation = corARMA(form = ~ 1|year, p = 2),
+           control = ctrl)
+m3 <- gamm(n_neckinfant ~ s(month, bs = "cc", k = 12) + s(Time), data = agoutiseq_jt, correlation = corARMA(form = ~ 1|year, p = 3),
+           control = ctrl)
+anova(m$lme, m1$lme, m2$lme, m3$lme) # to see which one is best
+
+plot(m1$gam)
+summary(m1$gam)
+
+# number of neck infants per month, accounting for locationtype and locationfactorand including numerical date to reflect between year variation
+s_gam1 <- gam(n_neckinfant ~ s(month, bs = "cc", k = 12) + s(Time) + locationtype + s(locationfactor, bs = "re"), data = agoutiseq_jt)
 plot(s_gam1)
 summary(s_gam1)
 draw(s_gam1)
+
+## in brms
+s_gam1b <- brm(n_neckinfant ~ s(month, bs = "cc", k = 12) + s(Time) + locationtype + s(locationfactor, bs = "re"), data = agoutiseq_jt,
+               family = poisson(), chains =2, cores = 2, iter = 2000, warmup = 1000, backend = "cmdstanr")
+# saveRDS(s_gam1b, "tide_analysis/ModelRDS/s_gam1b.RDS")
+summary(s_gam1b)
+plot(conditional_smooths(s_gam1b))
+mcmc_plot(s_gam1b)
+
+# without taking into account years
+s_gam2b <- brm(n_neckinfant ~ s(month, bs = "cc", k = 12) + locationtype + s(locationfactor, bs = "re"), data = agoutiseq_jt,
+               family = poisson(), chains =2, cores = 2, iter = 2000, warmup = 1000, backend = "cmdstanr")
+# saveRDS(s_gam2b, "tide_analysis/ModelRDS/s_gam1b.RDS")
+summary(s_gam2b)
+plot(conditional_smooths(s_gam2b))
+mcmc_plot(s_gam2b)
+
+plot(conditional_effects(s_gam2b))
+# this one seems okay. Try to plot conditional_smooths over real data
+
+birthpeak <- plot(conditional_effects(s_gam2b), plot = FALSE)[[2]]
+
+#png("tide_analysis/ModelRDS/birthpeak.png", width = 11, height = 8, units = 'in', res = 300)
+birthpeak + theme_bw() + 
+  stat_summary(data = agoutiseq_jt, inherit.aes = FALSE, aes(x = month, y = n_neckinfant, col = as.factor(year)), 
+               geom = "point", fun = "mean", size = 3, shape = 19, alpha = 0.5) +
+  labs(y = "Average number of neck infants", x = "Month", col = "Year") +
+  theme(axis.text.x = element_text(angle = 90), strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
+#dev.off()  
