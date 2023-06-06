@@ -121,6 +121,9 @@ agoutigross <- left_join(agoutigross, enddep, "uniqueloctag")
 # add deployment length in hours, this is an exposure
 agoutigross$dep_length_hours <-as.numeric(difftime(agoutigross$dep_end,agoutigross$dep_start,units="hours"))
 
+## Corrections: TU-155 was turned on two days prior to deployment, real deployment start is 2022-07-15 11:12:50
+agoutigross$dep_start[which(agoutigross$locationName == "TU-155")] <- "2022-07-15 11:12:50 EST"
+
 #### ADDING EXTRA VARIABLES ####
 # make month column
 agoutigross$month <- month(agoutigross$seq_start)
