@@ -8,15 +8,20 @@
 # alternatively have agoutiselect2 data that is on level of day-hour with zero's added in
 
 ## Packages required
-require(stringr)
-require(ggplot2)
-require(mgcv)
-require(gratia)
+library(stringr)
+library(ggplot2)
+library(mgcv)
+library(gratia)
+library(reshape2)
+library(asnipe)
+library(igraph)
+library(activity)
 
 ## Notes for analyses:
 
 # Need to find some way to incorporate detection distance in the models, see how it varies between the cameras. 
-# --> have this information on Kobo, can add it to the csv with camera information?
+# --> have this information on Kobo, can add it to the csv with camera information? --> this is incomplete
+# will need to find out how to calculate detection distance from camera images
 
 ##### DIAGNOSTICS ####
 
@@ -120,15 +125,63 @@ ggplot(data = gridspecies, aes(x = species, group = gridtype, fill = gridtype)) 
 ###### Are we capturing one NTU group? ####
 # max group size seen
 NTUgridseq <- gridsequence_c[gridsequence_c$gridtype == "NTU",]
-max(NTUgridseq$n)
+NTUgridseq[which(NTUgridseq$n == max(NTUgridseq$n)),]
+# in max group size, see 4 adult females, 5 adult males, 5 juveniles (of which one infant), 2 subadult males
+
+# look at supposed group composition (max number of adult males and adult females seen in one sequence and how many we have IDed)
+max(NTUgridseq$nAF) # max of 4 adult females (have identified 5)
+max(NTUgridseq$nAM) # max of 5 adult males (have identified 5, potentially 6)
+max(NTUgridseq$nJU) # max of 6 juveniles
+max(NTUgridseq$nSM) # max of 2 subadult males ( have identified 2, maybe 3)
 
 # co-occurrence of identifiable individuals (SNA network)
 # look at who occurs together in the same sequence. get nodes and see who has not been seen with anyone. 
+# step 1: working with gridclean dataframe, need to turn the IDstrings into the ID key codes we use for clarity.
+# need to get the file that links strings back to names. Asked Agouti for it
+# until then just work with the ID strings as they are
 
-# look at supposed group composition (max number of adult males and adult females seen in one sequence and how many we have IDed)
+# step 2: per sequence, get some kind of dyadic information of who was seen with whom
+# make dataframe with individual variation
+gridagesex <- gridclean_c[,c("individualID","lifeStage", "sex", "gridtype")]
+gridagesex <- gridagesex[! gridagesex$individualID == "" & ! duplicated(gridagesex$individualID),]
+NTUgridagesex <- gridagesex[gridagesex$gridtype == "NTU",]
+# for now just add real names in manually, later use key file
+NTUgridagesex <- NTUgridagesex[order(NTUgridagesex$individualID),]
+NTUgridagesex$ID <- c("QUA", "XAV", "LEX", "PIP", "JUN", "CON", "DRO", "FRA", "ELA", "HAN", "OCT", "MIR", "HEL", "BLO", "KAI")
+
+# I think data format needs to be sequenceID/individualID
+# go to only NTU grid data and only sequence ID and individual ID (when individual ID was known)
+NTUassoc <- gridclean_c[gridclean_c$gridtype == "NTU" & ! gridclean_c$individualID == "", c("sequenceID", "individualID")]
+NTUassoc <- left_join(NTUassoc, NTUgridagesex[,c("individualID", "ID")])
+NTUassoc <- NTUassoc[,c("sequenceID", "ID")]
+
+# then go from long to wide?
+NTUassoc_w <- dcast(NTUassoc, sequenceID ~ ID)
+NTUassoc_w2 <- NTUassoc_w
+NTUassoc_w2[is.na(NTUassoc_w2) == FALSE] <- 1
+NTUassoc_w2$sequenceID <- NTUassoc_w$sequenceID
+NTUassoc_w2[is.na(NTUassoc_w2)] <- 0
+NTUassoc_w2[,2:16] <- as.numeric(unlist(NTUassoc_w2[,2:16]))
+rownames(NTUassoc_w2) <- NTUassoc_w2$sequenceID
+NTUassoc_w2 <- NTUassoc_w2[,-1]
+## now we have a dataframe with all associations (whenever individuals were seen together in the same sequence) in GBI (group by individual) format
+# use this with asnipe package to get a network 
+adj.m <- get_network(NTUassoc_w2, association_index = "SRI")
+assoc.g <- graph_from_adjacency_matrix(adj.m, "undirected", weighted = T)
+plot(assoc.g, edge.width = E(assoc.g)$weight*100)
+
+# largely appears to be one group, but I will still do a double-check of the IDs and try to identify more individuals in the big group sightings
 
 # filter down to only capuchin detections
 gridseq_oc <- gridsequence_c[gridsequence_c$capuchin == 1,]
+
+###### Trap shyness ####
+# inspired by McCarthy et al 2018
+# can look at 1: if party size increases over time/if individuals are more likely to be spotted over time (only first is feasible with our data I think)
+# 2: are you more likely to spot capuchins at a camera trap the longer it has been out? So this is then a model where per day you have 1 capuchin 0 no capuchin and time of days since cam deployment
+
+
+
 
 ##### DAILY ACTIVITY PATTERN #####
 # first just visually, what time of day do we see activity of capuchins? 
@@ -150,6 +203,100 @@ nightowls <- gridseq_oc[gridseq_oc$hour < 5 | gridseq_oc$hour > 19,]
 # all of these cameras seem to have the correct time set. So this means we truly have a capuchin detection at midnight and one at 4 AM!
 
 ## still make proper daily activity model of this, look at Lester's paper for example code etc
+# following this  vignette https://bookdown.org/c_w_beirne/wildCo-Data-Analysis/activity.html
+
+## I think the right data format is what agouti gives you not aggregated to a sequence
+# so each sequence gets repeated for each individual sighting
+# use data with only capuchins in it
+head(gridseq_oc)
+# relevant columns are the gridtype (TU or NTU)
+# seq_start time, which is when the observation occurred
+
+# have various ways of representing time
+# the best and most relevant to me, seems to be solar time, which uses coordinates of observations to determine sunrise and sunset
+# then the activity is classified as being during the day or during the night
+gridseq_oc$timestamp <- ymd_hms(gridseq_oc$seq_start, tz = "America/Panama")
+
+tmp <- solartime(gridseq_oc$timestamp,
+                 gridseq_oc$latitude,
+                 gridseq_oc$longitude,
+                 tz = -5,
+                 format = "%Y-%m-%d %H:%M:%S")
+
+gridseq_oc$solar <- tmp$solar
+gridseq_oc$clock <- tmp$clock
+
+plot(gridseq_oc$solar, gridseq_oc$clock)
+
+# compare TU to NTU
+# TU
+act_m1 <- fitact(gridseq_oc$solar[gridseq_oc$gridtype == "TU"], sample = "model", reps = 100) # need to use 1000 reps
+#saveRDS(act_m1, "gridanalyses/RDS/act_m1.RDS")
+plot(act_m1)
+act_m1@act[1] * 24
+# this means they spend 0.38 * 24 = 9 hours per day active
+
+# NTU
+act_m2 <- fitact(gridseq_oc$solar[gridseq_oc$gridtype == "NTU"], sample = "model", reps = 100) # need to use at least 1000 reps
+#saveRDS(act_m2, "gridanalyses/RDS/act_m2.RDS")
+plot(act_m2)
+act_m2@act[1] * 24
+# this means they spend 0.38 * 24 = 10 hours per day active
+
+
+# plot both together on same axis
+plot(act_m1, yunit="density", data="none", las=1, lwd=2,
+     tline=list(lwd=2), # Thick line 
+     cline=list(lty=0)) # Supress confidence intervals
+
+plot(act_m2, yunit="density", data="none", add=TRUE, 
+     tline=list(col="red", lwd=2),
+     cline=list(lty=0))
+
+legend("topright", c("TU", "NTU"), col=1:2, lty=1, lwd=2)
+
+# overlap between the two
+compareCkern(act_m1, act_m2, reps = 100)
+# 0.897366727 lot of overlap
+
+# just out of curiosity, if we do the same on all the Jicaron TU data (not the grid)
+jtonly <- agouticlean[agouticlean$island == "Jicaron" & agouticlean$tool_site == 1 & str_detect(agouticlean$locationName, "TU") == FALSE & agouticlean$capuchin == 1,]
+jtonly$timestamp <- ymd_hms(jtonly$seq_start, tz = "America/Panama")
+
+tmp2 <- solartime(jtonly$timestamp,
+                 jtonly$latitude,
+                 jtonly$longitude,
+                 tz = -5,
+                 format = "%Y-%m-%d %H:%M:%S")
+
+jtonly$solar <- tmp2$solar
+jtonly$clock <- tmp2$clock
+
+# TU based on all data
+# Note: this is biased because this contains both individuals passing through and using tools, esp the latter really retriggers the camera
+# I was just curious, cant use it in this form. 
+act_m3 <- fitact(jtonly$solar, sample = "model", reps = 100) # need to use 1000 reps
+#saveRDS(act_m3, "gridanalyses/RDS/act_m3.RDS")
+plot(act_m3)
+act_m3@act[1] * 24
+
+# plot TU grid and non-grid together on same axis
+plot(act_m3, yunit="density", data="none", las=1, lwd=2,
+     tline=list(lwd=2), # Thick line 
+     cline=list(lty=0)) # Supress confidence intervals
+
+plot(act_m1, yunit="density", data="none", add=TRUE, 
+     tline=list(col="red", lwd=2),
+     cline=list(lty=0))
+
+legend("topleft", c("Non grid", "Grid"), col=1:2, lty=1, lwd=2)
+
+### STILL DO:
+# make activity for anvil cameras vs random vs streambed vs grid. 
+# plot them all together! 
+# that will be interesting. 
+
+
 
 ##### GROUP SIZE ####
 
