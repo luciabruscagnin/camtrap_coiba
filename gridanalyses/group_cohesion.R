@@ -16,6 +16,8 @@ library(reshape2)
 library(asnipe)
 library(igraph)
 library(activity)
+library(lme4)
+library(brms)
 
 ## Notes for analyses:
 
@@ -174,14 +176,61 @@ plot(assoc.g, edge.width = E(assoc.g)$weight*100)
 
 # filter down to only capuchin detections
 gridseq_oc <- gridsequence_c[gridsequence_c$capuchin == 1,]
+gridseq_oc$gridtype <- as.factor(gridseq_oc$gridtype)
+gridseq_oc <- droplevels.data.frame(gridseq_oc)
 
 ###### Trap shyness ####
 # inspired by McCarthy et al 2018
 # can look at 1: if party size increases over time/if individuals are more likely to be spotted over time (only first is feasible with our data I think)
+# depdays is days since camera was deployed
+ggplot(data = gridseq_oc) + geom_smooth(aes(x = depdays, y = n, group = gridtype, color = gridtype))
+
+# will be simple gam maybe if we expect not linear
+ts_gam1 <- gam(n ~ s(depdays, by = gridtype) + s(locationfactor, bs = "re"), data = gridseq_oc, family = "poisson")
+summary(ts_gam1)
+draw(ts_gam1)
+
+# linear
+ts_m1 <- glmer(n ~ depdays*gridtype + (1|locationfactor), data = gridseq_oc, family = "poisson")
+summary(ts_m1)
+plot(ts_m1)
+
+predicted_values<- modelr::data_grid(gridseq_oc, depdays, gridtype, locationfactor) %>% 
+  modelr::add_predictions(ts_m1)
+predicted_values %>% 
+  ggplot(aes(depdays, pred, color = locationfactor))+
+  geom_line()+
+  geom_point(data = gridseq_oc, aes(depdays, n, color = locationfactor)) + facet_wrap(~gridtype)
+
+# seems to be something going on but not a clear linear pattern, more non-linear. And not sure if this is due to trap shyness or other (seasonal) components
+
 # 2: are you more likely to spot capuchins at a camera trap the longer it has been out? So this is then a model where per day you have 1 capuchin 0 no capuchin and time of days since cam deployment
+# for this use the dataset with 0s in. 
+head(agoutiselect2)
+gridday <- agoutiselect2[str_detect(agoutiselect2$locationName, "TU") == TRUE, c("seqday", "locationfactor", "capuchin", "dep_start", "noanimal") ]
+gridday$dep_startday <- format(gridday$dep_start, "%Y-%m-%d")
+gridday$depdays <- as.numeric(difftime(gridday$seqday, gridday$dep_startday, units = "days"))
+gridday$gridtype <- as.factor(ifelse(str_detect(gridday$locationfactor, "NTU") == TRUE, "NTU", "TU"))
+gridday <- droplevels.data.frame(gridday)
+
+ts_gam2 <- gam(capuchin ~ s(depdays, by = gridtype), data = gridday, family = binomial()) 
+summary(ts_gam2)
+plot(ts_gam2)
 
 
+# linear
+ts_m2 <- glmer(capuchin ~ depdays*gridtype + (gridtype|locationfactor), data = gridday, family = binomial)
+summary(ts_m2)
+library("emmeans")
 
+# probably need to rescale depdays
+# not sure if locationfactor needs to be nested in gridtype or not
+
+ts_bm2 <- brm(capuchin ~ depdays*gridtype + (1|locationfactor), data = gridday, family = bernoulli(), iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+#saveRDS(ts_bm2, "gridanalyses/RDS/ts_bm2.RDS")
+plot(conditional_effects(ts_bm2))
+
+# seems like (without cameras in) probability of capuchins is higher later in deployments
 
 ##### DAILY ACTIVITY PATTERN #####
 # first just visually, what time of day do we see activity of capuchins? 
@@ -232,6 +281,7 @@ plot(gridseq_oc$solar, gridseq_oc$clock)
 # TU
 act_m1 <- fitact(gridseq_oc$solar[gridseq_oc$gridtype == "TU"], sample = "model", reps = 100) # need to use 1000 reps
 #saveRDS(act_m1, "gridanalyses/RDS/act_m1.RDS")
+#act_m1 <- readRDS("gridanalyses/RDS/act_m1.RDS")
 plot(act_m1)
 act_m1@act[1] * 24
 # this means they spend 0.38 * 24 = 9 hours per day active
@@ -293,10 +343,50 @@ legend("topleft", c("Non grid", "Grid"), col=1:2, lty=1, lwd=2)
 
 ### STILL DO:
 # make activity for anvil cameras vs random vs streambed vs grid. 
+jtonly$locationtype <- as.factor(ifelse(jtonly$tool_anvil == 1, "anvil", 
+                                              ifelse(jtonly$streambed == 1, "streambed", "random")))
 # plot them all together! 
 # that will be interesting. 
 
+# anvil
+act_m4 <- fitact(jtonly$solar[jtonly$locationtype == "anvil"], sample = "model", reps = 100) # need to use 1000 reps
+#saveRDS(act_m4, "gridanalyses/RDS/act_m4.RDS")
+plot(act_m4)
+act_m4@act[1] * 24
 
+# streambed
+act_m5 <- fitact(jtonly$solar[jtonly$locationtype == "streambed"], sample = "model", reps = 100) # need to use 1000 reps
+#saveRDS(act_m5, "gridanalyses/RDS/act_m5.RDS")
+plot(act_m5)
+act_m5@act[1] * 24
+
+# random
+act_m6 <- fitact(jtonly$solar[jtonly$locationtype == "random"], sample = "model", reps = 100) # need to use 1000 reps
+#saveRDS(act_m6, "gridanalyses/RDS/act_m6.RDS")
+plot(act_m6)
+act_m6@act[1] * 24
+
+# plot TU grid and non-grid anvil/stream/random together on same axis
+plot(act_m1, yunit="density", data="none", las=1, lwd=2,
+     tline=list(lwd=2), # Thick line 
+     cline=list(lty=0),
+     ylim = c(0,0.18))# Supress confidence intervals
+
+plot(act_m4, yunit="density", data="none", add=TRUE, 
+     tline=list(col="green", lwd=2),
+     cline=list(lty=0))
+
+plot(act_m5, yunit="density", data="none", add=TRUE, 
+     tline=list(col="blue", lwd=2),
+     cline=list(lty=0))
+
+plot(act_m6, yunit="density", data="none", add=TRUE, 
+     tline=list(col="purple", lwd=2),
+     cline=list(lty=0))
+
+legend("topleft", c("Grid", "Anvil", "Streambed", "Random"), col=c("black", "green", "blue", "purple"), lty=1, lwd=2)
+
+# are all surprisingly similar! 
 
 ##### GROUP SIZE ####
 
@@ -306,13 +396,18 @@ mean(gridseq_oc$n[gridseq_oc$gridtype == "NTU"])
 mean(gridseq_oc$n[gridseq_oc$gridtype == "TU"])
 ## need to model this obvs, some kind of poisson?
 
+gs_m1 <- glmer(n ~ gridtype + (1|gridtype:locationfactor), offset = log(dep_length_hours), data = gridseq_oc, family = poisson)
+summary(gs_m1)
+# but since there's likely this nonlinear daily relationship, might need to do gam instead
+# also if trap shyness is a thing, should probably include number of days since first deployment
+
+head(gridseq_oc)
 ## GAM I want to do below that looks at time of day/number of capuchins also does comparison of mean group size between TU and NTU! so maybe can be one model?
 
 ###### 2. Does the number of capuchins per sequence fluctuate depending on the hour of day, and does this relationship differ between TU and NTU ####
 # use a gam
 ## hour of day is not cyclic spline, as we have no observations at midnight and early in morning (explained in bottom of the heap youtube)
-gridseq_oc$gridtype <- as.factor(gridseq_oc$gridtype)
-grid_gam1 <- gam(n ~ s(hour, by = gridtype) + gridtype, data = gridseq_oc, method = "REML", family = poisson())
+grid_gam1 <- gam(n ~ s(hour, by = gridtype) + gridtype, offset = log(dep_length_hours), data = gridseq_oc, method = "REML", family = poisson())
 
 summary(grid_gam1)
 draw(grid_gam1)
@@ -327,13 +422,15 @@ gam.check(grid_gam1)
 # maybe we should include the 0s too? 
 
 # including locationfactor as a random effect
-grid_gam2 <- gam(n ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs = "re"), data = gridseq_oc, method = "REML", family = poisson())
+grid_gam2 <- gam(n ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs = "re"), offset = log(dep_length_hours), data = gridseq_oc, method = "REML", family = poisson())
 
 summary(grid_gam2)
 draw(grid_gam2)
 gam.check(grid_gam2)
 
 ## Need to think further on how to model this. Is poisson appropriate without 0s? should be 1-inflated. Once I'm satisfied with it could take it to brms
+# potentially do zero-truncated poisson
+
 
 ##### GROUP COMPOSITION ####
 
