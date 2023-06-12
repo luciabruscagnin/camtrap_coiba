@@ -45,22 +45,15 @@ require(easystats)
 ### Preparation #####
 ## Create two datasets:
 # 1. subset to only Jicaron tool-site data and exclude CEBUS-03 as this is on same location as CEBUS-02!
-agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron" & agoutisequence_c$locationfactor != "CEBUS-03"),]
-
-# exclude days on which cameras were deployed or picked up (to take away that bias)
-# since not all cameras ran until pick up, need to extract the actual days we were there
-picksetupdays2 <- unique(agoutiseq_jt$seqday[agoutiseq_jt$cameraSetup ==  "True"])
-agoutiseq_jt$picksetup <- ifelse(agoutiseq_jt$seqday %in% picksetupdays2 , 1, 0)
-# did not do this now because then we only have 80 displacements vs 94. discuss what we want
-#agoutiseq_jt <- agoutiseq_jt[(agoutiseq_jt$picksetup == 0),]
+agoutiseq_jt <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Jicaron" & !agoutisequence_c$locationfactor %in% c("CEBUS-03","TU-168", "TU-152")),]
+# also exclude days on which cameras were deployed or picked up 
+agoutiseq_jt <- agoutiseq_jt[(agoutiseq_jt$picksetup == 0),]
 agoutiseq_jt <- droplevels.data.frame(agoutiseq_jt)
 
 # 2. subset to only Coiba tool-site data
 agoutiseq_ct <- agoutisequence_c[which(agoutisequence_c$tool_site == 1 & agoutisequence_c$island == "Coiba"),]
 # exclude pick/set up days
-picksetupdays3 <- unique(agoutiseq_ct$seqday[which(agoutiseq_ct$cameraSetup ==  "True")] )
-agoutiseq_ct$picksetup <- ifelse(agoutiseq_ct$seqday %in% picksetupdays3 , 1, 0)
-#agoutiseq_ct <- agoutiseq_ct[(agoutiseq_ct$picksetup == 0),]
+agoutiseq_ct <- agoutiseq_ct[(agoutiseq_ct$picksetup == 0),]
 agoutiseq_ct <- droplevels.data.frame(agoutiseq_ct)
 
 ### H1: Females are physically incapable of tool use ####
@@ -90,19 +83,19 @@ agoutiseq_jt$locationtype <- relevel(agoutiseq_jt$locationtype, ref = "random")
 agoutiseq_jt$nAF_noinfant <- agoutiseq_jt$nAF - agoutiseq_jt$nAF_infant
 agoutiseq_jt$Nadults <- agoutiseq_jt$nAF + agoutiseq_jt$nAM
 
-# only sequences with adult capuchins and excluding when we didnt sex any of the adults
-agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
-agoutiseq_jto1 <- agoutiseq_jt[agoutiseq_jt$Nadults > 0 & (agoutiseq_jt$nAF >0 | agoutiseq_jt$nAM >0),] # CHECK do we want this or also include sequences with capuchins, without adults?
-agoutiseq_jto1 <- droplevels.data.frame(agoutiseq_jto1)
-
 ## add distance to coast (dist2coast.R script for getting distance per camera)
 # only available for Jicaron
 dist2coast_all <- read.csv("tide_analysis/allcams_gps.csv", header = TRUE)
 dist2coast_all <- dist2coast_all[ , c(2,5)]
 
-agoutiseq_jto1 <- left_join(agoutiseq_jto1, dist2coast_all, by = c("locationfactor" = "camera_id"))
+agoutiseq_jt <- left_join(agoutiseq_jt, dist2coast_all, by = c("locationfactor" = "camera_id"))
 # standardize distance to coast
-agoutiseq_jto1$distcoast_z <- scale(agoutiseq_jto1$distcoast, center = TRUE, scale = TRUE)
+agoutiseq_jt$distcoast_z <- scale(agoutiseq_jt$distcoast, center = TRUE, scale = TRUE)
+
+# only sequences with adult capuchins and excluding when we didnt sex any of the adults
+agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
+agoutiseq_jto1 <- agoutiseq_jt[agoutiseq_jt$Nadults > 0 & (agoutiseq_jt$nAF >0 | agoutiseq_jt$nAM >0),] # CHECK do we want this or also include sequences with capuchins, without adults?
+agoutiseq_jto1 <- droplevels.data.frame(agoutiseq_jto1)
 
 # so when capuchins are present, what is the ratio of adult females to adult males at the three different location types?
 # what can affect this ratio is: locationfactor, locationtype, distance from coast
@@ -170,7 +163,7 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-round(logit2prob(0.00),2)
+round(logit2prob(0.21-1.10),2)
 
 # to help with reporting results
 report(s_bm1)
@@ -219,7 +212,7 @@ B5 <- r_fit$`locationtypestreambed:distcoast`$estimate #interaction streambed an
 sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
-#png("tide_analysis/ModelRDS/s_bm1_cameras.png", width = 8, height = 7, units = 'in', res = 300)
+#png("tide_analysis/ModelRDS/s_bm1_cameras.png", width = 9, height = 9, units = 'in', res = 300)
 s_bm1 %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
                        locationtype = agoutiseq_jto1$locationtype,
@@ -364,7 +357,7 @@ loo(s_bm1coiba)
 loo_R2(s_bm1coiba)
 round(bayes_R2(s_bm1coiba),2)
 
-round(logit2prob(1.74),2)
+round(logit2prob(1.78),2)
 
 plot(s_bm1coiba)
 
@@ -397,12 +390,11 @@ s_bm1coiba %>%
 
 #### Model 2: ratio of females with infants to females without #########
 
-### NOTE WHEN RERUNNING:
-# Include the month of the year as a fixed (or random?) effect as there is a seasonal birthpeak. 
-
 agoutiseq_jto2 <- agoutiseq_jto1[which(agoutiseq_jto1$nAF >0),]
+# make month a factor (include month as a random effect because there is a seasonal birthpeak that affects infant ratio)
+agoutiseq_jto2$monthF <- as.factor(agoutiseq_jto2$month)
 
-s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor), data = agoutiseq_jto2, family = binomial, 
+s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor) + (1|monthF), data = agoutiseq_jto2, family = binomial, 
               prior = sexbias_prior,  iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
 # s_bm1b <- add_criterion(s_bm1b, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
 # saveRDS(s_bm1b, "tide_analysis/ModelRDS/s_bm1b.RDS")
@@ -416,7 +408,7 @@ loo(s_bm1b)
 loo_R2(s_bm1b)
 round(bayes_R2(s_bm1b),2)
 
-round(logit2prob(-0.41),2)
+round(logit2prob(-1.29+0.83),2)
 
 plot(conditional_effects(s_bm1b))
 
@@ -431,7 +423,8 @@ m_type_predb <- s_bm1b %>%
   epred_draws(newdata = tibble(nAF = agoutiseq_jto2$nAF,
                                locationtype = agoutiseq_jto2$locationtype,
                                locationfactor = agoutiseq_jto2$locationfactor,
-                               distcoast = agoutiseq_jto2$distcoast)) %>% 
+                               distcoast = agoutiseq_jto2$distcoast,
+                               monthF = agoutiseq_jto2$monthF)) %>% 
   mutate(.epred_prop = .epred/nAF) # change to proportion
 
 #png("tide_analysis/ModelRDS/s_bm1b_ratios.png", width = 8, height = 7, units = 'in', res = 300)
@@ -455,15 +448,17 @@ r_fit <- s_bm1b %>%
 B0_b <- r_fit$`(Intercept)`$estimate # average infant across all sequences in random cams
 B1_b <- r_fit$locationtypeanvil$estimate # effect of anvil on sex ratio across all sequences
 B2_b <- r_fit$locationtypestreambed$estimate # effect of streambed across all sequences
-sigma_0b <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
+sigma_0b1 <- r_fit$`sd__(Intercept)`$estimate[1] # between-camera variability of sex ratio 
+sigma_0b2 <- r_fit$`sd__(Intercept)`$estimate[2] # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
-#png("tide_analysis/ModelRDS/s_bm1b_cameras.png", width = 8, height = 7, units = 'in', res = 300)
+#png("tide_analysis/ModelRDS/s_bm1b_cameras.png", width = 8, height = 9, units = 'in', res = 300)
 s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
                        locationtype = agoutiseq_jto2$locationtype,
                        nAF = agoutiseq_jto2$nAF,
-                       distcoast = agoutiseq_jto2$distcoast)) %>%
+                       distcoast = agoutiseq_jto2$distcoast,
+                       monthF = agoutiseq_jto2$monthF)) %>%
   ungroup() %>% 
   mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
   ggplot(aes(x = logit2prob(.linpred), y = locationfactor, color = locationtype)) +
@@ -479,6 +474,27 @@ s_bm1b %>%
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
 #dev.off()
+
+# visualize variation between months
+png("tide_analysis/ModelRDS/s_bm1b_month.png", width = 8, height = 8, units = 'in', res = 300)
+s_bm1b %>%
+  linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
+                       locationtype = agoutiseq_jto2$locationtype,
+                       nAF = agoutiseq_jto2$nAF,
+                       distcoast = agoutiseq_jto2$distcoast,
+                       monthF = agoutiseq_jto2$monthF)) %>%
+  ungroup() %>% 
+  ggplot(aes(x = logit2prob(.linpred), y = monthF, color = locationtype)) +
+  scale_color_manual(values = cols) +
+  stat_pointinterval() + facet_wrap(~locationtype) + 
+  theme_bw() +
+  labs(x = "Model estimation of female with infants:female without infants ratio", y = "Month", color = "Location type") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16))
+#dev.off()
+
 
 ## visualize distance to coast interaction
 # marginal effects plots
@@ -587,6 +603,7 @@ plot(p_randomb + p_anvilb + p_streambedb)
 
 #### Model 2coiba: ratio of females with infants to females without on Coiba (only streambed) #########
 agoutiseq_cto2 <- agoutiseq_cto1[which(agoutiseq_cto1$nAF >0),]
+agoutiseq_cto2$monthF <- as.factor(agoutiseq_cto2$month)
 
 s_bm1b_coiba <- brm(nAF_infant | trials(nAF) ~ 1 + (1|locationfactor), data = agoutiseq_cto2, family = binomial, 
              iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
@@ -602,7 +619,7 @@ loo(s_bm1b_coiba)
 loo_R2(s_bm1b_coiba)
 round(bayes_R2(s_bm1b_coiba),2)
 
-round(logit2prob(-0.62),2)
+round(logit2prob(-0.40),2)
 
 report(s_bm1b_coiba)
 
@@ -618,7 +635,7 @@ sigma_0bc <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of se
 #png("tide_analysis/ModelRDS/s_bm1bcoiba_cameras.png", width = 8, height = 7, units = 'in', res = 300)
 s_bm1b_coiba %>%
   linpred_draws(tibble(locationfactor = agoutiseq_cto2$locationfactor,
-                       nAF = agoutiseq_cto2$nAF)) %>%
+                       nAF = agoutiseq_cto2$nAF), allow_new_levels = TRUE) %>%
   ungroup() %>% 
   mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
   ggplot(aes(x = logit2prob(.linpred), y = locationfactor)) +
@@ -627,7 +644,7 @@ s_bm1b_coiba %>%
   theme_bw() +
   labs(x = "Model estimation of female with infants:female without infants ratio", y = "Camera location") +
   theme(axis.text = element_text(size = 12),
-        axis.title = element_text(size = 16),
+        axis.title = element_text(size = 14),
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 16))
 #dev.off()
@@ -636,12 +653,13 @@ s_bm1b_coiba %>%
 
 ## Are displacements at anvils common?
 ftable(agoutiseq_jto$displacement[which(agoutiseq_jto$locationtype == "anvil")])
-## of the 12 300 sequences at anvils, displacement only occurred in 94 of them 
+## of the 12 300 sequences at anvils, displacement only occurred in 92 of them 
 ftable(agoutiseq_jto$displacement[which(agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$n > 1)])
 ## even if you filter to only sequences with more than 1 individual in, still see only 94 displacements on ~5600 sequences
 # displacements at anvils are actually rare
 # on Coiba
 ftable(agoutiseq_cto$displacement)
+ftable(agoutiseq_cto$displacement[which(agoutiseq_cto$n > 1)])
 
 ## who is being displaced?
 dis_vics <- as.data.frame(as.matrix(ftable(agoutiseq_jto$victim_as)))
@@ -678,8 +696,6 @@ ggplot(dis_graph, aes(x = agesex, y = value, group = type, fill = type)) + geom_
 
 # further opportunity: when are females alone at anvils?
 ftable(agoutiseq_jto$tooluse[which(agoutiseq_jto$nAF > 0 & agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$nAM == 0)])
-# 761 observations of a single adult female at an anvil without adult males there or other adult females
-# 814 observations of adult females at anvils without adult males there: 712 of times no tool use either, 102 times tool use by juveniles
 
 ## CONCLUSION: displacements at anvils are not common, and females are not often displaced. 
 
@@ -724,7 +740,7 @@ scrounging$agesex <- factor(scrounging$agesex, levels = c("adult female", "adult
 
 ggplot(scrounging, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = "identity", position = "dodge") +
   geom_text(aes(label=paste(n_scrounge, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
-  labs( x = "Age-sex class", y = "Proportion of opportunities spent scrounging", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+  labs( x = "Age-sex class", y = "Proportion of opportunities spent scrounging", fill = "Age-sex class" ) +
   theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
 
 ## consumption of anvil debris
@@ -753,12 +769,12 @@ anvildebris$agesex <- factor(anvildebris$agesex, levels = c("adult female", "adu
 
 ggplot(anvildebris, aes(x = agesex, y = prop, fill = agesex)) + geom_bar(stat = "identity", position = "dodge") +
   geom_text(aes(label=paste(n_scrounge, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
-  labs( x = "Age-sex class", y = "Proportion of opportunities spent consuming anvil debris", fill = "Age-sex class" ) +   scale_fill_manual(values = cbbPalette) +
+  labs( x = "Age-sex class", y = "Proportion of opportunities spent consuming anvil debris", fill = "Age-sex class" )  +
   theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14)) 
 
 scr_graph <- rbind(scrounging, anvildebris)
 scr_graph$type <- c(rep("scrounge", 5), rep("debris", 5))
-scr_graph <- scr_graph[-c(5,10),] #exclude unknown age/sex
+#scr_graph <- scr_graph[-c(5,10),] #exclude unknown age/sex
 scr_graph <- droplevels.data.frame(scr_graph)
 scr_graph$type <- factor(scr_graph$type, levels = c("scrounge", "debris"))
 
@@ -797,7 +813,7 @@ for (i in 1:nrow(locations_t)) {
 
 locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, locationtype = locations_t$locationtype), FUN = sum)
 
-sum(locations_t$dep_days[locations_t$locationtype == "anvil"])
+sum(locations_t$dep_days[locations_t$locationtype == "random"])
 sum(locations_t2$x)
 
 # How many locations

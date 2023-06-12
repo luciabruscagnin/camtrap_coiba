@@ -37,18 +37,13 @@ setwd("~/Git/camtrap_coiba")
 # Could add in the hours that the cameras werent triggered but were deployed (see old version of script)
 # If this is done, then don't run following line
 agoutiselect2 <- agoutisequence_c
-
-# create flag for deployment pick up and setup days
-# most of the pickup/setup days were at the start/end of the deployment. But sometimes people came to mess with cameras in middle of deployment. Should exclude those too
-picksetupdays <- unique(agoutiselect2$seqday[which(agoutiselect2$cameraSetup ==  "True")] )
-agoutiselect2$picksetup <- ifelse(agoutiselect2$seqday %in% picksetupdays , 1, 0)
-agoutiselect2 <- agoutiselect2[,c("deploymentID", "sequenceID", "scientificName", "locationName", "longitude", "latitude", "cameraSetup", "seq_start", 
+# filter out days with human presence 
+agoutiselect_t <- agoutiselect2[agoutiselect2$picksetup == 0,c("deploymentID", "sequenceID", "scientificName", "locationName", "longitude", "latitude", "cameraSetup", "seq_start", 
                                                                "seq_end", "seq_length", "temperature", "dep_start", "dep_end", "dep_length_hours", "month", 
                                                                "season", "island", "tool_anvil", "tool_site", "streambed", "capuchin", "n", "tooluse", "tidedifabs", 
                                                                "tidedif", "tidedif2", "uniqueloctag", "seqday", "hour", "toolusers",  "picksetup", "mediatype")] # add "noanimal if you added 0's)
 
-# exclude days on which cameras were deployed or picked up (to take away that bias)
-agoutiselect_t <- agoutiselect2[(agoutiselect2$picksetup == 0),]
+
 # exclude only NAs rows
 agoutiselect_t <- agoutiselect_t[rowSums(is.na(agoutiselect_t)) != ncol(agoutiselect_t),]
 agoutiselect_t$locationfactor <- as.factor(agoutiselect_t$locationName)
@@ -65,7 +60,7 @@ onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & onlycap_t$locationfactor
 ## distance to coast (preliminary based on google maps)
 dist2coast <- read.csv("tide_analysis/tidalcams2.csv", header = TRUE)
 
-onlycap_tj <- left_join(onlycap_tj, dist2coast, by = "locationfactor")
+onlycap_tj <- left_join(onlycap_tj, dist2coast, by = c("locationfactor" = "camera_id"))
 onlycap_tj$locationfactor <- as.factor(onlycap_tj$locationfactor)
 # remove only NA rows and cameras more than 50meters from coast
 onlycap_tj <- onlycap_tj[which(is.na(onlycap_tj$deploymentID) == FALSE & onlycap_tj$distcoast < 50),]

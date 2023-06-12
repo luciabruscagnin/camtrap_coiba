@@ -538,6 +538,23 @@ agoutisequence_c$locationfactor <- as.factor(agoutisequence_c$locationName)
 agoutisequence_c$depdays <- as.numeric(difftime(agoutisequence_c$seq_startday, agoutisequence_c$dep_startday, units = "days"))
 agoutisequence_c$depnr <- as.numeric(unlist(regmatches(agoutisequence_c$tags, gregexpr("[[:digit:]]+", agoutisequence_c$tags))))
 
+## also want to flag human presence, which is when cameras were deployed or picked up. 
+# here try to be specific, e.g. if one camera is placed in the tool-user range on Jicaron on a specific date, all cameras running there at that time might be affected. 
+# so use variable that specifies which island and which "side" (north/west) etc. 
+# and then identify days that a camera was picked up or removed
+agoutisequence_c$islandside <- paste(agoutisequence_c$island, agoutisequence_c$side, sep = "-")
+picksetupdays <- agoutisequence_c[agoutisequence_c$cameraSetup ==  "True", c("seqday", "islandside")]
+picksetupdays <- picksetupdays[!duplicated(picksetupdays),]
+
+# create flag for which ones need to be removed
+islandsides <- unique(agoutisequence_c$islandside)
+agoutisequence_c$picksetup <- NA
+for (i in 1:length(islandsides)) {
+  agoutisequence_c$picksetup[which(agoutisequence_c$islandside == islandsides[i])] <- ifelse(agoutisequence_c$seqday[which(agoutisequence_c$islandside == islandsides[i])] %in% picksetupdays$seqday[which(picksetupdays$islandside == islandsides[i])], 1, 0)
+}
+
+# now removing these is as simple as filtering out all those where picksetup == 1
+
 ##### generating 0's ####
 ## NOTE: this does not yet take into consideration that some cameras may not be active at night (this is only later deployments).
 
@@ -569,7 +586,7 @@ depldayhour <- data.frame(uniqueloctag = rep(depldays3$uniqueloctag, 24), seqday
 depldayhour <- depldayhour[order(depldayhour$uniqueloctag),]
 depldayhour$hour <- rep(1:24, (nrow(depldayhour)/24))
 
-agoutiselect2 <- left_join(depldayhour[depldayhour$uniqueloctag %in% agoutisequence_c$uniqueloctag,], agoutisequence_c, by = c("uniqueloctag", "seqday", "hour"))
+agoutiselect2 <- left_join(depldayhour[depldayhour$uniqueloctag %in% agoutisequence_c$uniqueloctag,], agoutisequence_c, by = c("uniqueloctag", "seqday", "hour"), relationship = "many-to-many")
 agoutiselect2$noanimal <- ifelse(is.na(agoutiselect2$sequenceID), 1, 0)
 
 ## fill in NAs like above, using a metadata file
@@ -599,7 +616,16 @@ agoutiselect2$n[agoutiselect2$noanimal == 1] <- 0
 agoutiselect2$capuchin[agoutiselect2$noanimal == 1] <- 0
 # not sure if we should change seq_length to 0
 agoutiselect2$seq_length[agoutiselect2$noanimal == 1] <- 0
-agoutiselect2[,c(50:67, 71:86, 91:96)][is.na(agoutiselect2[,c(50:67, 71:86, 91:96)])] <- 0
+agoutiselect2[,c( "n", "nAF", "nAM", "nAU","nJF", "nJM","nJU","nSF","nSM","nSU","nUF","nUM","nUU","nAF_infant","nAM_infant","nAU_infant","nJF_infant","nJM_infant","nJU_infant",
+                  "nSF_infant","nSM_infant","nSU_infant", "nUF_infant","nUM_infant","nUU_infant", "n_neckinfant","nAdult","nSubadult","nJuvenile","nFemales",  "nMales","n_inspect",
+                  "n_tooluse","tu_nAF","tu_nAM","tu_nAU", "tu_nJF","tu_nJM","tu_nJU","tu_nSF","tu_nSM","tu_nSU","tu_nUF","tu_nUM","tu_nUU" , "tu_nAdult","tu_nSubadult", "tu_nJuvenile",
+                  "nr_almendra","nr_coconut","nr_fruit","nr_invertebrate","nr_other" , "nr_unknown", "sc_nAF","sc_nAM","sc_nAU","sc_nJF","sc_nJM","sc_nJU","sc_nSF","sc_nSM","sc_nSU",
+                  "sc_nUF","sc_nUM","sc_nUU","ad_nAF","ad_nAM","ad_nAU","ad_nJF","ad_nJM","ad_nJU", "ad_nSF","ad_nSM","ad_nSU","ad_nUF", "ad_nUM")][is.na(agoutiselect2[,c(
+                    "n", "nAF", "nAM", "nAU","nJF", "nJM","nJU","nSF","nSM","nSU","nUF","nUM","nUU","nAF_infant","nAM_infant","nAU_infant","nJF_infant","nJM_infant","nJU_infant",
+                    "nSF_infant","nSM_infant","nSU_infant", "nUF_infant","nUM_infant","nUU_infant", "n_neckinfant","nAdult","nSubadult","nJuvenile","nFemales",  "nMales","n_inspect",
+                    "n_tooluse","tu_nAF","tu_nAM","tu_nAU", "tu_nJF","tu_nJM","tu_nJU","tu_nSF","tu_nSM","tu_nSU","tu_nUF","tu_nUM","tu_nUU" , "tu_nAdult","tu_nSubadult", "tu_nJuvenile",
+                    "nr_almendra","nr_coconut","nr_fruit","nr_invertebrate","nr_other" , "nr_unknown", "sc_nAF","sc_nAM","sc_nAU","sc_nJF","sc_nJM","sc_nJU","sc_nSF","sc_nSM","sc_nSU",
+                    "sc_nUF","sc_nUM","sc_nUU","ad_nAF","ad_nAM","ad_nAU","ad_nJF","ad_nJM","ad_nJU", "ad_nSF","ad_nSM","ad_nSU","ad_nUF", "ad_nUM")])] <- 0
 
 # fill in important variables
 agoutiselect2$month <- month(agoutiselect2$seqday)
