@@ -18,6 +18,7 @@ library(igraph)
 library(activity)
 library(lme4)
 library(brms)
+library(dplyr)
 
 ## Notes for analyses:
 
@@ -42,6 +43,9 @@ gridclean_c$gridtype <- ifelse(str_detect(gridclean_c$locationName, "NTU") == TR
 
 gridsequence_c <-  gridsequence[! gridsequence$locationName %in% c("NTU-151", "TU-168", "TU-152"),]
 gridsequence_c$gridtype <- ifelse(str_detect(gridsequence_c$locationName, "NTU") == TRUE, "NTU", "TU")
+gridsequence_c <- droplevels.data.frame(gridsequence_c)
+#saveRDS(gridclean_c, "gridanalyses/RDS/gridclean_c.RDS")
+#saveRDS(gridsequence_c, "gridanalyses/RDS/gridsequence_c.RDS")
 
 ## Did we have at least one capuchin detection at all remaining cameras?
 ftable(gridsequence_c[which(gridsequence_c$capuchin == 1),]$locationName)
@@ -124,7 +128,7 @@ ggplot(data = gridspecies, aes(x = species, group = gridtype, fill = gridtype)) 
 # see if average detection distance is similar between TU and NTU grid
 
 
-###### Are we capturing one NTU group? ####
+##### Are we capturing one NTU group? ####
 # max group size seen
 NTUgridseq <- gridsequence_c[gridsequence_c$gridtype == "NTU",]
 NTUgridseq[which(NTUgridseq$n == max(NTUgridseq$n)),]
@@ -212,6 +216,7 @@ gridday$dep_startday <- format(gridday$dep_start, "%Y-%m-%d")
 gridday$depdays <- as.numeric(difftime(gridday$seqday, gridday$dep_startday, units = "days"))
 gridday$gridtype <- as.factor(ifelse(str_detect(gridday$locationfactor, "NTU") == TRUE, "NTU", "TU"))
 gridday <- droplevels.data.frame(gridday)
+#saveRDS(gridday, "gridanalyses/RDS/gridday.RDS")
 
 ts_gam2 <- gam(capuchin ~ s(depdays, by = gridtype), data = gridday, family = binomial()) 
 summary(ts_gam2)
@@ -341,7 +346,6 @@ plot(act_m1, yunit="density", data="none", add=TRUE,
 
 legend("topleft", c("Non grid", "Grid"), col=1:2, lty=1, lwd=2)
 
-### STILL DO:
 # make activity for anvil cameras vs random vs streambed vs grid. 
 jtonly$locationtype <- as.factor(ifelse(jtonly$tool_anvil == 1, "anvil", 
                                               ifelse(jtonly$streambed == 1, "streambed", "random")))
@@ -388,7 +392,7 @@ legend("topleft", c("Grid", "Anvil", "Streambed", "Random"), col=c("black", "gre
 
 # are all surprisingly similar! 
 
-##### GROUP SIZE ####
+##### PARTY SIZE ####
 
 ###### 1: Does the number of capuchins per sequence differ between TU and NTU grid? ####
 # account for camera and detection distance (if we have it)
@@ -428,12 +432,36 @@ summary(grid_gam2)
 draw(grid_gam2)
 gam.check(grid_gam2)
 
+
 ## Need to think further on how to model this. Is poisson appropriate without 0s? should be 1-inflated. Once I'm satisfied with it could take it to brms
-# potentially do zero-truncated poisson
+
+## brms
+ps_bm1 <- brm(n ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = gridseq_oc, family = poisson(), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+summary(ps_bm1)
+plot(conditional_smooths(ps_bm1))
 
 
-##### GROUP COMPOSITION ####
+##### PARTY COMPOSITION ####
+# try zero-inflated poisson number of adult  females in a sequence (in dataframe only capuchin detections. TU vs NTU)
+# same for adult males
+# then combine the likelihood functions into one model? 
+pc_bm1 <- brm(nAF ~ gridtype + offset(log(dep_length_hours)) + (1|locationfactor), data = gridseq_oc, family = zero_inflated_poisson(link = "log", link_zi = "logit"), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+plot(conditional_effects(pc_bm1))
+pp_check(pc_bm1)
 
+# significantly higher number of females per sequence in NTU than TU grid
+
+#males
+pc_bm2 <- brm(nAM ~ gridtype + offset(log(dep_length_hours)) + (1|locationfactor), data = gridseq_oc, family = zero_inflated_poisson(link = "log", link_zi = "logit"), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+plot(conditional_effects(pc_bm2))
+pp_check(pc_bm2)
+
+# also higher number of males per sequence in NTU than TU grid
+
+#combining?
+pc_bm3 <- brm(nAF ~ gridtype + nAM + offset(log(dep_length_hours)) + (1|locationfactor), data = gridseq_oc, family = zero_inflated_poisson(link = "log", link_zi = "logit"), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+plot(conditional_effects(pc_bm3))
+pp_check(pc_bm3)
 
 ##### CO-OCCURRENCES ####
 

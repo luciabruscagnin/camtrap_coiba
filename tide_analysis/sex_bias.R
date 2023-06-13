@@ -90,7 +90,7 @@ dist2coast_all <- dist2coast_all[ , c(2,5)]
 
 agoutiseq_jt <- left_join(agoutiseq_jt, dist2coast_all, by = c("locationfactor" = "camera_id"))
 # standardize distance to coast
-agoutiseq_jt$distcoast_z <- scale(agoutiseq_jt$distcoast, center = TRUE, scale = TRUE)
+agoutiseq_jt$distcoast_z <- as.numeric(scale(agoutiseq_jt$distcoast, center = TRUE, scale = TRUE))
 
 # only sequences with adult capuchins and excluding when we didnt sex any of the adults
 agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
@@ -127,13 +127,13 @@ prior_summary(sbm1_prior)
 mcmc_plot(sbm1_prior)
 plot(sbm1_prior)
 
-
+s(month, by = species, bs = "cc") + species
 ### P1a: see less adult females on camera traps than adult males 
 ### P1b: females are especially unlikely to be on the ground in open spaces such as in streams and near the coast 
 
 #### Model 1: on Jicaron, comparing female to male sex ratio at different locationtypes #######
-s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
-             prior = sexbias_prior, iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
+s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast_z +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
+             prior = sexbias_prior, iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), seed = 1245)
 # s_bm1 <- add_criterion(s_bm1, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
 # saveRDS(s_bm1, "tide_analysis/ModelRDS/s_bm1.RDS")
 # s_bm1 <- readRDS("tide_analysis/ModelRDS/s_bm1.RDS")
@@ -163,7 +163,7 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-round(logit2prob(0.21-1.10),2)
+round(logit2prob(0.26-1.11),2)
 
 # to help with reporting results
 report(s_bm1)
@@ -177,7 +177,7 @@ m_type_pred <- s_bm1 %>%
   epred_draws(newdata = tibble(Nadults = agoutiseq_jto1$Nadults,
                                locationtype = agoutiseq_jto1$locationtype,
                                locationfactor = agoutiseq_jto1$locationfactor,
-                               distcoast = agoutiseq_jto1$distcoast)) %>% 
+                               distcoast_z = agoutiseq_jto1$distcoast_z)) %>% 
   mutate(.epred_prop = .epred/Nadults)
 
 #png("tide_analysis/ModelRDS/s_bm1_ratios.png", width = 8, height = 7, units = 'in', res = 300)
@@ -206,9 +206,9 @@ r_fit <- s_bm1 %>%
 B0 <- r_fit$`(Intercept)`$estimate # average sex ratio across all sequences in random cams
 B1 <- r_fit$locationtypeanvil$estimate # effect of anvil on sex ratio across all sequences
 B2 <- r_fit$locationtypestreambed$estimate # effect of streambed across all sequences
-B3 <- r_fit$distcoast$estimate # effect of distcoast on random cams
-B4 <- r_fit$`locationtypeanvil:distcoast`$estimate # interaction anvil and distcoast
-B5 <- r_fit$`locationtypestreambed:distcoast`$estimate #interaction streambed and distcoast
+B3 <- r_fit$distcoast_z$estimate # effect of distcoast on random cams
+B4 <- r_fit$`locationtypeanvil:distcoast_z`$estimate # interaction anvil and distcoast
+B5 <- r_fit$`locationtypestreambed:distcoast_z`$estimate #interaction streambed and distcoast
 sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
@@ -217,7 +217,7 @@ s_bm1 %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
                        locationtype = agoutiseq_jto1$locationtype,
                        Nadults = agoutiseq_jto1$Nadults,
-                       distcoast = agoutiseq_jto1$distcoast)) %>%
+                       distcoast_z = agoutiseq_jto1$distcoast_z)) %>%
   ungroup() %>% 
   mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
   ggplot(aes(x = logit2prob(.linpred), y = locationfactor, color = locationtype)) +
@@ -258,26 +258,33 @@ p_marginal_preds
 
 ## distance to coast interaction
 # this is assuming each camera can be at each distance at each locationtype (so also simulating distant anvil cameras)
+# make x-axis labels for distance to coast. want 0, 100, 200, 300
+meandist <- mean(agoutiseq_jt$distcoast)
+sddist <- sd(agoutiseq_jt$distcoast)
+labelsdistcoast <- c(0, 100, 200, 300)
+zdistcoast <- (labelsdistcoast - meandist)/sddist
 
 # random
 marginal_preds2 <- predictions(
   s_bm1,
   newdata = datagrid(locationtype = "random",
                      locationfactor = unique,
-                     distcoast = unique),
-  by = "distcoast",
+                     distcoast_z = unique),
+  by = "distcoast_z",
   re_formula = NULL
 ) %>% 
   posteriordraws()
 
-p_random <- ggplot(data = marginal_preds2, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults),  col = cols[1], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), col = cols[1], 
+p_random <- ggplot(data = marginal_preds2, aes(x = distcoast_z)) +
+  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF/Nadults),  col = cols[1], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF/Nadults), col = cols[1], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high), fill = cols[1], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, col = cols[1]) +
   labs(subtitle="Random cameras",
        y = "Female:male ratio", x = NULL) +
+  scale_x_continuous(breaks = zdistcoast,
+                              labels = as.character(labelsdistcoast)) +
   guides(colour="none", fill="none") + theme_bw() + theme(
     axis.title.y = element_text(size = 18),
     plot.subtitle = element_text(size = 18),
@@ -289,22 +296,22 @@ marginal_preds3 <- predictions(
   s_bm1,
   newdata = datagrid(locationtype = "anvil",
                      locationfactor = unique,
-                     distcoast = unique),
-  by = "distcoast",
+                     distcoast_z = unique),
+  by = "distcoast_z",
   re_formula = NULL
 ) %>% 
   posteriordraws()
 
-head(marginal_preds3)
-
-p_anvil <- ggplot(data = marginal_preds3, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[2], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[2], 
+p_anvil <- ggplot(data = marginal_preds3, aes(x = distcoast_z)) +
+  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF/Nadults), colour = cols[2], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF/Nadults), colour = cols[2], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = cols[2], colour = cols[2], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, colour = cols[2]) +
   labs(subtitle="Anvil cameras",
          y=NULL, x ="Distance from coast (m)") +
+  scale_x_continuous(breaks = zdistcoast,
+                     labels = as.character(labelsdistcoast)) +
   guides(colour="none", fill="none") + theme_bw() +  theme(axis.title.y=element_blank(),
                                                            axis.text.y=element_blank(),
                                                            axis.ticks.y=element_blank(),
@@ -318,19 +325,21 @@ marginal_preds4 <- predictions(
   s_bm1,
   newdata = datagrid(locationtype = "streambed",
                      locationfactor = unique,
-                     distcoast = unique),
-  by = "distcoast",
+                     distcoast_z = unique),
+  by = "distcoast_z",
   re_formula = NULL
 ) %>% 
   posteriordraws()
 
-p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[3], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF/Nadults), colour = cols[3], 
+p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast_z)) +
+  geom_point(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF/Nadults), colour = cols[3], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto1[which(agoutiseq_jto1$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF/Nadults), colour = cols[3], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = cols[3], colour = cols[3], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, colour = cols[3]) + 
   labs(subtitle="Streambed cameras", y=NULL, x = NULL, shape = "data_") +
+  scale_x_continuous(breaks = zdistcoast,
+                     labels = as.character(labelsdistcoast)) +
   theme_bw() +  theme(axis.title.y=element_blank(),
                 axis.text.y=element_blank(),
                 axis.ticks.y=element_blank(),
@@ -344,7 +353,7 @@ plot(p_random + p_anvil + p_streambed)
 
 #### Model 1coiba: on Coiba, ratio of adult females to adult males (only streambeds) #####
 s_bm1coiba <- brm(nAF | trials(Nadults) ~ 1 + (1|locationfactor), data = agoutiseq_cto1, family = binomial, 
-             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), control = list(adapt_delta = 0.99))
+             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), control = list(adapt_delta = 0.99), seed = 1245)
 # s_bm1coiba <- add_criterion(s_bm1coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", control = list(adapt_delta = 0.99), ndraws = 3000) 
 # saveRDS(s_bm1coiba, "tide_analysis/ModelRDS/s_bm1coiba.RDS")
 #s_bm1coiba <- readRDS("tide_analysis/ModelRDS/s_bm1coiba.RDS")
@@ -357,7 +366,7 @@ loo(s_bm1coiba)
 loo_R2(s_bm1coiba)
 round(bayes_R2(s_bm1coiba),2)
 
-round(logit2prob(1.78),2)
+round(logit2prob(1.70),2)
 
 plot(s_bm1coiba)
 
@@ -394,8 +403,8 @@ agoutiseq_jto2 <- agoutiseq_jto1[which(agoutiseq_jto1$nAF >0),]
 # make month a factor (include month as a random effect because there is a seasonal birthpeak that affects infant ratio)
 agoutiseq_jto2$monthF <- as.factor(agoutiseq_jto2$month)
 
-s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast + (1|locationfactor) + (1|monthF), data = agoutiseq_jto2, family = binomial, 
-              prior = sexbias_prior,  iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
+s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast_z + (1|locationfactor) + (1|monthF), data = agoutiseq_jto2, family = binomial, 
+              prior = sexbias_prior,  iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), seed = 1245)
 # s_bm1b <- add_criterion(s_bm1b, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
 # saveRDS(s_bm1b, "tide_analysis/ModelRDS/s_bm1b.RDS")
 #s_bm1b <- readRDS("tide_analysis/ModelRDS/s_bm1b.RDS")
@@ -408,7 +417,7 @@ loo(s_bm1b)
 loo_R2(s_bm1b)
 round(bayes_R2(s_bm1b),2)
 
-round(logit2prob(-1.29+0.83),2)
+round(logit2prob(-1.34+0.86),2)
 
 plot(conditional_effects(s_bm1b))
 
@@ -423,7 +432,7 @@ m_type_predb <- s_bm1b %>%
   epred_draws(newdata = tibble(nAF = agoutiseq_jto2$nAF,
                                locationtype = agoutiseq_jto2$locationtype,
                                locationfactor = agoutiseq_jto2$locationfactor,
-                               distcoast = agoutiseq_jto2$distcoast,
+                               distcoast_z = agoutiseq_jto2$distcoast_z,
                                monthF = agoutiseq_jto2$monthF)) %>% 
   mutate(.epred_prop = .epred/nAF) # change to proportion
 
@@ -457,7 +466,7 @@ s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
                        locationtype = agoutiseq_jto2$locationtype,
                        nAF = agoutiseq_jto2$nAF,
-                       distcoast = agoutiseq_jto2$distcoast,
+                       distcoast_z = agoutiseq_jto2$distcoast_z,
                        monthF = agoutiseq_jto2$monthF)) %>%
   ungroup() %>% 
   mutate(locationfactor = fct_reorder(factor(locationfactor), .linpred, .fun = mean)) %>%
@@ -476,12 +485,12 @@ s_bm1b %>%
 #dev.off()
 
 # visualize variation between months
-png("tide_analysis/ModelRDS/s_bm1b_month.png", width = 8, height = 8, units = 'in', res = 300)
+#png("tide_analysis/ModelRDS/s_bm1b_month.png", width = 8, height = 8, units = 'in', res = 300)
 s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
                        locationtype = agoutiseq_jto2$locationtype,
                        nAF = agoutiseq_jto2$nAF,
-                       distcoast = agoutiseq_jto2$distcoast,
+                       distcoast_z = agoutiseq_jto2$distcoast_z,
                        monthF = agoutiseq_jto2$monthF)) %>%
   ungroup() %>% 
   ggplot(aes(x = logit2prob(.linpred), y = monthF, color = locationtype)) +
@@ -525,20 +534,22 @@ marginal_preds2b <- predictions(
   s_bm1b,
   newdata = datagrid(locationtype = "random",
                      locationfactor = unique,
-                     distcoast = unique),
-  by = "distcoast",
+                     distcoast_z = unique),
+  by = "distcoast_z",
   re_formula = NULL
 ) %>% 
   posteriordraws()
 
-p_randomb <- ggplot(data = marginal_preds2b, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF),  col = cols[1], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF), col = cols[1], 
+p_randomb <- ggplot(data = marginal_preds2b, aes(x = distcoast_z)) +
+  geom_point(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF_infant/nAF),  col = cols[1], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "random"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF_infant/nAF), col = cols[1], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high), fill = cols[1], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, col = cols[1]) +
   labs(subtitle="Random cameras",
        y = "Ratio females with infants:females without infants", x = NULL) +
+  scale_x_continuous(breaks = zdistcoast,
+                     labels = as.character(labelsdistcoast)) +
   guides(colour="none", fill="none") + theme_bw() + theme(
     axis.title.y = element_text(size = 18),
     plot.subtitle = element_text(size = 18),
@@ -550,20 +561,22 @@ marginal_preds3b <- predictions(
   s_bm1b,
   newdata = datagrid(locationtype = "anvil",
                      locationfactor = unique,
-                     distcoast = unique),
-  by = "distcoast",
+                     distcoast_z = unique),
+  by = "distcoast_z",
   re_formula = NULL
 ) %>% 
   posteriordraws()
 
-p_anvilb <- ggplot(data = marginal_preds3b, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF), colour = cols[2], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF), colour = cols[2], 
+p_anvilb <- ggplot(data = marginal_preds3b, aes(x = distcoast_z)) +
+  geom_point(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF_infant/nAF), colour = cols[2], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "anvil"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF_infant/nAF), colour = cols[2], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = cols[2], colour = cols[2], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, colour = cols[2]) +
   labs(subtitle="Anvil cameras",
        y=NULL, x ="Distance from coast (m)") +
+  scale_x_continuous(breaks = zdistcoast,
+                     labels = as.character(labelsdistcoast)) +
   guides(colour="none", fill="none") + theme_bw() +  theme(axis.title.y=element_blank(),
                                                            axis.text.y=element_blank(),
                                                            axis.ticks.y=element_blank(),
@@ -577,19 +590,21 @@ marginal_preds4b <- predictions(
   s_bm1b,
   newdata = datagrid(locationtype = "streambed",
                      locationfactor = unique,
-                     distcoast = unique),
-  by = "distcoast",
+                     distcoast_z = unique),
+  by = "distcoast_z",
   re_formula = NULL
 ) %>% 
   posteriordraws()
 
-p_streambedb <- ggplot(data = marginal_preds4b, aes(x = distcoast)) +
-  geom_point(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF), colour = cols[3], alpha = 0.3) +
-  stat_summary(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast, y = nAF_infant/nAF), colour = cols[3], 
+p_streambedb <- ggplot(data = marginal_preds4b, aes(x = distcoast_z)) +
+  geom_point(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF_infant/nAF), colour = cols[3], alpha = 0.3) +
+  stat_summary(data = agoutiseq_jto2[which(agoutiseq_jto2$locationtype == "streambed"),], inherit.aes = FALSE, aes(x = distcoast_z, y = nAF_infant/nAF), colour = cols[3], 
                geom = "point", fun = "mean", size = 4, shape = 17, alpha = 0.5) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high)  , fill = cols[3], colour = cols[3], alpha=0.3) +
   geom_line(aes(y=estimate), linewidth = 1, colour = cols[3]) + 
   labs(subtitle="Streambed cameras", y=NULL, x = NULL, shape = "data_") +
+  scale_x_continuous(breaks = zdistcoast,
+                     labels = as.character(labelsdistcoast)) +
   theme_bw() +  theme(axis.title.y=element_blank(),
                       axis.text.y=element_blank(),
                       axis.ticks.y=element_blank(),
@@ -606,7 +621,7 @@ agoutiseq_cto2 <- agoutiseq_cto1[which(agoutiseq_cto1$nAF >0),]
 agoutiseq_cto2$monthF <- as.factor(agoutiseq_cto2$month)
 
 s_bm1b_coiba <- brm(nAF_infant | trials(nAF) ~ 1 + (1|locationfactor), data = agoutiseq_cto2, family = binomial, 
-             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
+             iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), seed = 1245)
 # s_bm1b_coiba <- add_criterion(s_bm1b_coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
 # saveRDS(s_bm1b_coiba, "tide_analysis/ModelRDS/s_bm1b_coiba.RDS")
 # s_bm1b_coiba <- readRDS("tide_analysis/ModelRDS/s_bm1b_coiba.RDS")
@@ -619,7 +634,7 @@ loo(s_bm1b_coiba)
 loo_R2(s_bm1b_coiba)
 round(bayes_R2(s_bm1b_coiba),2)
 
-round(logit2prob(-0.40),2)
+round(logit2prob(-4.67),2)
 
 report(s_bm1b_coiba)
 
