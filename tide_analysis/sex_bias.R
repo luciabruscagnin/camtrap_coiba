@@ -828,7 +828,7 @@ for (i in 1:nrow(locations_t)) {
 
 locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, locationtype = locations_t$locationtype), FUN = sum)
 
-sum(locations_t$dep_days[locations_t$locationtype == "random"])
+sum(locations_t$dep_days[locations_t$locationtype == "anvil"])
 sum(locations_t2$x)
 
 # How many locations
@@ -841,6 +841,7 @@ summary(as.numeric(locations_t$dep_days))
 # number of deployments per location
 max(as.matrix(ftable(locations_t$locationfactor)))
 mean(as.matrix(ftable(locations_t$locationfactor)))
+as.matrix(ftable(locations_t$locationfactor))
 
 ## Coiba
 coidays <- agoutiseq_ct
@@ -877,7 +878,10 @@ max(as.matrix(ftable(locations_ct$locationfactor)))
 mean(as.matrix(ftable(locations_ct$locationfactor)))
 
 # how successful are we at sexing
-ftable(agoutiseq_jt$agesex)
+alllocations <- c(locations_t2$locationfactor, locations_ct2$locationfactor)
+ftable(agouticlean$agesex[which(agouticlean$capuchin == 1 & agouticlean$tool_site == 1 & agouticlean$locationName %in% alllocations)])
+rowSums(ftable(agouticlean$agesex[which(agouticlean$capuchin == 1 & agouticlean$tool_site == 1 & agouticlean$locationName %in% alllocations)]))
+
 nrow(agoutiseq_jto)
 nrow(agoutiseq_cto)
 

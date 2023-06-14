@@ -61,6 +61,9 @@ for (i in 1:nrow(dettools_r)) {
 
 }
 
+# check for NAs
+dettools_r[is.na(dettools_r$seqnumber) == TRUE,]
+
 # combine with location and date to get unique seq_ID
 dettools_r$location <- ifelse(str_detect(dettools_r$videoID, "EXP-ANV") == TRUE, "EXP-ANV-01", "CEBUS-02")
 dettools_r$mediadate <- sapply(str_split(dettools_r$videoID, "__"), '[', 2)

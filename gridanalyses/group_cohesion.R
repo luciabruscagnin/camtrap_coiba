@@ -446,6 +446,7 @@ plot(conditional_smooths(ps_bm1))
 # same for adult males
 # then combine the likelihood functions into one model? 
 pc_bm1 <- brm(nAF ~ gridtype + offset(log(dep_length_hours)) + (1|locationfactor), data = gridseq_oc, family = zero_inflated_poisson(link = "log", link_zi = "logit"), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+summary(pc_bm1)
 plot(conditional_effects(pc_bm1))
 pp_check(pc_bm1)
 
