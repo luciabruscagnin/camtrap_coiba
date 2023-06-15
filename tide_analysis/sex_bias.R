@@ -1,6 +1,6 @@
 ## Sex bias in tool use
 ## MPI-AB; Z Goldsborough
-
+# Version not for publication
 ## STEP 1: Run "agouti_cleaning.R" script and its dependencies (1. "exiftempseq_cleaning.R" 2. "tide_cleaning.R")
 
 # start with the agoutisequence dataframe that's cleaned and aggregated to the sequence level 
@@ -92,6 +92,18 @@ agoutiseq_jt <- left_join(agoutiseq_jt, dist2coast_all, by = c("locationfactor" 
 # standardize distance to coast
 agoutiseq_jt$distcoast_z <- as.numeric(scale(agoutiseq_jt$distcoast, center = TRUE, scale = TRUE))
 
+agoutiseq_jt <- agoutiseq_jt[,!names(agoutiseq_jt) %in% c("observationID", "deploymentID", "sequenceID", "observationType", "cameraSetup", "taxonID", "count", 
+                                                          "scientificName", "lifeStage", "sex", "behaviour", "individualID", "classificationMethod", "classifiedBy",
+                                                          "classificationTimestamp", "comments.x", "speed", "radius", "angle", "locationID", "locationName", "latitude",
+                                                          "longitude", "setupBy", "cameraInterval", "cameraHeight", "tags", "flag", "temperature", "caution", "island", "side",
+                                                          "tool_anvil", "tool_site", "streambed", "X", "agesex", "agesexF", "nAM_infant", "nAU_infant", "nJF_infant",
+                                                          "nJM_infant", "nJU_infant", "nSF_infant", "nSM_infant", "nSU_infant", "nUF_infant", "nUM_infant", "nUU_infant",
+                                                          "n_neckinfant", "n_inspect",  "bothforage", "seq_item", "timelapse", "uncoded",
+                                                          "tidedifabs", "tidedif", "tidedif2", "seqday", "dep_startday", "dep_endday", "seq_startday", "dep_starttime",
+                                                          "dep_endtime", "exposure", "toolusers", "depdays", "depnr", "islandside", "picksetup", "nAF_noinfant")]
+
+#write.csv(agoutiseq_jt, "sexbias/agoutiseq_jt.csv", row.names = FALSE)
+
 # only sequences with adult capuchins and excluding when we didnt sex any of the adults
 agoutiseq_jto <- agoutiseq_jt[agoutiseq_jt$capuchin == 1,]
 agoutiseq_jto1 <- agoutiseq_jt[agoutiseq_jt$Nadults > 0 & (agoutiseq_jt$nAF >0 | agoutiseq_jt$nAM >0),] # CHECK do we want this or also include sequences with capuchins, without adults?
@@ -105,6 +117,17 @@ agoutiseq_jto1 <- droplevels.data.frame(agoutiseq_jto1)
 # differentiate adult females with and without infants
 agoutiseq_ct$nAF_noinfant <- agoutiseq_ct$nAF - agoutiseq_ct$nAF_infant
 agoutiseq_ct$Nadults <- agoutiseq_ct$nAF + agoutiseq_ct$nAM
+
+agoutiseq_ct <- agoutiseq_ct[,!names(agoutiseq_ct) %in% c("observationID", "deploymentID", "sequenceID", "observationType", "cameraSetup", "taxonID", "count", 
+                                                          "scientificName", "lifeStage", "sex", "behaviour", "individualID", "classificationMethod", "classifiedBy",
+                                                          "classificationTimestamp", "comments.x", "speed", "radius", "angle", "locationID", "locationName", "latitude",
+                                                          "longitude", "setupBy", "cameraInterval", "cameraHeight", "tags", "flag", "temperature", "caution", "island", "side",
+                                                          "tool_anvil", "tool_site", "streambed", "X", "agesex", "agesexF", "nAM_infant", "nAU_infant", "nJF_infant",
+                                                          "nJM_infant", "nJU_infant", "nSF_infant", "nSM_infant", "nSU_infant", "nUF_infant", "nUM_infant", "nUU_infant",
+                                                          "n_neckinfant", "n_inspect", "bothforage", "seq_item", "timelapse", "uncoded",
+                                                          "tidedifabs", "tidedif", "tidedif2", "seqday", "dep_startday", "dep_endday", "seq_startday", "dep_starttime",
+                                                          "dep_endtime", "exposure", "toolusers", "depdays", "depnr", "islandside", "picksetup", "nAF_noinfant")]
+#write.csv(agoutiseq_ct, "sexbias/agoutiseq_ct.csv", row.names = FALSE)
 
 # only sequences with adult capuchins
 # also dropping sequences that only contain unsexed adults (so no adults recognized as males or females) 
@@ -664,39 +687,46 @@ s_bm1b_coiba %>%
         legend.title = element_text(size = 16))
 #dev.off()
 
-### H3: Females are rarely observed tool-using because of within-group competition ####
+### H3: COMPETITION ####
 
 ## Are displacements at anvils common?
 ftable(agoutiseq_jto$displacement[which(agoutiseq_jto$locationtype == "anvil")])
 ## of the 12 300 sequences at anvils, displacement only occurred in 92 of them 
 ftable(agoutiseq_jto$displacement[which(agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$n > 1)])
-## even if you filter to only sequences with more than 1 individual in, still see only 94 displacements on ~5600 sequences
-# displacements at anvils are actually rare
-# on Coiba
+## even if you filter to only sequences with more than 1 individual in, still see only 92 displacements on ~5200 sequences
+
+# on Coiba we saw no displacements at all
 ftable(agoutiseq_cto$displacement)
 ftable(agoutiseq_cto$displacement[which(agoutiseq_cto$n > 1)])
 
-## who is being displaced?
+## Who is being displaced?
 dis_vics <- as.data.frame(as.matrix(ftable(agoutiseq_jto$victim_as)))
 dis_vics$juvenile <- dis_vics$`juvenile male` + dis_vics$`juvenile unknown`
 dis_vics$subadult <- dis_vics$`subadult male`+dis_vics$`subadult unknown`
 dis_vics <- melt(dis_vics[, c("adult female", "adult male", "subadult", "juvenile", "unknown")])
-dis_vics$prop <- dis_vics$value / 94
+dis_vics$prop <- dis_vics$value / 92
 
 ## who is the displacer?
 dis_agg <- as.data.frame(as.matrix(ftable(agoutiseq_jto$aggressor_as)))
 dis_agg$juvenile <- dis_agg$`juvenile male` + dis_agg$`juvenile unknown`
-dis_agg <- melt(dis_agg[, c("adult female", "adult male", "subadult male", "juvenile", "unknown")])
-dis_agg$prop <- dis_agg$value / 94
+dis_agg$subadult <- dis_agg$`subadult male`
+dis_agg <- melt(dis_agg[, c("adult female", "adult male", "subadult", "juvenile", "unknown")])
+dis_agg$prop <- dis_agg$value / 92
 
 dis_graph <- rbind(dis_agg, dis_vics)
 dis_graph$type <- c(rep("aggressor", 5), rep("victim", 5))
-dis_opp <- as.data.frame(ftable(agoutiseq_jto$agesex[which(agoutiseq_jto$locationtype == "anvil" & agoutiseq_jto$n > 1)]))
-dis_graph$opportunity <- c(dis_opp$Freq[1], dis_opp$Freq[2], 
-                           (dis_opp$Freq[6] + dis_opp$Freq[7]+dis_opp$Freq[8]),
-                             (dis_opp$Freq[4] + dis_opp$Freq[5]), 0 ,rep("",5))
+
+# Opportunities for displacement: when an age-sex class is present in a sequence with other individuals
+dis_graph$opportunity <- NA
+dis_graph$opportunity[dis_graph$variable == "adult female"] <-  nrow(agoutiseq_jto[which(agoutiseq_jto$nAF > 0 & agoutiseq_jto$n > 1 & agoutiseq_jto$locationtype == "anvil"),])
+dis_graph$opportunity[dis_graph$variable == "adult male"] <-  nrow(agoutiseq_jto[which(agoutiseq_jto$nAM > 0 & agoutiseq_jto$n > 1 & agoutiseq_jto$locationtype == "anvil"),])
+dis_graph$opportunity[dis_graph$variable == "subadult"] <-  nrow(agoutiseq_jto[which(agoutiseq_jto$nSubadult > 0 & agoutiseq_jto$n > 1 & agoutiseq_jto$locationtype == "anvil"),])
+dis_graph$opportunity[dis_graph$variable == "juvenile"] <-  nrow(agoutiseq_jto[which(agoutiseq_jto$nJuvenile > 0 & agoutiseq_jto$n > 1 & agoutiseq_jto$locationtype == "anvil"),])
+dis_graph$opportunity[dis_graph$variable == "unknown"] <-  nrow(agoutiseq_jto[which(agoutiseq_jto$nUU > 0 & agoutiseq_jto$n > 1 & agoutiseq_jto$locationtype == "anvil"),])
+
+dis_graph
 dis_graph <- dis_graph[-c(5,10),] #exclude unknown age/sex
-dis_graph$variable[3] <-"subadult"
+dis_graph$opportunity[which(dis_graph$type == "victim")] <- NA
 dis_graph$agesex <- factor(dis_graph$variable, levels = c("adult female", "adult male", "subadult", "juvenile"))
 
 ## Figure 5
@@ -805,6 +835,13 @@ ggplot(scr_graph, aes(x = agesex, y = prop, group = type, fill = type)) + geom_b
 ## H5: Females have different diet than males ####
 ftable(agoutiseq_ct$tool_item[which(agoutiseq_ct$tu_nAF >0)])
 
+# tool use in streambeds
+tooluse_s <- agoutiseq_jt[which(agoutiseq_jt$tooluse == "TRUE" & agoutiseq_jt$locationtype == "streambed"),]
+sum(tooluse_s$tu_nAM)
+sum(tooluse_s$tu_nJuvenile)
+sum(tooluse_s$tu_nSubadult)
+sum(tooluse_s$tu_nAF)
+
 ## Descriptives ####
 ## Jicaron
 ## How many camera trapping days
@@ -828,7 +865,7 @@ for (i in 1:nrow(locations_t)) {
 
 locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, locationtype = locations_t$locationtype), FUN = sum)
 
-sum(locations_t$dep_days[locations_t$locationtype == "anvil"])
+sum(locations_t$dep_days[locations_t$locationtype == "streambed"])
 sum(locations_t2$x)
 
 # How many locations
