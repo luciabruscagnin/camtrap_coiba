@@ -821,4 +821,4 @@ summary(as.numeric(locations_ct2$x))
 summary(as.numeric(locations_ct$dep_days))
 # number of deployments per location
 max(as.matrix(ftable(locations_ct$locationfactor)))
-mean(as.matrix(ftable(locations_ct$locationfactor))
+mean(as.matrix(ftable(locations_ct$locationfactor)))
