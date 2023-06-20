@@ -5,7 +5,7 @@
 # Evelyn Del Rosario, Kate Tiedeman, Claudio Monteza & Brendan Barrett
 # 2023
 
-# setwd("~/Git/camtrap_coiba/tide_analysis")
+# setwd("/Users/Zoe/Documents/GitHub/camtrap_coiba/tide_analysis")
 
 ## Packages required
 library(viridis)
@@ -32,9 +32,9 @@ tooltides$seasonF <- factor(tooltides$seasonF, levels = c("Dry", "Wet"))
 tooltides$locationfactor <- as.factor(tooltides$locationfactor)
 
 ## z-transform distance to coast, time to low tide and hour of day
-tooltides$distcoast_z <- scale(tooltides$distcoast, center = TRUE, scale = TRUE)
-tooltides$tidedif_z <- scale(tooltides$tidedif, center = TRUE, scale = TRUE)
-tooltides$hour_z <- scale(tooltides$hour, center = TRUE, scale = TRUE)
+tooltides$distcoast_z <- as.numeric(scale(tooltides$distcoast, center = TRUE, scale = TRUE))
+tooltides$tidedif_z <- as.numeric(scale(tooltides$tidedif, center = TRUE, scale = TRUE))
+tooltides$hour_z <- as.numeric(scale(tooltides$hour, center = TRUE, scale = TRUE))
 
 # store mean and sd for each variable for easy back-transformation to real scale
 meandist <- mean(tooltides$distcoast)
@@ -66,7 +66,7 @@ tidal_prior <- c(prior(normal(0, 2), class = Intercept),
 tbm1_prior <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                     t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
                     s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = tooltides, chain = 2, core = 2, iter = 1000,
-                  prior = tidal_prior, samp3le_prior = "only", backend = "cmdstanr")
+                  prior = tidal_prior, sample_prior = "only", backend = "cmdstanr")
 
 summary(tbm1_prior)
 prior_summary(tbm1_prior)
@@ -1320,3 +1320,87 @@ round(mean(tooltides$n),2)
 min(tooltides$n)
 max(tooltides$n)
 round(sd(tooltides$n),2)
+
+#### TIDAL GAMS IN BRMS: GRID DATA ONLY ####
+## outcome variable:
+# number of capuchins per sequence (n)
+
+## predictors:
+# - z-transformed time until next low tide (tidedif_z)
+# - tool-using - TU - group on Jicaron vs non-tool-using - NTU - groups (toolusers)
+# - factor for each camera location (locationfactor)
+# - distance to coast for each camera in meters, z-transformed (distcoast_z)
+# - hour of day 0-23, z-transformed (hour_z)
+
+##### MODEL 1_grid: TIDES & ACTIVITY FOR TU AND NTU TOGETHER ######
+## Number of capuchins by tidedif_z and distcoast_z, split by toolusers, with locationfactor as random effect
+####
+tooltides_grid <- tooltides[tooltides$datatype == "grid",]
+tbm1_grid <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+              t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
+              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = tooltides_grid, 
+            chain = 2, core = 2, iter = 5000, save_pars = save_pars(all = TRUE),
+            control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
+
+# to add loo, loo_R2 and bayes_R2
+# tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 4000) 
+
+# Saving and loading model after it ran. Change to location where you'd want to save the object
+#saveRDS(tbm1, "ModelRDS/tbm1_final.rds")
+#tbm1 <- readRDS("ModelRDS/tbm1_final.rds")
+
+# Diagnostics
+mcmc_plot(tbm1,type = "trace")
+mcmc_plot(tbm1, type = "acf_bar") # autocorrelation
+pp_check(tbm1, ndraw = 100) 
+loo(tbm1)
+loo_R2(tbm1)
+bayes_R2(tbm1)
+
+# Evaluating results
+summary(tbm1)
+mcmc_plot(tbm1) #plot posterior intervals
+plot(conditional_effects(tbm1))
+plot(conditional_smooths(tbm1))
+# compare nr of capuchins per sequence for tool-users vs non-tool-users
+hypothesis(tbm1, "Intercept = Intercept + toolusersToolMusers")
+
+# Visualization of activity and tidal cycles: Compute posterior predictions and plot contourplot from those
+predict_tbm1_p <- posterior_smooths(tbm1, smooth = 't2(tidedif_z,distcoast_z,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
+tbm1$data$fit_tooltide <- as.numeric(colMedians(predict_tbm1_p))
+d1_tu <- with(tbm1$data[tbm1$data$toolusers == "Tool-users",], interp(x = tidedif_z, y = distcoast_z, z = fit_tooltide, duplicate = "mean"))
+d1_ntu <-  with(tbm1$data[tbm1$data$toolusers == "Non-tool-users",], interp(x = tidedif_z, y = distcoast_z, z = fit_tooltide, duplicate = "mean"))
+d2_tu <- melt(d1_tu$z, na.rm = TRUE)
+names(d2_tu) <- c("x", "y", "fit")
+d2_tu$tidedif <- d1_tu$x[d2_tu$x] * sdtide + meantide
+d2_tu$distcoast <- d1_tu$y[d2_tu$y] *sddist + meandist
+d2_ntu <- melt(d1_ntu$z, na.rm = TRUE)
+names(d2_ntu) <- c("x", "y", "fit")
+d2_ntu$tidedif <- d1_ntu$x[d2_ntu$x] * sdtide + meantide
+d2_ntu$distcoast <- d1_ntu$y[d2_ntu$y] *sddist + meandist
+d2_tu$toolusers <- "Tool-users"
+d2_ntu$toolusers <- "Non-tool-users"
+d2_t <- rbind(d2_tu, d2_ntu)
+d2_t$toolusers <- factor(d2_t$toolusers, levels = c("Tool-users",  "Non-tool-users"))
+
+# plot can take a while to load because of the rug with alpha = 0.05
+ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
+  geom_contour_filled(breaks = mybreaks, show.legend = TRUE) + scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + 
+  theme_bw() + theme(panel.grid = element_blank()) +  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)") +
+  geom_rug(data = tooltides, aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
+  theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 14)) + facet_wrap(~toolusers, scales = "free")
+
+# Visualizing variation in activity between cameras
+cam1 <- plot(conditional_effects(tbm1), plot = FALSE)[[7]]
+
+# for saving as PNG can uncomment line below and "dev.off" line.
+#png("ModelRDS/tbm1_camlocations.png", width = 11, height = 7, units = 'in', res = 300)
+cam1  + theme_bw() + 
+  stat_summary(data = tooltides, inherit.aes = FALSE, aes(x = locationfactor, y = n, group = toolusers, fill = toolusers), 
+               geom = "point", fun = "mean", size = 4, shape = 24, alpha = 0.5) +
+  labs(y = "Average number of capuchins per sequence", x = "Camera Location", fill = "Group") +
+  theme(axis.text.x = element_text(angle = 90), strip.text.x = element_text(size = 14), 
+        axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
+        legend.title = element_text(size =16), axis.text = element_text(size = 12))
+#dev.off()  
