@@ -25,7 +25,7 @@ library(lubridate)
 library(dplyr)
 require(cowplot)
 
-setwd("~/Git/camtrap_coiba")
+setwd("~/GitHub/camtrap_coiba")
 
 ### Prepare dataframe tidal analyses ####
 

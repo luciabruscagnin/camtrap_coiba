@@ -6,6 +6,7 @@
 # 2023
 
 # setwd("/Users/Zoe/Documents/GitHub/camtrap_coiba/tide_analysis")
+# setwd("/Users/Zoe Goldsborough/Documents/GitHub/camtrap_coiba/tide_analysis")
 
 ## Packages required
 library(viridis)
@@ -1336,6 +1337,8 @@ round(sd(tooltides$n),2)
 ## Number of capuchins by tidedif_z and distcoast_z, split by toolusers, with locationfactor as random effect
 ####
 tooltides_grid <- tooltides[tooltides$datatype == "grid",]
+tooltides_grid <- droplevels.data.frame(tooltides_grid)
+
 tbm1_grid <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
               t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
               s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = tooltides_grid, 
