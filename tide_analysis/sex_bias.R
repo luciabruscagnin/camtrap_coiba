@@ -158,8 +158,8 @@ s(month, by = species, bs = "cc") + species
 s_bm1 <- brm(nAF | trials(Nadults) ~ locationtype*distcoast_z +  (1|locationfactor), data = agoutiseq_jto1, family = binomial, 
              prior = sexbias_prior, iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), seed = 1245)
 # s_bm1 <- add_criterion(s_bm1, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
-# saveRDS(s_bm1, "tide_analysis/ModelRDS/s_bm1.RDS")
-# s_bm1 <- readRDS("tide_analysis/ModelRDS/s_bm1.RDS")
+# saveRDS(s_bm1, "sexbias/ModelRDS/s_bm1.RDS")
+# s_bm1 <- readRDS("sexbias/ModelRDS/s_bm1.RDS")
 summary(s_bm1)
 mcmc_plot(s_bm1)
 
@@ -203,7 +203,7 @@ m_type_pred <- s_bm1 %>%
                                distcoast_z = agoutiseq_jto1$distcoast_z)) %>% 
   mutate(.epred_prop = .epred/Nadults)
 
-#png("tide_analysis/ModelRDS/s_bm1_ratios.png", width = 8, height = 7, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1_ratios.png", width = 8, height = 7, units = 'in', res = 300)
 ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) + 
   geom_hline(yintercept = 0.50, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
   geom_hline(yintercept = 0.55, linetype = "dashed", color = "black", linewidth = 1, alpha = 0.5) +
@@ -235,7 +235,7 @@ B5 <- r_fit$`locationtypestreambed:distcoast_z`$estimate #interaction streambed 
 sigma_0 <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
-#png("tide_analysis/ModelRDS/s_bm1_cameras.png", width = 9, height = 9, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1_cameras.png", width = 9, height = 9, units = 'in', res = 300)
 s_bm1 %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto1$locationfactor,
                        locationtype = agoutiseq_jto1$locationtype,
@@ -370,7 +370,7 @@ p_streambed <- ggplot(data = marginal_preds4, aes(x = distcoast_z)) +
                 axis.text = element_text(size = 16)) 
 p_streambed
 
-#png("tide_analysis/ModelRDS/s_bm1_interaction.png", width = 11, height = 7, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1_interaction.png", width = 11, height = 7, units = 'in', res = 300)
 plot(p_random + p_anvil + p_streambed)
 #dev.off()
 
@@ -378,8 +378,8 @@ plot(p_random + p_anvil + p_streambed)
 s_bm1coiba <- brm(nAF | trials(Nadults) ~ 1 + (1|locationfactor), data = agoutiseq_cto1, family = binomial, 
              iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), control = list(adapt_delta = 0.99), seed = 1245)
 # s_bm1coiba <- add_criterion(s_bm1coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", control = list(adapt_delta = 0.99), ndraws = 3000) 
-# saveRDS(s_bm1coiba, "tide_analysis/ModelRDS/s_bm1coiba.RDS")
-#s_bm1coiba <- readRDS("tide_analysis/ModelRDS/s_bm1coiba.RDS")
+# saveRDS(s_bm1coiba, "sexbias/ModelRDS/s_bm1coiba.RDS")
+#s_bm1coiba <- readRDS("sexbias/ModelRDS/s_bm1coiba.RDS")
 summary(s_bm1coiba)
 mcmc_plot(s_bm1coiba)
 
@@ -403,7 +403,7 @@ r_fitc <- s_bm1coiba %>%
 B0c <- r_fitc$`(Intercept)`$estimate # average sex ratio across all sequences 
 sigma_0c <- r_fitc$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
-#png("tide_analysis/ModelRDS/s_bm1coiba_cameras.png", width = 8, height = 7, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1coiba_cameras.png", width = 8, height = 7, units = 'in', res = 300)
 s_bm1coiba %>%
   linpred_draws(tibble(locationfactor = agoutiseq_cto1$locationfactor,
                        Nadults = agoutiseq_cto1$Nadults)) %>%
@@ -429,8 +429,8 @@ agoutiseq_jto2$monthF <- as.factor(agoutiseq_jto2$month)
 s_bm1b <- brm(nAF_infant | trials(nAF) ~ locationtype*distcoast_z + (1|locationfactor) + (1|monthF), data = agoutiseq_jto2, family = binomial, 
               prior = sexbias_prior,  iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), seed = 1245)
 # s_bm1b <- add_criterion(s_bm1b, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
-# saveRDS(s_bm1b, "tide_analysis/ModelRDS/s_bm1b.RDS")
-#s_bm1b <- readRDS("tide_analysis/ModelRDS/s_bm1b.RDS")
+# saveRDS(s_bm1b, "sexbias/ModelRDS/s_bm1b.RDS")
+#s_bm1b <- readRDS("sexbias/ModelRDS/s_bm1b.RDS")
 summary(s_bm1b)
 mcmc_plot(s_bm1b)
 
@@ -459,7 +459,7 @@ m_type_predb <- s_bm1b %>%
                                monthF = agoutiseq_jto2$monthF)) %>% 
   mutate(.epred_prop = .epred/nAF) # change to proportion
 
-#png("tide_analysis/ModelRDS/s_bm1b_ratios.png", width = 8, height = 7, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1b_ratios.png", width = 8, height = 7, units = 'in', res = 300)
 ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violin(aes(color = locationtype, fill = locationtype), alpha = 0.4) + 
   stat_summary(agoutiseq_jto2, inherit.aes = FALSE, mapping=aes(x = locationtype, y = nAF_infant/nAF, color = locationtype), geom = "point", fun = "mean",
                size = 4) + 
@@ -484,7 +484,7 @@ sigma_0b1 <- r_fit$`sd__(Intercept)`$estimate[1] # between-camera variability of
 sigma_0b2 <- r_fit$`sd__(Intercept)`$estimate[2] # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
-#png("tide_analysis/ModelRDS/s_bm1b_cameras.png", width = 8, height = 9, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1b_cameras.png", width = 8, height = 9, units = 'in', res = 300)
 s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
                        locationtype = agoutiseq_jto2$locationtype,
@@ -508,7 +508,7 @@ s_bm1b %>%
 #dev.off()
 
 # visualize variation between months
-#png("tide_analysis/ModelRDS/s_bm1b_month.png", width = 8, height = 8, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1b_month.png", width = 8, height = 8, units = 'in', res = 300)
 s_bm1b %>%
   linpred_draws(tibble(locationfactor = agoutiseq_jto2$locationfactor,
                        locationtype = agoutiseq_jto2$locationtype,
@@ -635,7 +635,7 @@ p_streambedb <- ggplot(data = marginal_preds4b, aes(x = distcoast_z)) +
                       axis.text = element_text(size = 16)) 
 p_streambedb
 
-#png("tide_analysis/ModelRDS/s_bm1b_interaction.png", width = 11, height = 7, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1b_interaction.png", width = 11, height = 7, units = 'in', res = 300)
 plot(p_randomb + p_anvilb + p_streambedb)
 #dev.off()
 
@@ -646,8 +646,8 @@ agoutiseq_cto2$monthF <- as.factor(agoutiseq_cto2$month)
 s_bm1b_coiba <- brm(nAF_infant | trials(nAF) ~ 1 + (1|locationfactor), data = agoutiseq_cto2, family = binomial, 
              iter = 3000, chain = 3, core = 3, backend = "cmdstanr", save_pars = save_pars(all = TRUE), seed = 1245)
 # s_bm1b_coiba <- add_criterion(s_bm1b_coiba, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 3000) 
-# saveRDS(s_bm1b_coiba, "tide_analysis/ModelRDS/s_bm1b_coiba.RDS")
-# s_bm1b_coiba <- readRDS("tide_analysis/ModelRDS/s_bm1b_coiba.RDS")
+# saveRDS(s_bm1b_coiba, "sexbias/ModelRDS/s_bm1b_coiba.RDS")
+# s_bm1b_coiba <- readRDS("sexbias/ModelRDS/s_bm1b_coiba.RDS")
 summary(s_bm1b_coiba)
 mcmc_plot(s_bm1b_coiba)
 
@@ -670,7 +670,7 @@ B0_bc <- r_fit$`(Intercept)`$estimate # average infant across all sequences in r
 sigma_0bc <- r_fit$`sd__(Intercept)`$estimate # between-camera variability of sex ratio 
 
 # visualize camera-specific offsets 
-#png("tide_analysis/ModelRDS/s_bm1bcoiba_cameras.png", width = 8, height = 7, units = 'in', res = 300)
+#png("sexbias/ModelRDS/s_bm1bcoiba_cameras.png", width = 8, height = 7, units = 'in', res = 300)
 s_bm1b_coiba %>%
   linpred_draws(tibble(locationfactor = agoutiseq_cto2$locationfactor,
                        nAF = agoutiseq_cto2$nAF), allow_new_levels = TRUE) %>%
@@ -730,7 +730,7 @@ dis_graph$opportunity[which(dis_graph$type == "victim")] <- NA
 dis_graph$agesex <- factor(dis_graph$variable, levels = c("adult female", "adult male", "subadult", "juvenile"))
 
 ## Figure 5
-#png("tide_analysis/ModelRDS/displacement.png", width = 8, height = 6, units = 'in', res = 300)
+#png("sexbias/ModelRDS/displacement.png", width = 8, height = 6, units = 'in', res = 300)
 ggplot(dis_graph, aes(x = agesex, y = value, group = type, fill = type)) + geom_bar(stat = "identity", position = position_dodge()) + 
   geom_text(aes(label=value), position=position_dodge(width=0.9), vjust=-0.25) +
   geom_text(aes(label = opportunity), position = position_dodge(width = 0), vjust = -0.5, fontface = "italic" ) +
@@ -824,7 +824,7 @@ scr_graph <- droplevels.data.frame(scr_graph)
 scr_graph$type <- factor(scr_graph$type, levels = c("scrounge", "debris"))
 
 ## Figure 6
-#png("tide_analysis/ModelRDS/scrounging.png", width = 9, height = 7, units = 'in', res = 300)
+#png("sexbias/ModelRDS/scrounging.png", width = 9, height = 7, units = 'in', res = 300)
 ggplot(scr_graph, aes(x = agesex, y = prop, group = type, fill = type)) + geom_bar(stat = "identity", position = position_dodge()) + 
   geom_text(aes(label=paste(n_scrounge, n_opp, sep = "/")), position=position_dodge(width=0.9), vjust=-0.25) +
   labs( x = "Age-sex class", y = "Number of times observed", fill = "Type of scrounging" ) +   scale_fill_grey() +
@@ -964,7 +964,7 @@ draw(s_gam1)
 ## in brms
 s_gam1b <- brm(n_neckinfant ~ s(month, bs = "cc", k = 12) + s(Time) + locationtype + s(locationfactor, bs = "re"), data = agoutiseq_jt,
                family = poisson(), chains =2, cores = 2, iter = 2000, warmup = 1000, backend = "cmdstanr")
-# saveRDS(s_gam1b, "tide_analysis/ModelRDS/s_gam1b.RDS")
+# saveRDS(s_gam1b, "sexbias/ModelRDS/s_gam1b.RDS")
 summary(s_gam1b)
 plot(conditional_smooths(s_gam1b))
 mcmc_plot(s_gam1b)
@@ -972,7 +972,7 @@ mcmc_plot(s_gam1b)
 # without taking into account years
 s_gam2b <- brm(n_neckinfant ~ s(month, bs = "cc", k = 12) + locationtype + s(locationfactor, bs = "re"), data = agoutiseq_jt,
                family = poisson(), chains =2, cores = 2, iter = 2000, warmup = 1000, backend = "cmdstanr")
-# saveRDS(s_gam2b, "tide_analysis/ModelRDS/s_gam1b.RDS")
+# saveRDS(s_gam2b, "sexbias/ModelRDS/s_gam1b.RDS")
 summary(s_gam2b)
 plot(conditional_smooths(s_gam2b))
 mcmc_plot(s_gam2b)
@@ -982,7 +982,7 @@ plot(conditional_effects(s_gam2b))
 
 birthpeak <- plot(conditional_effects(s_gam2b), plot = FALSE)[[2]]
 
-#png("tide_analysis/ModelRDS/birthpeak.png", width = 11, height = 8, units = 'in', res = 300)
+#png("sexbias/ModelRDS/birthpeak.png", width = 11, height = 8, units = 'in', res = 300)
 birthpeak + theme_bw() + 
   stat_summary(data = agoutiseq_jt, inherit.aes = FALSE, aes(x = month, y = n_neckinfant, col = as.factor(year)), 
                geom = "point", fun = "mean", size = 3, shape = 19, alpha = 0.5) +
