@@ -54,18 +54,23 @@ agoutiselect_t$locationfactor <- as.factor(agoutiselect_t$locationName)
 # so for hourlevel question this means adding a 0 for each day-hour combination within each deployment length
 onlycap_t <- agoutiselect_t[agoutiselect_t$capuchin == 1,]
 
-## make only Jicaron dataset initially
-onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & onlycap_t$locationfactor != "CEBUS-03",]
+## make only Jicaron dataset initially, exclude bad cameras (CEBUS-03 because it overlaps with CEBUS-02, grid cams that are not good)
+onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & !onlycap_t$locationfactor %in% c("CEBUS-03","TU-168", "TU-152", "NTU-151"),]
 
 ## distance to coast (preliminary based on google maps)
-dist2coast <- read.csv("tide_analysis/tidalcams2.csv", header = TRUE)
+dist2coast <- read.csv("tide_analysis/allcams_gps.csv", header = TRUE)
 
 onlycap_tj <- left_join(onlycap_tj, dist2coast, by = c("locationfactor" = "camera_id"))
 onlycap_tj$locationfactor <- as.factor(onlycap_tj$locationfactor)
 # remove only NA rows and cameras more than 50meters from coast
-onlycap_tj <- onlycap_tj[which(is.na(onlycap_tj$deploymentID) == FALSE & onlycap_tj$distcoast < 50),]
+hist(onlycap_tj$distcoast)
+# if we want to use the grid data, should not limit based on distance to the coast. 
+onlycap_tj <- onlycap_tj[which(is.na(onlycap_tj$deploymentID) == FALSE),]
+#onlycap_tj <- onlycap_tj[which(is.na(onlycap_tj$deploymentID) == FALSE & onlycap_tj$distcoast < 50),]
 # new predictor, whether it is the Wet (May-November) or the Dry season (December-April)
 onlycap_tj$seasonF <- as.factor(onlycap_tj$season)
+# make variable for grid or non grid data
+onlycap_tj$datatype <- ifelse(str_detect(onlycap_tj$locationfactor, "TU") == TRUE, "grid", "non-grid")
 
 ## now similar sampling
 hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Non-tool-users"])
@@ -75,7 +80,7 @@ hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Tool-users"])
 str(onlycap_tj)
 
 tooltides <- onlycap_tj[,c("seq_start", "seq_end", "seq_length", "dep_start", "dep_end", "dep_length_hours",
-                           "month", "seasonF", "tool_anvil", "toolusers", "locationfactor", "uniqueloctag", "n", "tidedif","hour", "distcoast")]
+                           "month", "seasonF", "tool_anvil", "toolusers", "locationfactor", "uniqueloctag", "n", "tidedif","hour", "distcoast", "datatype")]
 
 #write.csv(tooltides, "tide_analysis/tooltides.csv", row.names = FALSE)
 

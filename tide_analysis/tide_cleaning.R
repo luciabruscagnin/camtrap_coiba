@@ -162,6 +162,8 @@ Tides <- list.rbind(tidal_data_clean)
 
 # check if you got all the dates per year
 table(Tides$YEAR)
+Tides$YEAR <- str_trim(Tides$YEAR)
+table(Tides$MONTH[Tides$YEAR == "2022"])
 
 #write.csv(Tides, "cebaco_island_tide_charts/TidesClean.csv")
 
@@ -218,12 +220,12 @@ TidesLow$LTIDE_NR <- ave(TidesLow$DATE, TidesLow$DATE, FUN = seq_along)
 TidesHigh$HTIDE_NR <- ave(TidesHigh$DATE, TidesHigh$DATE, FUN = seq_along)
 
 par(mar=c(5.1, 5.1, 4.1, 8.1), xpd=TRUE)
-plot(day(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == " 2019" & TidesLow$MONTH == "May")]), 
-     hour(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == " 2019" & TidesLow$MONTH == "May")]),
+plot(day(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == "2019" & TidesLow$MONTH == "May")]), 
+     hour(TidesLow$TIDE_TIME[which(TidesLow$LTIDE_NR == 1 & TidesLow$YEAR == "2019" & TidesLow$MONTH == "May")]),
      col = "#FC4E07", bty = 'L', xlab = "Day of the Month", ylab = "Time of Tide", main ="May 2019",
      cex.lab = 1.2, cex.main = 1.2, pch = 19)
-points(day(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == " 2019" & TidesHigh$MONTH == "May")]), 
-        hour(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == " 2019" & TidesHigh$MONTH == "May")]),
+points(day(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == "2019" & TidesHigh$MONTH == "May")]), 
+        hour(TidesHigh$TIDE_TIME[which(TidesHigh$HTIDE_NR == 1 & TidesHigh$YEAR == "2019" & TidesHigh$MONTH == "May")]),
         col = "#00AFBB", pch = 19) 
 legend("topright", inset=c(0,0.22), legend = c("Low Tide", "High Tide"), 
          col = c("#FC4E07", "#00AFBB"), pch = 19)
