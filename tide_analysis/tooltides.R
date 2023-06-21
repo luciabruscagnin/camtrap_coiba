@@ -1346,56 +1346,56 @@ tbm1_grid <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6
             control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = tidal_prior)
 
 # to add loo, loo_R2 and bayes_R2
-# tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 4000) 
+#tbm1_grid <- add_criterion(tbm1_grid, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 5000) 
 
 # Saving and loading model after it ran. Change to location where you'd want to save the object
-#saveRDS(tbm1, "ModelRDS/tbm1_final.rds")
-#tbm1 <- readRDS("ModelRDS/tbm1_final.rds")
+#saveRDS(tbm1_grid, "ModelRDS/tbm1_grid.rds")
+# tbm1_grid <- readRDS("ModelRDS/tbm1_grid.rds")
 
 # Diagnostics
-mcmc_plot(tbm1,type = "trace")
-mcmc_plot(tbm1, type = "acf_bar") # autocorrelation
-pp_check(tbm1, ndraw = 100) 
-loo(tbm1)
-loo_R2(tbm1)
-bayes_R2(tbm1)
+mcmc_plot(tbm1_grid,type = "trace")
+mcmc_plot(tbm1_grid, type = "acf_bar") # autocorrelation
+pp_check(tbm1_grid, ndraw = 100) 
+loo(tbm1_grid)
+loo_R2(tbm1_grid)
+bayes_R2(tbm1_grid)
 
 # Evaluating results
-summary(tbm1)
-mcmc_plot(tbm1) #plot posterior intervals
-plot(conditional_effects(tbm1))
-plot(conditional_smooths(tbm1))
+summary(tbm1_grid)
+mcmc_plot(tbm1_grid) #plot posterior intervals
+plot(conditional_effects(tbm1_grid))
+plot(conditional_smooths(tbm1_grid))
 # compare nr of capuchins per sequence for tool-users vs non-tool-users
-hypothesis(tbm1, "Intercept = Intercept + toolusersToolMusers")
+hypothesis(tbm1_grid, "Intercept = Intercept + toolusersToolMusers")
 
 # Visualization of activity and tidal cycles: Compute posterior predictions and plot contourplot from those
-predict_tbm1_p <- posterior_smooths(tbm1, smooth = 't2(tidedif_z,distcoast_z,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
-tbm1$data$fit_tooltide <- as.numeric(colMedians(predict_tbm1_p))
-d1_tu <- with(tbm1$data[tbm1$data$toolusers == "Tool-users",], interp(x = tidedif_z, y = distcoast_z, z = fit_tooltide, duplicate = "mean"))
-d1_ntu <-  with(tbm1$data[tbm1$data$toolusers == "Non-tool-users",], interp(x = tidedif_z, y = distcoast_z, z = fit_tooltide, duplicate = "mean"))
-d2_tu <- melt(d1_tu$z, na.rm = TRUE)
-names(d2_tu) <- c("x", "y", "fit")
-d2_tu$tidedif <- d1_tu$x[d2_tu$x] * sdtide + meantide
-d2_tu$distcoast <- d1_tu$y[d2_tu$y] *sddist + meandist
-d2_ntu <- melt(d1_ntu$z, na.rm = TRUE)
-names(d2_ntu) <- c("x", "y", "fit")
-d2_ntu$tidedif <- d1_ntu$x[d2_ntu$x] * sdtide + meantide
-d2_ntu$distcoast <- d1_ntu$y[d2_ntu$y] *sddist + meandist
-d2_tu$toolusers <- "Tool-users"
-d2_ntu$toolusers <- "Non-tool-users"
-d2_t <- rbind(d2_tu, d2_ntu)
-d2_t$toolusers <- factor(d2_t$toolusers, levels = c("Tool-users",  "Non-tool-users"))
+predict_tbm1_grid_p <- posterior_smooths(tbm1_grid, smooth = 't2(tidedif_z,distcoast_z,bs=c("cc","tp"),by=toolusers,k=c(10,6),m=1)')
+tbm1_grid$data$fit_tooltide <- as.numeric(colMedians(predict_tbm1_grid_p))
+d1_gtu <- with(tbm1_grid$data[tbm1_grid$data$toolusers == "Tool-users",], interp(x = tidedif_z, y = distcoast_z, z = fit_tooltide, duplicate = "mean"))
+d1_gntu <-  with(tbm1_grid$data[tbm1_grid$data$toolusers == "Non-tool-users",], interp(x = tidedif_z, y = distcoast_z, z = fit_tooltide, duplicate = "mean"))
+d2_gtu <- melt(d1_gtu$z, na.rm = TRUE)
+names(d2_gtu) <- c("x", "y", "fit")
+d2_gtu$tidedif <- d1_gtu$x[d2_gtu$x] * sdtide + meantide
+d2_gtu$distcoast <- d1_gtu$y[d2_gtu$y] *sddist + meandist
+d2_gntu <- melt(d1_gntu$z, na.rm = TRUE)
+names(d2_gntu) <- c("x", "y", "fit")
+d2_gntu$tidedif <- d1_gntu$x[d2_gntu$x] * sdtide + meantide
+d2_gntu$distcoast <- d1_gntu$y[d2_gntu$y] *sddist + meandist
+d2_gtu$toolusers <- "Tool-users"
+d2_gntu$toolusers <- "Non-tool-users"
+d2_gt <- rbind(d2_gtu, d2_gntu)
+d2_gt$toolusers <- factor(d2_gt$toolusers, levels = c("Tool-users",  "Non-tool-users"))
 
 # plot can take a while to load because of the rug with alpha = 0.05
-ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
+ggplot(data = d2_gt, aes(x = tidedif, y = distcoast, z = fit)) +
   geom_contour_filled(breaks = mybreaks, show.legend = TRUE) + scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) + 
   theme_bw() + theme(panel.grid = element_blank()) +  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)") +
-  geom_rug(data = tooltides, aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
+  geom_rug(data = tooltides_grid, aes(x = tidedif, y = distcoast), alpha = 0.05, inherit.aes = FALSE) + 
   theme(strip.text.x = element_text(size = 20), axis.title = element_text(size = 20), legend.text =  element_text(size = 16), 
         legend.title = element_text(size =16), axis.text = element_text(size = 14)) + facet_wrap(~toolusers, scales = "free")
 
 # Visualizing variation in activity between cameras
-cam1 <- plot(conditional_effects(tbm1), plot = FALSE)[[7]]
+cam1_grid <- plot(conditional_effects(tbm1_grid), plot = FALSE)[[7]]
 
 # for saving as PNG can uncomment line below and "dev.off" line.
 #png("ModelRDS/tbm1_camlocations.png", width = 11, height = 7, units = 'in', res = 300)

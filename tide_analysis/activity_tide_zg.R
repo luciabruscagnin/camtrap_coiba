@@ -2566,3 +2566,27 @@ ggplot() +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
+
+# minimal reproducible example
+data = data.frame(
+  n = rpois(100, 5),
+  distcoast_z = runif(100, -1, 5),
+  tidedif_z = rnorm(100, 0, 2),
+  locationfactor = factor(rep(c("A","B", "C", "D", "E"),each=20)),
+  toolusers = factor(rep(c("yes","no"), each = 50))
+)
+
+prior <- c(prior(normal(0, 2), class = Intercept),
+           prior(normal(0,2), class = b),
+           prior(exponential(1), class = sds))
+
+fit1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+              t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
+              s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = data, 
+            chain = 2, core = 2, iter = 2000, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", prior = prior)
+
+
+summary(fit1)
+plot(conditional_smooths(fit1))
+
+
