@@ -100,7 +100,7 @@ multimedia$seq_length <- ifelse((multimedia$fileMediatype == "video/mp4"), multi
 multimedia$mediatype <- ifelse((multimedia$fileMediatype == "video/mp4"), "video", "still") 
 
 # left join does not work if the y dataframe (so multimedia2) has duplicated values in the column you're matching by (so sequenceID). Need to drop duplicates before the left_join
-multimedia2 <- multimedia[,c("sequenceID", "seq_start", "seq_end", "seq_length", "temperature", "mediatype")]
+multimedia2 <- multimedia[,c("sequenceID", "seq_start", "seq_end", "seq_length", "temperature", "mediatype", "captureMethod")]
 multimedia2 <- multimedia2[!duplicated(multimedia2$sequenceID),]
 agoutigross <- left_join(agoutigross, multimedia2, "sequenceID")
 
@@ -432,11 +432,6 @@ cap_debris_as$sequenceID <- rownames(cap_debris_as)
 agoutigross <- left_join(agoutigross, cap_debris_as, "sequenceID")
 
 #### Cleaning and to sequence-level ##### 
-# create column to flag the timelapse triggers at 12:00:00 and 00:00:00
-agoutigross$timelapse <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$classificationTimestamp == "" & str_detect(agoutigross$seq_start, "00:00") == "TRUE", 1, 0)
-# flag the uncoded sequences in here
-agoutigross$uncoded <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$cameraSetup == "False" & agoutigross$classificationTimestamp == "" & agoutigross$timelapse == 0, 1, 0)
-
 # set all NAs to 0 except for categorical variables
 agoutigross <- agoutigross %>%
   mutate_at(vars("n", "nAF", "nAM", "nAU", "nJF", "nJM", "nJU", "nSF", "nSM", "nSU", "nUF", "nUM", "nUU", "nAdult",
@@ -449,10 +444,14 @@ agoutigross <- agoutigross %>%
                  "nUF_infant", "nUM_infant", "nUU_infant", "n_neckinfant"), ~replace_na(.,0))
 
 ### at this point can FILTER OUR THE BLANKS
+# remove all timelapse triggers
+# flag the uncoded sequences in here that are not camera setup
+agoutigross$uncoded <- ifelse(agoutigross$observationType == "unclassified" & agoutigross$cameraSetup == "False" & agoutigross$classificationTimestamp == "" & agoutigross$captureMethod == "motion detection", 1, 0)
+
 # exclude blanks, unclassified and unknown
-ftable(agoutigross$observationType, agoutigross$timelapse)
+ftable(agoutigross$observationType)
 # exclude all timelapse triggers, all blanks. Keep the unclassified (uncoded) ones in cause those allow you to filter out which deployments are coded or not
-agoutigross2 <- agoutigross[which(agoutigross$observationType != "blank" & agoutigross$timelapse != 1),]
+agoutigross2 <- agoutigross[which(agoutigross$observationType != "blank" & agoutigross$captureMethod == "motion detection"),]
 
 # can still clean up by removing unnecessary columns
 # keep checking if these are the right ones to remove
@@ -525,7 +524,7 @@ agoutisequence$exposure <- ifelse(agoutisequence$seq_startday == agoutisequence$
 # want to exclude deployments that have uncoded sequences (that are not timelapse)
 # I already took the timelapse ones out, so all unclassified left are "real" uncoded sequences
 # can either very strictly subset on only 100% coded deployments or less strictly on all that have less than 5 uncoded sequences or something
-cd <- as.data.frame(ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded))
+cd <- as.data.frame((ftable(agoutisequence$uniqueloctag, agoutisequence$uncoded)))
 codeddeployments_total <- as.character(cd$Var1[cd$Var2 == 1 & cd$Freq < 5]) # deployments that miss less than 5 sequences
 
 # subset only fully coded deployments 
