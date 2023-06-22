@@ -19,6 +19,7 @@ library(activity)
 library(lme4)
 library(brms)
 library(dplyr)
+library(geodist)
 
 ## Notes for analyses:
 
@@ -466,3 +467,18 @@ pp_check(pc_bm3)
 
 ##### CO-OCCURRENCES ####
 
+
+## Step 1: Generate distance matrix showing distance between each camera per grid
+TUgridcams <- gridseq_oc[!duplicated(gridseq_oc$locationfactor) & gridseq_oc$gridtype == "TU", c("locationfactor", "latitude", "longitude")]
+TUgridcams <- TUgridcams[order(TUgridcams$locationfactor),]
+TUdistmat <- geodist(TUgridcams)
+rownames(TUdistmat) <- TUgridcams$locationfactor
+colnames(TUdistmat) <- TUgridcams$locationfactor
+TUdistmat
+
+NTUgridcams <- gridseq_oc[!duplicated(gridseq_oc$locationfactor) & gridseq_oc$gridtype == "NTU", c("locationfactor", "latitude", "longitude")]
+NTUgridcams <- NTUgridcams[order(NTUgridcams$locationfactor),]
+NTUdistmat <- geodist(NTUgridcams)
+rownames(NTUdistmat) <- NTUgridcams$locationfactor
+colnames(NTUdistmat) <- NTUgridcams$locationfactor
+NTUdistmat

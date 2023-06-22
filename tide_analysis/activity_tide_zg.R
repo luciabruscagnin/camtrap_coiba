@@ -2567,13 +2567,13 @@ ggplot() +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
 
-# minimal reproducible example
+####### minimal reproducible example of conditional_effects brms error ##########
 data = data.frame(
-  n = rpois(100, 5),
-  distcoast_z = runif(100, -1, 5),
-  tidedif_z = rnorm(100, 0, 2),
-  locationfactor = factor(rep(c("A","B", "C", "D", "E"),each=20)),
-  toolusers = factor(rep(c("yes","no"), each = 50))
+  n = rpois(1000, 5),
+  distcoast_z = runif(1000, -1, 5),
+  tidedif_z = rnorm(1000, 0, 2),
+  locationfactor = factor(rep(c("A","B", "C", "D", "E"),each=200)),
+  toolusers = factor(rep(c("yes","no"), each = 500))
 )
 
 prior <- c(prior(normal(0, 2), class = Intercept),
@@ -2589,4 +2589,19 @@ fit1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), fu
 summary(fit1)
 plot(conditional_smooths(fit1))
 
+require(mgcv)
+fit1_mgcv <- gam(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+                   t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
+                   s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = data, method = "REML")
+summary(fit1_mgcv)
+plot(fit1_mgcv)
 
+require(gamm4)
+fit1_gamm4 <- gamm4(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
+                   t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
+                   s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = data)
+summary(fit1_gamm4$gam)
+summary(fit1_gamm4$mer)
+plot(fit1_gamm4$gam)
+
+plot(conditional_effects(fit1_gamm4$gam))
