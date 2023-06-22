@@ -55,7 +55,7 @@ agoutiselect_t$locationfactor <- as.factor(agoutiselect_t$locationName)
 onlycap_t <- agoutiselect_t[agoutiselect_t$capuchin == 1,]
 
 ## make only Jicaron dataset initially, exclude bad cameras (CEBUS-03 because it overlaps with CEBUS-02, grid cams that are not good)
-onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & !onlycap_t$locationfactor %in% c("CEBUS-03","TU-168", "TU-152", "NTU-151"),]
+onlycap_tj <- onlycap_t[onlycap_t$island == "Jicaron" & !onlycap_t$locationfactor %in% c("CEBUS-03","TU-168", "TU-152", "NTU-151", "JIC-STREAM-CAMP-NO-T-02", "JIC-STREAM-CAMP-NO-T-01" ,"JIC-STREAM-CAMP-NO-T-03"),]
 
 ## distance to coast (preliminary based on google maps)
 dist2coast <- read.csv("tide_analysis/allcams_gps.csv", header = TRUE)
