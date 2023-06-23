@@ -67,7 +67,7 @@ tidal_prior <- c(prior(normal(0, 2), class = Intercept),
 tbm1_prior <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), full = TRUE) +
                     t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), by = toolusers, k = c(10, 6), m = 1) + toolusers +
                     s(locationfactor, bs = "re"), family = poisson(),  knots = list(tidedif_z =c(-1.8,1.8)),  data = tooltides, chain = 2, core = 2, iter = 1000,
-                  prior = tidal_prior, sample_prior = "only", backend = "cmdstanr")
+                  prior = tidal_prior, sample_prior = "only", backend = "cmdstanr", refresh = 100)
 
 summary(tbm1_prior)
 prior_summary(tbm1_prior)
@@ -100,6 +100,10 @@ tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), fu
 # Saving and loading model after it ran. Change to location where you'd want to save the object
 #saveRDS(tbm1, "ModelRDS/tbm1_final.rds")
 #tbm1 <- readRDS("ModelRDS/tbm1_final.rds")
+# tbm1_final is one from RSOS original submission
+saveRDS(tbm1, "ModelRDS/tbm1_all.rds")
+tbm1 <- readRDS("ModelRDS/tbm1_all.rds")
+# tbm1_all is with all cameras coded in 
 
 # Diagnostics
 mcmc_plot(tbm1,type = "trace")
@@ -147,12 +151,12 @@ ggplot(data = d2_t, aes(x = tidedif, y = distcoast, z = fit)) +
 cam1 <- plot(conditional_effects(tbm1), plot = FALSE)[[7]]
 
 # for saving as PNG can uncomment line below and "dev.off" line.
-#png("ModelRDS/tbm1_camlocations.png", width = 11, height = 7, units = 'in', res = 300)
+#png("ModelRDS/tbm1_camlocations.png", width = 14, height = 10, units = 'in', res = 300)
 cam1  + theme_bw() + 
   stat_summary(data = tooltides, inherit.aes = FALSE, aes(x = locationfactor, y = n, group = toolusers, fill = toolusers), 
                geom = "point", fun = "mean", size = 4, shape = 24, alpha = 0.5) +
   labs(y = "Average number of capuchins per sequence", x = "Camera Location", fill = "Group") +
-  theme(axis.text.x = element_text(angle = 90), strip.text.x = element_text(size = 14), 
+  theme(axis.text.x = element_text(angle = 90, size = 10), 
         axis.title = element_text(size = 16), legend.text =  element_text(size = 14), 
         legend.title = element_text(size =16), axis.text = element_text(size = 12))
 #dev.off()  
