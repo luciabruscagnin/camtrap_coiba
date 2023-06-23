@@ -79,7 +79,7 @@ hist(onlycap_tj$distcoast[onlycap_tj$toolusers == "Tool-users"])
 ## Clean onlycap_tj dataframe and save it to csv for sharing with publication
 str(onlycap_tj)
 
-tooltides <- onlycap_tj[,c("seq_start", "seq_end", "seq_length", "dep_start", "dep_end", "dep_length_hours",
+tooltides <- onlycap_tj[,c("seq_start", "seq_end", "seq_length", "dep_start", "dep_end", "dep_length_hours", "mediatype",
                            "month", "seasonF", "tool_anvil", "toolusers", "locationfactor", "uniqueloctag", "n", "tidedif","hour", "distcoast", "datatype")]
 
 #write.csv(tooltides, "tide_analysis/tooltides.csv", row.names = FALSE)

@@ -1286,7 +1286,7 @@ tidaldays2 <- tidaldays[!duplicated(tidaldays$dayloc),]
 
 # make overview of deployments we have and their start and end days
 locations_t <- data.frame(uniqueloctag = unique(tooltides$uniqueloctag)) 
-locations_t <- left_join(locations_t, tooltides[,c("uniqueloctag", "dep_start", "dep_end", "locationfactor", "toolusers")], by = "uniqueloctag")
+locations_t <- left_join(locations_t, tooltides[,c("uniqueloctag", "dep_start", "dep_end", "locationfactor", "toolusers", "mediatype")], by = "uniqueloctag")
 locations_t <- locations_t[!duplicated(locations_t$uniqueloctag),]
 # take time off and keep just date variable
 locations_t$dep_startday <- as.Date(locations_t$dep_start, "%Y-%m-%d")
@@ -1300,8 +1300,10 @@ for (i in 1:nrow(locations_t)) {
 
 locations_t2 <- aggregate(locations_t$dep_days, list(locationfactor  = locations_t$locationfactor, toolusers = locations_t$toolusers), FUN = sum)
 
-sum(locations_t$dep_days[locations_t$toolusers == "Tool-users"])
+sum(locations_t$dep_days[locations_t$toolusers == "Non-tool-users"])
 sum(locations_t2$x)
+
+ftable(locations_t$mediatype)
 
 # How many locations
 nrow(locations_t2)
@@ -1311,20 +1313,25 @@ summary(as.numeric(locations_t2$x))
 # average number of trapping days per deployment
 summary(as.numeric(locations_t$dep_days))
 # number of deployments per location
-max(as.matrix(ftable(locations_t$locationfactor)))
 mean(as.matrix(ftable(locations_t$locationfactor)))
+max(as.matrix(ftable(locations_t$locationfactor)))
+sort(as.matrix(ftable(locations_t$locationfactor)))
 
 # distances to coast
-min(tooltides$distcoast[which(tooltides$toolusers == "Tool-users")])
-max(tooltides$distcoast[which(tooltides$toolusers == "Tool-users")])
-min(tooltides$distcoast[which(tooltides$toolusers == "Non-tool-users")])
-max(tooltides$distcoast[which(tooltides$toolusers == "Non-tool-users")])
+summary(tooltides$distcoast[which(tooltides$toolusers == "Tool-users" & tooltides$datatype == "non-grid")])
+summary(tooltides$distcoast[which(tooltides$toolusers == "Tool-users" & tooltides$datatype == "grid")])
+summary(tooltides$distcoast[which(tooltides$toolusers == "Non-tool-users" & tooltides$datatype == "non-grid")])
+summary(tooltides$distcoast[which(tooltides$toolusers == "Non-tool-users" & tooltides$datatype == "grid")])
 
 # number of capuchins per sequence 
 round(mean(tooltides$n),2)
 min(tooltides$n)
 max(tooltides$n)
 round(sd(tooltides$n),2)
+# try to show density of capuchins
+# plot of number of observation days vs nr of capuchins detections
+ggplot(tooltides, aes(x = dep_length_hours)) + geom_point(stat = "count") 
+
 
 #### TIDAL GAMS IN BRMS: GRID DATA ONLY ####
 ## outcome variable:
