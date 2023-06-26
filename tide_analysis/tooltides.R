@@ -176,6 +176,8 @@ tbm2 <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), ful
 # Saving and loading model after it ran
 #saveRDS(tbm2, "ModelRDS/tbm2_final.rds")
 #tbm2 <- readRDS("ModelRDS/tbm2_final.rds")
+#saveRDS(tbm2, "ModelRDS/tbm2_all.rds")
+#tbm2 <- readRDS("ModelRDS/tbm2_all.rds")
 
 # Diagnostics
 mcmc_plot(tbm2,type = "trace")
@@ -244,6 +246,9 @@ tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), f
 # Saving and loading model object
 #saveRDS(tbm2a, "ModelRDS/tbm2a_final.rds")
 #tbm2a <- readRDS("ModelRDS/tbm2a_final.rds")
+#saveRDS(tbm2a, "ModelRDS/tbm2a_all.rds")
+#tbm2a <- readRDS("ModelRDS/tbm2a_all.rds")
+
 
 # Diagnostics
 mcmc_plot(tbm2a,type = "trace")
@@ -306,11 +311,13 @@ tbm2_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full
               control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # Add loo, loo_R2 and bayes_R2
-# tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
+ tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model object
 #saveRDS(tbm2_h, "ModelRDS/tbm2_hfinal.rds")
 #tbm2_h <- readRDS("ModelRDS/tbm2_hfinal.rds")
+#saveRDS(tbm2_h, "ModelRDS/tbm2_hall.rds")
+#tbm2_h <- readRDS("ModelRDS/tbm2_hall.rds")
 
 # Diagnostics
 mcmc_plot(tbm2_h,type = "trace")
