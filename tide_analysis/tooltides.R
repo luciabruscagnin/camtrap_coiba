@@ -249,7 +249,6 @@ tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), f
 #saveRDS(tbm2a, "ModelRDS/tbm2a_all.rds")
 #tbm2a <- readRDS("ModelRDS/tbm2a_all.rds")
 
-
 # Diagnostics
 mcmc_plot(tbm2a,type = "trace")
 pp_check(tbm2a, ndraw = 100) 
@@ -311,7 +310,7 @@ tbm2_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full
               control = list(adapt_delta = 0.99), backend = "cmdstanr", prior = tidal_prior)
 
 # Add loo, loo_R2 and bayes_R2
- tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
+# tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model object
 #saveRDS(tbm2_h, "ModelRDS/tbm2_hfinal.rds")
@@ -370,6 +369,8 @@ tbm2a_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), ful
 # Saving and loading model object
 #saveRDS(tbm2a_h, "ModelRDS/tbm2a_hfinal.rds")
 #tbm2a_h <- readRDS("ModelRDS/tbm2a_hfinal.rds")
+#saveRDS(tbm2a_h, "ModelRDS/tbm2a_hall.rds")
+#tbm2a_h <- readRDS("ModelRDS/tbm2a_hall.rds")
 
 # Diagnostics
 mcmc_plot(tbm2a_h,type = "trace")
@@ -913,6 +914,21 @@ p <- plot_grid(prow, legend_b, ncol = 2, rel_widths = c(1, .4))
 p
 #dev.off()
 
+### Supplemental plot zoomed in
+#png("ModelRDS/tusvsntu_predder_p_zoomed.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) +
+  geom_rug(data = tooltides, aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_raster(data = na.omit(tbm1_p_merge[tbm1_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = tidedif, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none")  + coord_cartesian(ylim=c(0,50)) +
+  facet_wrap(~toolusers) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
+#dev.off()
+
 # Not used in manuscript, but can also plot areas with certain levels of confidence (e.g. 70) as alternative to the % on one side approach
 ggplot() +
   geom_contour_filled(data = tbm1_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
@@ -1005,6 +1021,22 @@ p2 <- plot_grid(prow2, legend_b2, ncol = 2, rel_widths = c(1, .4))
 p2
 #dev.off()
 
+### Zoomed in plot of 50 m region
+# png("ModelRDS/toolusers_predder_p_zoom.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) +
+  geom_rug(data = tooltides[tooltides$toolusers == "Tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_raster(data = na.omit(tbm2_p_merge[tbm2_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = tidedif, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none")  + coord_cartesian(ylim = c(0,50)) +
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
+#dev.off()
+
+
 # Not used in manuscript, but can also plot areas with certain levels of confidence (e.g. 70) as alternative to the % on one side approach
 ggplot() +
   geom_contour_filled(data = tbm2_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 0.7) +
@@ -1074,7 +1106,6 @@ ggplot() +
   labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
         legend.title = element_text(size =16), axis.text = element_text(size=16))
-
 #dev.off()
 
 ### Supplemental plots showing just how much of derivative is on each side of 0
@@ -1096,6 +1127,22 @@ legend_b2a <- get_legend(tbm2a_p1 + theme(legend.position = "right"))
 p2a <- plot_grid(prow2a, legend_b2a, ncol = 2, rel_widths = c(1, .4))
 #png("ModelRDS/tbm2a_abovebelow.png", width = 12, height = 9, units = 'in', res = 300)
 p2a
+#dev.off()
+
+### Supplemental zoomed in plot
+# png("ModelRDS/nontoolusers_predder_p_zoomed.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2a_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = tidedif, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE) +
+  geom_rug(data = tooltides[tooltides$toolusers == "Non-tool-users",], aes(x = tidedif, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_raster(data = na.omit(tbm2a_p_merge[tbm2a_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = tidedif, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none")  + coord_cartesian(ylim = c(0,50)) +
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hours until and after nearest low tide (=0)", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
+
 #dev.off()
 
 # Not used in manuscript, but can also plot areas with certain levels of confidence (e.g. 70) as alternative to the % on one side approach
@@ -1192,6 +1239,21 @@ p2h <- plot_grid(prow2h, legend_b2h, ncol = 2, rel_widths = c(1, .4))
 p2h
 #dev.off()
 
+### Supplemental plot zoomed in
+#png("ModelRDS/toolusershour_predder_p_zoom.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2_h_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = tooltides[tooltides$toolusers == "Tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_raster(data = na.omit(tbm2_h_p_merge[tbm2_h_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = hour, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none") + coord_cartesian(ylim = c(0,50)) +
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
+#dev.off()
+
 # Not used in manuscript, but can also plot areas with certain levels of confidence (e.g. 70) as alternative to the % on one side approach
 ggplot() +
   geom_contour_filled(data = tbm2_h_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 0.7) +
@@ -1271,6 +1333,21 @@ legend_b2ah <- get_legend(tbm2ah_p1 + theme(legend.position = "right"))
 p2ah <- plot_grid(prow2ah, legend_b2ah, ncol = 2, rel_widths = c(1, .4))
 #png("ModelRDS/tbm2ah_abovebelow.png", width = 12, height = 9, units = 'in', res = 300)
 p2ah
+#dev.off()
+
+### Supplemental zoomed plots
+#png("ModelRDS/nontoolusershour_predder_p_zoom.png", width = 12, height = 6, units = 'in', res = 300)
+ggplot() +
+  geom_contour_filled(data = tbm2_ah_p_merge, breaks = mybreaks, show.legend = TRUE, aes(x = hour, y = distcoast, z = fit), alpha = 1) +
+  scale_fill_manual(values = inferncol, name = "Change nr of capuchins", drop = FALSE)+
+  geom_rug(data = tooltides[tooltides$toolusers == "Non-tool-users",], aes(x = hour, y = distcoast),alpha = 0.05, inherit.aes = FALSE) + 
+  new_scale_fill() + 
+  geom_raster(data = na.omit(tbm2_ah_p_merge[tbm2_ah_p_merge$confidence == 70,]), inherit.aes = FALSE, show.legend = FALSE, aes(x = hour, y = distcoast, alpha = as.factor(Significance_p)), fill = "white") + 
+  scale_alpha_manual(values = c(0.3, 0), guide = "none") + coord_cartesian(ylim =c(0,50)) +
+  facet_wrap(~seasonF) + theme_bw() + theme(panel.grid = element_blank())  +
+  labs(x = "Hour of day", y = "Distance to coast (m)", fill = "Change nr of capuchins") +
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 18), legend.text =  element_text(size = 16), plot.title = element_text(size = 20),
+        legend.title = element_text(size =16), axis.text = element_text(size=16))
 #dev.off()
 
 # Not used in manuscript, but can also plot areas with certain levels of confidence (e.g. 70) as alternative to the % on one side approach
