@@ -5,7 +5,6 @@
 # Evelyn Del Rosario, Kate Tiedeman, Claudio Monteza & Brendan Barrett
 # 2023
 
-# setwd("/Users/Zoe/Documents/GitHub/camtrap_coiba/tide_analysis")
 # setwd("/Users/Zoe Goldsborough/Documents/GitHub/camtrap_coiba/tide_analysis")
 
 ## Packages required
@@ -98,12 +97,8 @@ tbm1 <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), fu
 # tbm1 <- add_criterion(tbm1, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99, max_treedepth = 12), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model after it ran. Change to location where you'd want to save the object
-#saveRDS(tbm1, "ModelRDS/tbm1_final.rds")
-#tbm1 <- readRDS("ModelRDS/tbm1_final.rds")
-# tbm1_final is one from RSOS original submission
-saveRDS(tbm1, "ModelRDS/tbm1_all.rds")
-tbm1 <- readRDS("ModelRDS/tbm1_all.rds")
-# tbm1_all is with all cameras coded in 
+#saveRDS(tbm1, "ModelRDS/tbm1_all.rds")
+#tbm1 <- readRDS("ModelRDS/tbm1_all.rds")
 
 # Diagnostics
 mcmc_plot(tbm1,type = "trace")
@@ -174,8 +169,6 @@ tbm2 <- brm(n ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), ful
 # tbm2 <- add_criterion(tbm2, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model after it ran
-#saveRDS(tbm2, "ModelRDS/tbm2_final.rds")
-#tbm2 <- readRDS("ModelRDS/tbm2_final.rds")
 #saveRDS(tbm2, "ModelRDS/tbm2_all.rds")
 #tbm2 <- readRDS("ModelRDS/tbm2_all.rds")
 
@@ -244,8 +237,6 @@ tbm2a <- brm(n  ~ t2(tidedif_z, distcoast_z, bs = c("cc", "tp"), k = c(10, 6), f
 #tbm2a <- add_criterion(tbm2a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model object
-#saveRDS(tbm2a, "ModelRDS/tbm2a_final.rds")
-#tbm2a <- readRDS("ModelRDS/tbm2a_final.rds")
 #saveRDS(tbm2a, "ModelRDS/tbm2a_all.rds")
 #tbm2a <- readRDS("ModelRDS/tbm2a_all.rds")
 
@@ -313,8 +304,6 @@ tbm2_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), full
 # tbm2_h <- add_criterion(tbm2_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 4000) 
 
 # Saving and loading model object
-#saveRDS(tbm2_h, "ModelRDS/tbm2_hfinal.rds")
-#tbm2_h <- readRDS("ModelRDS/tbm2_hfinal.rds")
 #saveRDS(tbm2_h, "ModelRDS/tbm2_hall.rds")
 #tbm2_h <- readRDS("ModelRDS/tbm2_hall.rds")
 
@@ -367,8 +356,6 @@ tbm2a_h <- brm(n ~ t2(hour_z, distcoast_z, bs = c("tp", "tp"), k = c(10, 6), ful
 #tbm2a_h <- add_criterion(tbm2a_h, c("loo", "loo_R2", "bayes_R2"), moment_match = TRUE, control = list(adapt_delta = 0.99), backend = "cmdstanr", ndraws = 5000) 
 
 # Saving and loading model object
-#saveRDS(tbm2a_h, "ModelRDS/tbm2a_hfinal.rds")
-#tbm2a_h <- readRDS("ModelRDS/tbm2a_hfinal.rds")
 #saveRDS(tbm2a_h, "ModelRDS/tbm2a_hall.rds")
 #tbm2a_h <- readRDS("ModelRDS/tbm2a_hall.rds")
 
@@ -1412,10 +1399,8 @@ round(mean(tooltides$n),2)
 min(tooltides$n)
 max(tooltides$n)
 round(sd(tooltides$n),2)
-# try to show density of capuchins
 # plot of number of observation days vs nr of capuchins detections
 ggplot(tooltides, aes(x = dep_length_hours)) + geom_point(stat = "count") 
-
 
 #### TIDAL GAMS IN BRMS: GRID DATA ONLY ####
 ## outcome variable:
