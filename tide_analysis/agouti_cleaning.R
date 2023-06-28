@@ -182,6 +182,12 @@ agoutigross <- left_join(agoutigross, cap_numbers, "sequenceID")
 # replace NAs with 0 for the capuchin count
 agoutigross$n[is.na(agoutigross$n)] <- 0
 
+## First add ID string instead of code
+IDS <- read.csv("agouti_output/individual_age_sex_species_202306131450.csv")
+IDS <- IDS[,c("id", "name")]
+
+agoutigross <- left_join(agoutigross, IDS, by = c("individualID" = "id"))
+
 ##### Age/sex classes #####
 # make frequency table of agesex per sequence
 cap_agesex <- as.data.frame(as.matrix(ftable(agoutigross_cap$sequenceID, agoutigross_cap$agesex)))
