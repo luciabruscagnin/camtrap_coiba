@@ -14,6 +14,8 @@ library(fitdistrplus)
 
 
 ## NOTE: add code about catching when anvil type switches (e.g. if it's wooden anvil at comment seq_start, or when they switch back to stone/wood)
+### NOTE: when they start with hammerstone "inhand", add 1 pound (and some seconds?) or if we have enough exclude those from analyses
+
 
 # load tsv file with aggregated BORIS output
 dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.tsv", sep = "\t")

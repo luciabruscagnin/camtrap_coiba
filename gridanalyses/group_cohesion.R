@@ -57,6 +57,11 @@ ftable(gridsequence_c[which(gridsequence_c$capuchin == 1),]$locationName)
 hist(gridsequence_c[which(gridsequence_c$capuchin == 1),]$hour)
 # all looks fine
 
+# filter down to only capuchin detections
+gridseq_oc <- gridsequence_c[gridsequence_c$capuchin == 1,]
+gridseq_oc$gridtype <- as.factor(gridseq_oc$gridtype)
+gridseq_oc <- droplevels.data.frame(gridseq_oc)
+
 ###### Exposure, how many trapping nights TU vs NTU ####
 ## How many camera trapping days
 griddays <- gridsequence_c
@@ -157,6 +162,9 @@ NTUgridagesex <- gridagesex[gridagesex$gridtype == "NTU",]
 # for now just add real names in manually, later use key file
 NTUgridagesex <- NTUgridagesex[order(NTUgridagesex$individualID),]
 NTUgridagesex$ID <- c("QUA", "XAV", "LEX", "PIP", "JUN", "CON", "DRO", "FRA", "ELA", "HAN", "OCT", "MIR", "HEL", "BLO", "KAI")
+NTUgridagesex$col <- ifelse(NTUgridagesex$sex == "male", "lightblue", "pink")
+NTUgridagesex$col <- ifelse(NTUgridagesex$lifeStage == "adult", NTUgridagesex$col, "lightgreen")
+NTUgridagesex <- NTUgridagesex[order(NTUgridagesex$ID),]
 
 # I think data format needs to be sequenceID/individualID
 # go to only NTU grid data and only sequence ID and individual ID (when individual ID was known)
@@ -179,6 +187,12 @@ adj.m <- get_network(NTUassoc_w2, association_index = "SRI")
 assoc.g <- graph_from_adjacency_matrix(adj.m, "undirected", weighted = T)
 plot(assoc.g, edge.width = E(assoc.g)$weight*100)
 
+net_NTU <- graph.adjacency(adj.m, mode = "undirected", weighted = TRUE, diag = FALSE)
+plot(net_NTU, vertex.color = NTUgridagesex$col, edge.width = E(assoc.g)$weight*100)
+coms_NTU <- fastgreedy.community(net_NTU) #identify communities
+NTUgridagesex$COM <- membership(coms_NTU) #assign membership of communities
+plot(net_NTU, vertex.color =NTUgridagesex$col, edge.with = 20*E(net_NTU)$weight^2, mark.groups = coms_NTU)
+
 # largely appears to be one group, but I will still do a double-check of the IDs and try to identify more individuals in the big group sightings
 
 ### SNA TU GROUP ##########
@@ -189,10 +203,11 @@ TUassoc <- agoutiseq_jt[, c("sequenceID", "name")]
 # make dataset with all unique individuals and their age-sex
 inds <- agoutiseq_jt[!duplicated(agoutiseq_jt$name), c("name", "lifeStage", "sex")]
 inds <- inds[-1,]
+inds$col <- NA
 inds$col[which(inds$sex == "male"  & inds$lifeStage == "adult")] <- "lightblue"
-inds$col[which(inds$sex == "female" & inds$lifeStage == "adult")] <- "red"
+inds$col[which(inds$sex == "female" & inds$lifeStage == "adult")] <- "pink"
 inds$col[which(inds$sex == "male"  & inds$lifeStage != "adult")] <- "lightgreen"
-inds$col[which(inds$sex == "female" & inds$lifeStage != "adult")] <- "pink"
+inds$col[which(inds$sex == "female" & inds$lifeStage != "adult")] <- "purple"
 
 inds <- inds[order(inds$name),]
 
@@ -213,9 +228,6 @@ inds2 <- inds[inds$name %in% colnames(TUassoc_w3),]
 ## now we have a dataframe with all associations (whenever individuals were seen together in the same sequence) in GBI (group by individual) format
 # use this with asnipe package to get a network 
 adj.m_TU <- get_network(TUassoc_w2, association_index = "SRI")
-assoc.g_TU <- graph_from_adjacency_matrix(adj.m_TU, "undirected", weighted = T)
-plot(assoc.g_TU, edge.width = E(assoc.g_TU)$weight*100)
-
 net <- graph.adjacency(adj.m_TU, mode = "undirected", weighted = TRUE, diag = FALSE)
 plot(net, vertex.color = inds$col, edge.width = E(assoc.g_TU)$weight*200)
 coms <- fastgreedy.community(net) #identify communities
@@ -223,54 +235,17 @@ inds$COM <- membership(coms) #assign membership of communities
 plot(net, vertex.color =inds$col, edge.with = 20*E(net)$weight^2, mark.groups = coms)
 
 ## with less seen individuals removed
-adj.m_TU <- get_network(TUassoc_w3, association_index = "SRI")
-net <- graph.adjacency(adj.m_TU, mode = "undirected", weighted = TRUE, diag = FALSE)
-plot(net, vertex.color = inds2$col, edge.width = E(assoc.g_TU)$weight*200)
-coms <- fastgreedy.community(net) #identify communities
-inds2$COM <- membership(coms) #assign membership of communities
-plot(net, vertex.color =inds2$col, edge.width = 2000*E(net)$weight^2, mark.groups = coms)
+adj.m_TU2 <- get_network(TUassoc_w3, association_index = "SRI")
+net2 <- graph.adjacency(adj.m_TU2, mode = "undirected", weighted = TRUE, diag = FALSE)
+plot(net2, vertex.color = inds2$col, edge.width = E(net2)$weight*200)
+coms2 <- fastgreedy.community(net2) #identify communities
+inds2$COM <- membership(coms2) #assign membership of communities
+plot(net2, vertex.color =inds2$col, edge.width = 2000*E(net2)$weight^2, mark.groups = coms2)
 
-
-# step 2: per sequence, get some kind of dyadic information of who was seen with whom
-# make dataframe with individual variation
-gridagesex <- gridclean_c[,c("individualID","lifeStage", "sex", "gridtype")]
-gridagesex <- gridagesex[! gridagesex$individualID == "" & ! duplicated(gridagesex$individualID),]
-NTUgridagesex <- gridagesex[gridagesex$gridtype == "NTU",]
-# for now just add real names in manually, later use key file
-NTUgridagesex <- NTUgridagesex[order(NTUgridagesex$individualID),]
-NTUgridagesex$ID <- c("QUA", "XAV", "LEX", "PIP", "JUN", "CON", "DRO", "FRA", "ELA", "HAN", "OCT", "MIR", "HEL", "BLO", "KAI")
-
-# I think data format needs to be sequenceID/individualID
-# go to only NTU grid data and only sequence ID and individual ID (when individual ID was known)
-NTUassoc <- gridclean_c[gridclean_c$gridtype == "NTU" & ! gridclean_c$individualID == "", c("sequenceID", "individualID")]
-NTUassoc <- left_join(NTUassoc, NTUgridagesex[,c("individualID", "ID")])
-NTUassoc <- NTUassoc[,c("sequenceID", "ID")]
-
-# then go from long to wide?
-NTUassoc_w <- dcast(NTUassoc, sequenceID ~ ID)
-NTUassoc_w2 <- NTUassoc_w
-NTUassoc_w2[is.na(NTUassoc_w2) == FALSE] <- 1
-NTUassoc_w2$sequenceID <- NTUassoc_w$sequenceID
-NTUassoc_w2[is.na(NTUassoc_w2)] <- 0
-NTUassoc_w2[,2:16] <- as.numeric(unlist(NTUassoc_w2[,2:16]))
-rownames(NTUassoc_w2) <- NTUassoc_w2$sequenceID
-NTUassoc_w2 <- NTUassoc_w2[,-1]
-## now we have a dataframe with all associations (whenever individuals were seen together in the same sequence) in GBI (group by individual) format
-# use this with asnipe package to get a network 
-adj.m <- get_network(NTUassoc_w2, association_index = "SRI")
-assoc.g <- graph_from_adjacency_matrix(adj.m, "undirected", weighted = T)
-plot(assoc.g, edge.width = E(assoc.g)$weight*100)
-
-# largely appears to be one group, but I will still do a double-check of the IDs and try to identify more individuals in the big group sightings
-
-# filter down to only capuchin detections
-gridseq_oc <- gridsequence_c[gridsequence_c$capuchin == 1,]
-gridseq_oc$gridtype <- as.factor(gridseq_oc$gridtype)
-gridseq_oc <- droplevels.data.frame(gridseq_oc)
-
-
-
-
+## which individuals are more central?
+inds$BINARY.DEGREE <- sna::degree(adj.m_TU, ignore.eval = TRUE)
+inds$WEIGHTED.DEGREE <- sna::degree(adj.m_TU, ignore.eval=FALSE) 
+# ABE is most central individual, followed by older females (OLG and BEA) 
 
 ###### Trap shyness ####
 # inspired by McCarthy et al 2018
@@ -555,18 +530,45 @@ pp_check(pc_bm3)
 
 ##### CO-OCCURRENCES ####
 
-
 ## Step 1: Generate distance matrix showing distance between each camera per grid
 TUgridcams <- gridseq_oc[!duplicated(gridseq_oc$locationfactor) & gridseq_oc$gridtype == "TU", c("locationfactor", "latitude", "longitude")]
 TUgridcams <- TUgridcams[order(TUgridcams$locationfactor),]
-TUdistmat <- geodist(TUgridcams)
+TUdistmat <- geodist::geodist(TUgridcams)
 rownames(TUdistmat) <- TUgridcams$locationfactor
 colnames(TUdistmat) <- TUgridcams$locationfactor
 TUdistmat
 
 NTUgridcams <- gridseq_oc[!duplicated(gridseq_oc$locationfactor) & gridseq_oc$gridtype == "NTU", c("locationfactor", "latitude", "longitude")]
 NTUgridcams <- NTUgridcams[order(NTUgridcams$locationfactor),]
-NTUdistmat <- geodist(NTUgridcams)
+NTUdistmat <- geodist::geodist(NTUgridcams)
 rownames(NTUdistmat) <- NTUgridcams$locationfactor
 colnames(NTUdistmat) <- NTUgridcams$locationfactor
 NTUdistmat
+
+### Using all TU data (not just grid), looking for co-occurrences within 60 seconds >150 m away
+agoutiseq_jt <- agoutisequence_c[agoutisequence_c$capuchin == 1 & agoutisequence_c$island == "Jicaron" & agoutisequence_c$tool_site == 1,]
+# make distance matrix for all cameras
+TUcams <- agoutiseq_jt[!duplicated(agoutiseq_jt$locationfactor), c("locationfactor", "latitude", "longitude")]
+TUcams <- TUcams[order(TUcams$locationfactor),]
+TUdistmat_all <- geodist::geodist(TUcams)
+rownames(TUdistmat_all) <- TUcams$locationfactor
+colnames(TUdistmat_all) <- TUcams$locationfactor
+
+i <- 1545
+# make blank co-occurrence info data frame? 
+
+for (i in 1:nrow(agoutiseq_jt)) {
+  ## at beginning have some kind of check if the sequenceID is already in the co-occurence dataframe, if so can skip everything
+  dist <- as.data.frame(subset(TUdistmat_all, rownames(TUdistmat_all) %in% agoutiseq_jt$locationfactor[i])) 
+  cand_locs <- colnames(dist[,dist > 150]) # make list of candidate locations for co-occurrence (>150 m away)
+  # filter to sequence that are at candidate location and on same day as sequence we're looking at 
+  cand_seq <- agoutiseq_jt[agoutiseq_jt$locationfactor %in% cand_locs & agoutiseq_jt$seqday == agoutiseq_jt$seqday[i], c("sequenceID", "locationfactor", "seqday", "seq_start", "seq_end", "n", "nAdult", "nJuvenile","nSubadult", "tooluse")]
+  # see if there are any co-occurrences
+  # if there is anything, then extract information from those sequences, both add to agoutiseq_jt dataframe, and to co-occurrence dataframe?
+  if(min(abs(difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s"))) < 60) {
+    cand_seq$dtime <- difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s")
+    cand_seq_t <- cand_seq[abs(cand_seq$dtime) < 60,]
+  }
+  
+  
+  }
