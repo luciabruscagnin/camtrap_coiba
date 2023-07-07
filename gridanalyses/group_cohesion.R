@@ -11,7 +11,7 @@
 library(stringr)
 library(ggplot2)
 library(mgcv)
-#library(gratia)
+library(gratia)
 library(reshape2)
 library(asnipe)
 library(igraph)
@@ -496,7 +496,9 @@ gam.check(grid_gam2)
 ## Need to think further on how to model this. Is poisson appropriate without 0s? should be 1-inflated. Once I'm satisfied with it could take it to brms
 
 ## brms
-ps_bm1 <- brm(n ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = gridseq_oc, family = poisson(), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+ps_bm1 <- brm(n |trunc(lb = 1) ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = gridseq_oc, family = poisson(),  control = list(adapt_delta = 0.9), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+#saveRDS(ps_bm1, "gridanalyses/RDS/ps_bm1.rds")
+#ps_bm1 <- readRDS("gridanalyses/RDS/ps_bm1.rds")
 summary(ps_bm1)
 plot(conditional_smooths(ps_bm1))
 
