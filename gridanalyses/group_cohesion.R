@@ -501,6 +501,18 @@ ps_bm1 <- brm(n |trunc(lb = 1) ~ s(hour, by = gridtype) + gridtype +  s(location
 #ps_bm1 <- readRDS("gridanalyses/RDS/ps_bm1.rds")
 summary(ps_bm1)
 plot(conditional_smooths(ps_bm1))
+pp_check(ps_bm1)
+
+# plot with real data plotted over it
+partysize_day <- plot(conditional_smooths(ps_bm1), plot = FALSE)[[1]]
+# all in one plot
+partysize_day + labs(y = "Hour of the day", x = "Log of party size")
+
+# with real points plotted on it and separate plots (real scale)
+ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__), color = gridtype, group = gridtype), size = 1) + 
+  geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__), ymax = log(upper__)), alpha = 0.2) + facet_wrap(~gridtype) +
+  stat_summary(data = gridseq_oc, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
+  labs(x = "Hour of the day", y = "Estimated party size per sequence") + theme_bw()
 
 
 ##### PARTY COMPOSITION ####
@@ -633,3 +645,13 @@ hist(cooccurrences$distcam12)
 summary(cooccurrences$distcam12)
 agoutiseq_jt$year <- year(agoutiseq_jt$seq_start)
 length(unique(agoutiseq_jt$locationfactor[which(agoutiseq_jt$year == "2022")]))
+
+######## MAP ############
+library(mapview)
+library(rgdal)
+library(sf)
+
+camcoords <- gridsequence[!duplicated(gridsequence$locationName), c("locationName", "longitude", "latitude")]
+all_cams <- st_as_sf(camcoords , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
+all_cams_map <- mapview(all_cams , col.regions="gold"  )
+all_cams_map
