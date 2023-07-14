@@ -15,12 +15,17 @@ library(fitdistrplus)
 
 ## NOTE: add code about catching when anvil type switches (e.g. if it's wooden anvil at comment seq_start, or when they switch back to stone/wood)
 ### NOTE: when they start with hammerstone "inhand", add 1 pound (and some seconds?) or if we have enough exclude those from analyses
+# also if you have seq_cont (so a split) add 1 pound
 ## NOTE: check how to extract end location of second hammer when they switch (code hammerend loc again?)
 
 # load tsv file with aggregated BORIS output
-dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.tsv", sep = "\t")
+dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.csv")
 # Meredith's csv
-#dettools <- read.csv("detailedtools/EXP-ANV-01-R11_MKWC.csv")
+#dettools2 <- read.csv("detailedtools/EXP-ANV-01-R11_MKWC.csv")
+# Leonie's csv
+dettools3 <- read.csv("detailedtools/CEBUS-02-R11_2022_LRdetailedtoolscoding.csv")
+
+dettools <- rbind(dettools, dettools3)
 
 # sort so that observations from the same video are clustered together and it's chronological
 dettools <- dettools[order(dettools$Observation.id),]
@@ -148,8 +153,11 @@ for (i in 1:nrow(dettools_r2)) {
 dettools_r2$h_switchloc <- ifelse(dettools_r2$behavior == "hammerswitch", dettools_r2$modifier1, NA)
 
 ## incorporate what type of anvil it is
-# default is stone, if it was wood we made a comment at the seqstart
-seqdat$anviltype <- ifelse(seqdat$sequenceID %in% dettools_r2$sequenceID[which(dettools_r2$behavior == "seqstart" & str_detect(dettools_r2$comment, "wood") == TRUE)], "wood", "stone")
+# at EXP-ANV is stone, at CEBUS-02 is wood
+seqdat$anviltype <- ifelse(str_detect(seqdat$sequenceID, "CEBUS-02") == TRUE, "wood", "stone")
+# if it differed from the anviltype of the main anvil we made a comment at the seqstart
+seqdat$anviltype <- ifelse(seqdat$sequenceID %in% dettools_r2$sequenceID[which(dettools_r2$behavior == "seqstart" & str_detect(dettools_r2$comment, "wood") == TRUE)], "wood", ifelse(
+  seqdat$sequenceID %in% dettools_r2$sequenceID[which(dettools_r2$behavior == "seqstart" & str_detect(dettools_r2$comment, "stone") == TRUE)], "stone", seqdat$anviltype))
 # attach this to main dataframe
 dettools_r2 <- left_join(dettools_r2, seqdat[,c("sequenceID", "anviltype")], "sequenceID")
 
@@ -208,6 +216,7 @@ dettools_r2 <- left_join(dettools_r2, seqdat[, c("sequenceID", "seqduration")], 
 poundsonly <- dettools_r2[dettools_r2$behavior == "pound",]
 nr_pounds <- poundsonly %>%
   dplyr::count(sequenceID)
+
 colnames(nr_pounds) <- c("sequenceID", "n_pounds")
 
 dettools_r2 <- left_join(dettools_r2, nr_pounds, "sequenceID")
@@ -249,6 +258,9 @@ dettools_r2$hammerID2 <- str_trim(dettools_r2$hammerID2)
 detseq <- dettools_r2[!duplicated(dettools_r2$sequenceID),]
 detseq$split <- seqdat$split[which(detseq$sequenceID == seqdat$sequenceID)]
 
+# add a pount if the hammerstone was "inhand" or if there is a split
+detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] <- detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] + 1
+
 #saveRDS(detseq, "detailedtools/RDS/detseq.rds")
 
 ####### INITIAL ANALYSES/MESSING AROUND ########
@@ -263,7 +275,9 @@ detseq$split <- seqdat$split[which(detseq$sequenceID == seqdat$sequenceID)]
 
 # Age differences in efficiency (duration of sequence)
 # filter to only opened sequences
-detseq_o <- detseq[detseq$outcome == "opened",]
+# for now to be very conservative and only use good data, filter out itemtypes we have few observations for 
+ftable(detseq_o$item)
+detseq_o <- detseq[detseq$outcome == "opened" & detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown"),]
 
 boxplot(detseq_o$seqduration ~ detseq_o$Age)
 
@@ -282,7 +296,11 @@ testdist1.2 <- fitdist(detseq_o$seqduration, "gamma")
 plot(testdist1.2)
 
 
-m_e1 <- brm(seqduration ~ Age + item + split, data = detseq_o, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "gamma")
+### comparing duration
+# items of interest: anviltype and maybe hammerID?
+head(detseq_o)
+
+m_e1 <- brm(seqduration ~ Age + item*anviltype + split, data = detseq_o, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "gamma")
 #saveRDS(m_e1, "detailedtools/RDS/m_e1.rds")
 summary(m_e1)
 mcmc_plot(m_e1)
@@ -293,7 +311,8 @@ plot(conditional_effects(m_e1))
 m_type_pred <- m_e1 %>% 
   epred_draws(newdata = tibble(item = detseq_o$item,
                                Age = detseq_o$Age,
-                               split = detseq_o$split))
+                               split = detseq_o$split,
+                               anviltype = detseq_o$anviltype))
 
 # age difference in duration to open item
 ggplot(data = m_type_pred, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) + ylim(0,50) +
@@ -304,7 +323,7 @@ ggplot(data = m_type_pred, aes(x = Age, y = .epred)) + geom_violin(aes(color = A
   guides(color = "none", fill = "none") +
   labs(x = "Age", y = "Seconds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
+                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
 
 # item difference in duration to open item
 ggplot(data = m_type_pred, aes(x = item, y = .epred)) + geom_violin(aes(color = item, fill = item), alpha = 0.4) + ylim(0,100) +
@@ -315,7 +334,7 @@ ggplot(data = m_type_pred, aes(x = item, y = .epred)) + geom_violin(aes(color = 
   guides(color = "none", fill = "none") +
   labs(x = "Item type", y = "Seconds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
+                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
 
 ## including interaction of age and item (once we have more reliable data for each item type)
 #m_e1b <- brm(seqduration ~ age_of + item + age_of*item + split, data = detseq_o, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "gamma")
@@ -332,18 +351,23 @@ descdist(detseq_o$n_pounds)
 testdist2.1 <- fitdist(detseq_o$n_pounds, "pois")
 plot(testdist2.1)
 
-# for now exclude split sequences as we likely missed pounds off camera
-m_e2 <- brm(n_pounds ~ Age + item, data = detseq_o[which(detseq_o$split == FALSE),], family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+# if we're being very safe, for now exclude split sequences as we likely missed pounds off camera 
+# and only include green and brown almendras and exclude itemtypes we dont have many observations for
+m_e2 <- brm(n_pounds ~ Age + item*anviltype, data = detseq_o[which(detseq_o$split == FALSE),], family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(m_e2, "detailedtools/RDS/m_e2.rds")
 summary(m_e2)
 pp_check(m_e2)
 mcmc_plot(m_e2)
 plot(conditional_effects(m_e2))
 
+hypothesis(m_e2, "Intercept  > Intercept + anviltypewood", alpha = 0.05)
+
+
 # make violin plot
 m_type_pred2 <- m_e2 %>% 
   epred_draws(newdata = tibble(item = detseq_o$item,
-                               Age = detseq_o$Age))
+                               Age = detseq_o$Age,
+                               anviltype = detseq_o$anviltype))
 
 # age difference in duration to open item
 ggplot(data = m_type_pred2, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
@@ -354,11 +378,11 @@ ggplot(data = m_type_pred2, aes(x = Age, y = .epred)) + geom_violin(aes(color = 
   guides(color = "none", fill = "none") +
   labs(x = "Age", y = "Number of pounds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
+                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
 
 # item difference in duration to open item
 ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color = item, fill = item), alpha = 0.4) +
-  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = item, y = n_pounds, color = item), geom = "point", fun = "mean",
+  stat_summary(detseq_o[which(detseq_o$item %in% c("almendrabrown", "almendragreen")),], inherit.aes = FALSE, mapping=aes(x = item, y = n_pounds, color = item), geom = "point", fun = "mean",
                size = 4) +
   scale_fill_viridis_d(option = "plasma", end = 0.8) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
@@ -368,8 +392,8 @@ ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color =
                      axis.title = element_text(size = 14)) 
 
 ## including interaction of age and item (once we have more reliable data for each item type)
-#m_e2b <- brm(n_pounds ~ age_of + item + age_of*item + split, data = detseq_o, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "gamma")
-#plot(conditional_effects(m_e2b))
+m_e2b <- brm(n_pounds ~ age_of + item + age_of*item, data = detseq_o[detseq_o$split == FALSE,], iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "poisson")
+plot(conditional_effects(m_e2b))
 
 ### FROM HERE ON OUT NEED TO CHANGE TO NOT USING DETSEQ_O BUT JUST DETSEQ. 
 # doesnt need to just be opened sequences but can do all?
@@ -387,7 +411,7 @@ testdist3.1 <- fitdist(detseq_o$n_miss, "pois")
 plot(testdist3.1)
 
 
-m_e3 <- brm(n_miss ~ Age, data = detseq_o, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
+m_e3 <- brm(n_miss ~ Age + item*anviltype, data = detseq_o, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
 #saveRDS(m_e3, "detailedtools/RDS/m_e3.rds")
 summary(m_e3)
 pp_check(m_e3)
@@ -395,7 +419,9 @@ plot(conditional_effects(m_e3))
 
 # make violin plot
 m_type_pred3 <- m_e3 %>% 
-  epred_draws(newdata = tibble(Age = detseq_o$Age))
+  epred_draws(newdata = tibble(Age = detseq_o$Age,
+                               item = detseq_o$item,
+                               anviltype = detseq_o$anviltype))
 
 # age difference in duration to open item
 ggplot(data = m_type_pred3, aes(x = Age, y = .epred)) + geom_boxplot(aes(color = Age, fill = Age), alpha = 0.4) +
@@ -409,7 +435,7 @@ ggplot(data = m_type_pred3, aes(x = Age, y = .epred)) + geom_boxplot(aes(color =
                      axis.title = element_text(size = 14)) 
 
 # individual variation in how many mistakes are made
-knownids <- data.frame(ID = c("TER", "SPT", "BAL", "TOM", "PEA", "SMG", "ZIM", "MIC", "LAR"))
+knownids <- data.frame(ID = c("TER", "SPT", "BAL", "TOM", "PEA", "SMG", "ZIM", "MIC", "LAR", "JOE"))
 for (i in 1:nrow(knownids)) {
   knownids$nrow[i] <- nrow(detseq_o[which(detseq_o$subjectID == knownids$ID[i]),])
 }
@@ -424,22 +450,29 @@ ggplot(detseq_o2, aes(x=subjectID, y=n_miss, color = Age, fill = Age)) +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+## model with only identified individuals
+m_e3b <- brm(n_miss ~ Age + item*anviltype + (1|subjectID), data = detseq_o2, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
+#saveRDS(m_e3b, "detailedtools/RDS/m_e3b.rds")
+plot(conditional_effects(m_e3b))
+
 ## Age differences in efficiency (number of repositions)
 boxplot(detseq_o$n_reposit ~ detseq_o$Age)
 ggplot(detseq_o, aes(x=Age, y=n_reposit)) + 
   geom_violin()
 
 
-m_e4 <- brm(n_reposit ~ Age, data = detseq_o, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+m_e4 <- brm(n_reposit ~ Age + item*anviltype, data = detseq_o, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(m_e4, "detailedtools/RDS/m_e4.rds")
 summary(m_e4)
 mcmc_plot(m_e4)
 pp_check(m_e4)
-plot(conditional_effects(m_e4b))
+plot(conditional_effects(m_e4))
 
 # make violin plot
 m_type_pred4 <- m_e4 %>% 
-  epred_draws(newdata = tibble(Age = detseq_o$Age))
+  epred_draws(newdata = tibble(Age = detseq_o$Age,
+                               item = detseq_o$item,
+                               anviltype = detseq_o$anviltype))
 
 # age difference in duration to open item
 ggplot(data = m_type_pred4, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
@@ -450,7 +483,7 @@ ggplot(data = m_type_pred4, aes(x = Age, y = .epred)) + geom_violin(aes(color = 
   guides(color = "none", fill = "none") +
   labs(x = "Age", y = "Average number of repositions per sequence") +
   theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
+                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
 
 # individual variation
 
@@ -488,3 +521,13 @@ ggplot(detseq_o[detseq_o$split == FALSE,], aes(y = seqduration, x = n_pounds, co
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+# improvement over time?
+head(detseq_o2)
+ggplot(detseq_o2) + geom_smooth(aes(x = videostart, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = videostart, y = n_pounds, color = "n_pounds")) + 
+  geom_smooth(aes(x = videostart, y = n_reposit,  color = "n_repositions"))  + facet_wrap(~subjectID, scales = "free") + theme_bw() + scale_color_manual("", breaks = c("n_miss", "n_pounds", "n_repositions"),
+                                                                                                                                                         values = c("red", "blue", "green"))
+# would probably have to be some kind of GAM, that also includes other things that affects these things (item, anviltype)
+# either work with actual number or do maybe a julian day or something? and then split by ID? 
+
+ggplot(detseq_o2[detseq_o2$split == FALSE,]) + geom_smooth(aes(x = videostart, y = seqduration)) + facet_wrap(~subjectID, scales = "free") + theme_bw() 
+ftable(detseq_o2$seqduration)

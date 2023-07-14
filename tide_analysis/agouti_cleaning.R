@@ -588,7 +588,7 @@ for (i in 2:nrow(locations2)) {
 
 # need to expand this dataframe to have an hour a day for each deployment.
 depldayhour <- data.frame(uniqueloctag = rep(depldays3$uniqueloctag, 24), seqday = rep(depldays3$seqday, 24))
-depldayhour <- depldayhour[order(depldayhour$uniqueloctag),]
+depldayhour <- depldayhour[order(depldayhour$uniqueloctag, depldayhour$seqday),]
 depldayhour$hour <- rep(1:24, (nrow(depldayhour)/24))
 
 agoutiselect2 <- left_join(depldayhour[depldayhour$uniqueloctag %in% agoutisequence_c$uniqueloctag,], agoutisequence_c, by = c("uniqueloctag", "seqday", "hour"), relationship = "many-to-many")

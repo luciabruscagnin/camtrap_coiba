@@ -514,6 +514,91 @@ ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__
   stat_summary(data = gridseq_oc, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
   labs(x = "Hour of the day", y = "Estimated party size per sequence") + theme_bw()
 
+### Seems like a continuous time modeling would be better
+# but in the meantime, probably already adding in the zero's, and then modeling it as a two-point process (probability of capuchins yes/no, then if capuchins how many) 
+# will need to add in 0's for all hours that are now not in
+# and for other hours calculate average number of capuchins OR just keep all the other counts intact?
+
+## agoutiselect2 is dataframe with 0's in
+head(agoutiselect2)
+# filter down to cameras we want for grid
+gridselect2 <- agoutiselect2[which(agoutiselect2$locationName %in% gridsequence_c$locationName),]
+gridselect2 <- droplevels.data.frame(gridselect2)
+
+## create variable for average nr of capuchins in sequence per hour
+gridselect2$dayhour <- paste(gridselect2$seqday, gridselect2$hour, sep = " ")
+
+nrow(gridseq_oc)
+# should be 3807 sequences with capuchins
+
+griddayhour <- aggregate(gridselect2$n, by = list(dayhour = gridselect2$dayhour, uniqueloctag = gridselect2$uniqueloctag), FUN = mean)
+colnames(griddayhour) <- c("dayhour", "uniqueloctag", "n_mean")
+
+gridselect2$identifier <- paste(gridselect2$uniqueloctag, gridselect2$dayhour, sep = "-")
+grid_dh <- gridselect2[!duplicated(gridselect2$identifier),]
+grid_dh <- left_join(grid_dh, griddayhour, c("uniqueloctag", "dayhour"))
+grid_dh <- grid_dh[,c("locationfactor", "seqday", "hour", "dayhour", "n_mean", "dep_length_hours")]
+grid_dh$gridtype <- factor(ifelse(str_detect(grid_dh$locationfactor, "NTU") == TRUE, "NTU", "TU"))
+grid_dh <- droplevels.data.frame(grid_dh)
+
+
+# add 0's to other dataframe
+gridseq_oc$dayhour <- paste(gridseq_oc$seqday, gridseq_oc$hour, sep = " ")
+grid_dh2 <- gridseq_oc[,c("locationfactor", "seqday", "hour", "dayhour", "n", "dep_length_hours", "gridtype")]
+grid_dh0 <- grid_dh[grid_dh$n_mean == 0,]
+colnames(grid_dh0) <- c("locationfactor", "seqday", "hour", "dayhour", "n", "dep_length_hours", "gridtype")
+grid_dht <- rbind(grid_dh0, grid_dh2)
+
+## exclude night 0's (not night detections!!) between 19 and 5 (this is being quite broad)
+grid_dht <- grid_dht[!(grid_dht$n == 0 & (grid_dht$hour > 18 | grid_dht$hour < 6)),]
+
+grid_dht[order(grid_dht$locationfactor, grid_dht$seqday, grid_dht$hour),]
+## STILL NEED TO BE MORE THOROUGH AND CHECK IF THERE'S NOW NO DAYHOUR THAT HAS BOTH A 0 AND A NUMBER (SHOULD NOT HAPPEN)
+
+## mgcv
+ps_gam1 <- gam(list(n ~ s(hour, by = gridtype) + gridtype + s(locationfactor, bs = "re"), ~ s(hour, by = gridtype) + gridtype + s(locationfactor, bs = "re")), offset = log(dep_length_hours), data = grid_dht, family = ziplss())
+summary(ps_gam1)
+plot(ps_gam1)
+
+new_data <- tidyr::expand(grid_dht, nesting(locationfactor), hour = unique(hour), gridtype = unique(gridtype))
+
+m5_pred <- bind_cols(new_data,
+                     as.data.frame(predict(ps_gam1, newdata = new_data, type = "link")))
+# V1 is predicted value of response from Poisson part of model on scale of linear predictor (log scale)
+# V2 is predicted value of zero-inflation component and is on log-log scale
+# need to transform them back and multiply together to get actual predicted values
+ilink <- binomial(link = "cloglog")$linkinv # to transform log-log back
+m5_pred$fit <- exp(m5_pred$V1)*ilink(m5_pred$V2)
+
+ggplot(m5_pred, aes(x = hour, y = fit, group = gridtype, color = gridtype)) +
+  geom_line() +
+  facet_wrap(~ gridtype)
+head(m5_pred)
+
+## brms model
+
+## STILL RUN THIS OVERNIGHT? WILL TAKE A WHILE I THINK
+
+ps_bm1b <- brm(n ~ s(hour, by = gridtype) + gridtype + s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = grid_dht, family = hurdle_poisson(link = "log"),  iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+#saveRDS(ps_bm1b, "gridanalyses/RDS/ps_bm1b.rds")
+#ps_bm1b <- readRDS("gridanalyses/RDS/ps_bm1b.rds")
+summary(ps_bm1)
+plot(conditional_smooths(ps_bm1))
+pp_check(ps_bm1)
+
+# plot with real data plotted over it
+partysize_day <- plot(conditional_smooths(ps_bm1), plot = FALSE)[[1]]
+# all in one plot
+partysize_day + labs(y = "Hour of the day", x = "Log of party size")
+
+# with real points plotted on it and separate plots (real scale)
+ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__), color = gridtype, group = gridtype), size = 1) + 
+  geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__), ymax = log(upper__)), alpha = 0.2) + facet_wrap(~gridtype) +
+  stat_summary(data = gridseq_oc, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
+  labs(x = "Hour of the day", y = "Estimated party size per sequence") + theme_bw()
+
+
+
 
 ##### PARTY COMPOSITION ####
 # try zero-inflated poisson number of adult  females in a sequence (in dataframe only capuchin detections. TU vs NTU)
