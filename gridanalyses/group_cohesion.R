@@ -361,14 +361,14 @@ act_m2@act[1] * 24
 
 # plot both together on same axis
 plot(act_m1, yunit="density", data="none", las=1, lwd=2,
-     tline=list(lwd=2), # Thick line 
-     cline=list(lty=0)) # Supress confidence intervals
+     tline=list(lwd=3, col = "#C8800F"), # Thick line 
+     cline=list(lty=2, col = "#C8800F")) # Supress confidence intervals
 
 plot(act_m2, yunit="density", data="none", add=TRUE, 
-     tline=list(col="red", lwd=2),
-     cline=list(lty=0))
+     tline=list(col="#81A956", lwd=3),
+     cline=list(lty=2, col="#81A956"))
 
-legend("topright", c("TU", "NTU"), col=1:2, lty=1, lwd=2)
+legend("topright", c("TU", "NTU"), col=c("#C8800F","#81A956"), lty=1, lwd=2)
 
 # overlap between the two
 compareCkern(act_m1, act_m2, reps = 100)
@@ -503,16 +503,50 @@ summary(ps_bm1)
 plot(conditional_smooths(ps_bm1))
 pp_check(ps_bm1)
 
+
 # plot with real data plotted over it
 partysize_day <- plot(conditional_smooths(ps_bm1), plot = FALSE)[[1]]
 # all in one plot
 partysize_day + labs(y = "Hour of the day", x = "Log of party size")
 
 # with real points plotted on it and separate plots (real scale)
+ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__-1), color = gridtype, group = gridtype), size = 1) + 
+  geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__-1), ymax = log(upper__-1)), alpha = 0.2) + facet_wrap(~gridtype) +
+  stat_summary(data = gridseq_oc, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
+  labs(x = "Hour of the day", y = "Estimated party size per sequence") +scale_color_manual(values = c("#81A956", "#C8800F")) +  theme_bw() + 
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
+        axis.text = element_text(size = 12)) 
+
+# without real points
 ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__), color = gridtype, group = gridtype), size = 1) + 
   geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__), ymax = log(upper__)), alpha = 0.2) + facet_wrap(~gridtype) +
-  stat_summary(data = gridseq_oc, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
-  labs(x = "Hour of the day", y = "Estimated party size per sequence") + theme_bw()
+  labs(x = "Hour of the day", y = "Estimated party size per sequence") +scale_color_manual(values = c("#81A956", "#C8800F")) + theme_bw()
+
+
+## plot from predicting
+predict_ps_bm1 <- posterior_smooths(ps_bm1, smooth = 's(hour, by = gridtype)')
+# mean of each column is what I'm looking for
+tbm2_h$data$fit_seasonhour <- as.numeric(colMedians(predict_tbm2_h))
+
+d1h_wet <- with(tbm2_h$data[tbm2_h$data$seasonF == "Wet",], interp(x = hour_z, y = distcoast_z, z = fit_seasonhour, duplicate = "mean"))
+d1h_dry <-  with(tbm2_h$data[tbm2_h$data$seasonF == "Dry",], interp(x = hour_z, y = distcoast_z, z = fit_seasonhour, duplicate = "mean"))
+
+d2h_wet <- melt(d1h_wet$z, na.rm = TRUE)
+names(d2h_wet) <- c("x", "y", "fit")
+d2h_wet$hour <- d1h_wet$x[d2h_wet$x] * sdhour + meanhour
+d2h_wet$distcoast <- d1h_wet$y[d2h_wet$y] * sddist + meandist
+
+d2h_dry <- melt(d1h_dry$z, na.rm = TRUE)
+names(d2h_dry) <- c("x", "y", "fit")
+d2h_dry$hour <- d1h_dry$x[d2h_dry$x] * sdhour + meanhour
+d2h_dry$distcoast <- d1h_dry$y[d2h_dry$y] * sddist + meandist
+
+d2h_dry$seasonF <- "Dry"
+d2h_wet$seasonF <- "Wet"
+
+d2h <- rbind(d2h_dry, d2h_wet)
+d2h$seasonF <- factor(d2h$seasonF, levels = c("Dry", "Wet"))
+
 
 ### Seems like a continuous time modeling would be better
 # but in the meantime, probably already adding in the zero's, and then modeling it as a two-point process (probability of capuchins yes/no, then if capuchins how many) 
@@ -582,19 +616,19 @@ head(m5_pred)
 ps_bm1b <- brm(n ~ s(hour, by = gridtype) + gridtype + s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = grid_dht, family = hurdle_poisson(link = "log"),  iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(ps_bm1b, "gridanalyses/RDS/ps_bm1b.rds")
 #ps_bm1b <- readRDS("gridanalyses/RDS/ps_bm1b.rds")
-summary(ps_bm1)
-plot(conditional_smooths(ps_bm1))
-pp_check(ps_bm1)
+summary(ps_bm1b)
+plot(conditional_smooths(ps_bm1b))
+pp_check(ps_bm1b)
 
 # plot with real data plotted over it
-partysize_day <- plot(conditional_smooths(ps_bm1), plot = FALSE)[[1]]
+partysize_dayb <- plot(conditional_smooths(ps_bm1b), plot = FALSE)[[1]]
 # all in one plot
-partysize_day + labs(y = "Hour of the day", x = "Log of party size")
+partysize_dayb + labs(x = "Hour of the day", y = "Log of party size")
 
 # with real points plotted on it and separate plots (real scale)
-ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__), color = gridtype, group = gridtype), size = 1) + 
-  geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__), ymax = log(upper__)), alpha = 0.2) + facet_wrap(~gridtype) +
-  stat_summary(data = gridseq_oc, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
+ggplot() + geom_line(data = partysize_dayb$data, aes(x = hour, y = log(estimate__), color = gridtype, group = gridtype), size = 1) + 
+  geom_ribbon(data = partysize_dayb$data, aes(x = hour, ymin = log(lower__), ymax = log(upper__)), alpha = 0.2) + facet_wrap(~gridtype) +
+  stat_summary(data = grid_dht, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
   labs(x = "Hour of the day", y = "Estimated party size per sequence") + theme_bw()
 
 
