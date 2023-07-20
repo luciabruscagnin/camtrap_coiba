@@ -22,6 +22,8 @@ library(dplyr)
 library(geodist)
 library(sna)
 library(assortnet)
+library(ggnewscale)
+
 
 ## Notes for analyses:
 
@@ -459,6 +461,10 @@ legend("topleft", c("Grid", "Anvil", "Streambed", "Random"), col=c("black", "gre
 mean(gridseq_oc$n[gridseq_oc$gridtype == "NTU"])
 mean(gridseq_oc$n[gridseq_oc$gridtype == "TU"])
 ## need to model this obvs, some kind of poisson?
+hist(gridseq_oc$n[gridseq_oc$gridtype == "NTU"])
+hist(gridseq_oc$n[gridseq_oc$gridtype == "TU"])
+
+
 
 gs_m1 <- glmer(n ~ gridtype + (1|gridtype:locationfactor), offset = log(dep_length_hours), data = gridseq_oc, family = poisson)
 summary(gs_m1)
@@ -491,61 +497,95 @@ grid_gam2 <- gam(n ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs =
 summary(grid_gam2)
 draw(grid_gam2)
 gam.check(grid_gam2)
+plot(grid_gam2, seWithMean = TRUE, shift = coef(grid_gam2)[1])
 
+plot(grid_gam2, all.terms=TRUE, rug=TRUE, pages = 1, seWithMean = TRUE, shade = TRUE, shade.col = "light blue", shift = coef(grid_gam2)[1], trans = exp)
 
 ## Need to think further on how to model this. Is poisson appropriate without 0s? should be 1-inflated. Once I'm satisfied with it could take it to brms
 
 ## brms
+# zero-truncated poisson
 ps_bm1 <- brm(n |trunc(lb = 1) ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = gridseq_oc, family = poisson(),  control = list(adapt_delta = 0.9), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(ps_bm1, "gridanalyses/RDS/ps_bm1.rds")
 #ps_bm1 <- readRDS("gridanalyses/RDS/ps_bm1.rds")
 summary(ps_bm1)
 plot(conditional_smooths(ps_bm1))
+plot(conditional_effects(ps_bm1))
 pp_check(ps_bm1)
 
+get_elapsed_time(ps_bm1$fit)
+??get_elapsed_time
 
 # plot with real data plotted over it
 partysize_day <- plot(conditional_smooths(ps_bm1), plot = FALSE)[[1]]
 # all in one plot
-partysize_day + labs(y = "Hour of the day", x = "Log of party size")
+partysize_day + labs(x = "Hour of the day", y = "Log of party size") + 
+  geom_point(data = psizeplot, aes(x = hour, y = exp(mean)), inherit.aes = FALSE)
+
+psizeplot <- gridseq_oc %>% 
+  group_by(hour, gridtype) %>%
+  summarize_at(vars("n"), list(mean = mean, sd = sd, nsample = length)) 
+  
+psizeplot$se <- psizeplot$sd/sqrt(psizeplot$nsample)
 
 # with real points plotted on it and separate plots (real scale)
-ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__-1), color = gridtype, group = gridtype), size = 1) + 
-  geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__-1), ymax = log(upper__-1)), alpha = 0.2) + facet_wrap(~gridtype) +
-  stat_summary(data = gridseq_oc, aes(x = hour, y = n, color = gridtype, group = gridtype), fun = mean, geom = "point", inherit.aes = FALSE) +
-  labs(x = "Hour of the day", y = "Estimated party size per sequence") +scale_color_manual(values = c("#81A956", "#C8800F")) +  theme_bw() + 
+ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__)-1, color = gridtype, group = gridtype), size = 2) + 
+  geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__)-1, ymax = log(upper__)-1), alpha = 0.2) +
+  scale_color_manual(values = c("#81A956", "#C8800F")) + facet_wrap(~gridtype) +
+  geom_point(data = psizeplot, aes(x = hour, y = mean, color = gridtype, alpha = nsample),  size = 2, inherit.aes = FALSE) +
+  geom_errorbar(data = psizeplot, aes(x = hour, ymin = mean - se, 
+                                      ymax =  mean + se, color= gridtype, alpha = nsample),
+                width=.4, linewidth = 1.5) +
+  labs(x = "Hour of the day", y = "Estimated party size per sequence") +  theme_bw() + 
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
         axis.text = element_text(size = 12)) 
 
+fitsp <- fitted(ps_bm1_p)
 # without real points
 ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__), color = gridtype, group = gridtype), size = 1) + 
   geom_ribbon(data = partysize_day$data, aes(x = hour, ymin = log(lower__), ymax = log(upper__)), alpha = 0.2) + facet_wrap(~gridtype) +
   labs(x = "Hour of the day", y = "Estimated party size per sequence") +scale_color_manual(values = c("#81A956", "#C8800F")) + theme_bw()
 
+# conditional effects instead of conditional smooths
+partysize_day2 <- plot(conditional_effects(ps_bm1), plot = FALSE)[[3]]
+#saveRDS(partysize_day2, "gridanalyses/RDS/partysize_day2.rds")
+# all in one plot
+partysize_day2 + labs(y = "Hour of the day", x = "Log of party size")
 
-## plot from predicting
-predict_ps_bm1 <- posterior_smooths(ps_bm1, smooth = 's(hour, by = gridtype)')
-# mean of each column is what I'm looking for
-tbm2_h$data$fit_seasonhour <- as.numeric(colMedians(predict_tbm2_h))
+ggplot() + geom_line(data = partysize_day2$data, aes(x = hour, y = estimate__, color = gridtype, group = gridtype), size = 2) + 
+  geom_ribbon(data = partysize_day2$data, aes(x = hour, ymin = lower__, ymax = upper__), alpha = 0.2) +
+  scale_color_manual(values = c("#81A956", "#C8800F")) + facet_wrap(~gridtype) +
+  geom_point(data = psizeplot, aes(x = hour, y = mean, color = gridtype, alpha = nsample),  size = 2, inherit.aes = FALSE) +
+  geom_errorbar(data = psizeplot, aes(x = hour, ymin = mean - se, 
+                                      ymax =  mean + se, color= gridtype, alpha = nsample),
+                width=.4, linewidth = 1.5) +
+  labs(x = "Hour of the day", y = "Estimated party size per sequence") +  theme_bw() + 
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
+        axis.text = element_text(size = 12)) +
+  coord_cartesian(ylim = c(1,2.5))
 
-d1h_wet <- with(tbm2_h$data[tbm2_h$data$seasonF == "Wet",], interp(x = hour_z, y = distcoast_z, z = fit_seasonhour, duplicate = "mean"))
-d1h_dry <-  with(tbm2_h$data[tbm2_h$data$seasonF == "Dry",], interp(x = hour_z, y = distcoast_z, z = fit_seasonhour, duplicate = "mean"))
+# normal poisson
+ps_bm1_p <- brm(n ~ s(hour, by = gridtype) + gridtype +  s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = gridseq_oc, family = poisson(),  control = list(adapt_delta = 0.9), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
+summary(ps_bm1_p)
+mcmc_plot(ps_bm1_p)
+plot(conditional_smooths(ps_bm1_p))
+plot(conditional_effects(ps_bm1_p, re_formula =  NULL))
+pp_check(ps_bm1_p)
 
-d2h_wet <- melt(d1h_wet$z, na.rm = TRUE)
-names(d2h_wet) <- c("x", "y", "fit")
-d2h_wet$hour <- d1h_wet$x[d2h_wet$x] * sdhour + meanhour
-d2h_wet$distcoast <- d1h_wet$y[d2h_wet$y] * sddist + meandist
 
-d2h_dry <- melt(d1h_dry$z, na.rm = TRUE)
-names(d2h_dry) <- c("x", "y", "fit")
-d2h_dry$hour <- d1h_dry$x[d2h_dry$x] * sdhour + meanhour
-d2h_dry$distcoast <- d1h_dry$y[d2h_dry$y] * sddist + meandist
+# conditional effects instead of conditional smooths
+partysize_day2p <- plot(conditional_effects(ps_bm1_p, re_formula = NULL), plot = FALSE)[[3]]
 
-d2h_dry$seasonF <- "Dry"
-d2h_wet$seasonF <- "Wet"
-
-d2h <- rbind(d2h_dry, d2h_wet)
-d2h$seasonF <- factor(d2h$seasonF, levels = c("Dry", "Wet"))
+ggplot() + geom_point(data = psizeplot, aes(x = hour, y = mean, color = gridtype, alpha = nsample),  size = 2, inherit.aes = FALSE) +
+  geom_errorbar(data = psizeplot, aes(x = hour, ymin = mean - se, 
+                                      ymax =  mean + se, color= gridtype, alpha = nsample),
+                width=.4, linewidth = 1.5) +
+  geom_line(data = partysize_day2p$data, aes(x = hour, y = estimate__, color = gridtype, group = gridtype), size = 2) + 
+  geom_ribbon(data = partysize_day2p$data, aes(x = hour, ymin = lower__, ymax = upper__, fill = gridtype), alpha = 0.1) +
+  scale_color_manual(values = c("#81A956", "#C8800F")) +   scale_fill_manual(values = c("#81A956", "#C8800F")) + facet_wrap(~gridtype) +
+    labs(x = "Hour of the day", y = "Estimated party size per sequence") +  theme_bw() + 
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
+        axis.text = element_text(size = 12)) + coord_cartesian(ylim = c(0.5,3))
 
 
 ### Seems like a continuous time modeling would be better
@@ -615,7 +655,7 @@ head(m5_pred)
 
 ps_bm1b <- brm(n ~ s(hour, by = gridtype) + gridtype + s(locationfactor, bs = "re") + offset(log(dep_length_hours)), data = grid_dht, family = hurdle_poisson(link = "log"),  iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 #saveRDS(ps_bm1b, "gridanalyses/RDS/ps_bm1b.rds")
-#ps_bm1b <- readRDS("gridanalyses/RDS/ps_bm1b.rds")
+ps_bm1b <- readRDS("gridanalyses/RDS/ps_bm1b.rds")
 summary(ps_bm1b)
 plot(conditional_smooths(ps_bm1b))
 pp_check(ps_bm1b)
@@ -658,8 +698,40 @@ pp_check(pc_bm2)
 pc_bm3 <- brm(nAF ~ gridtype*nAM + offset(log(dep_length_hours)) + (1|locationfactor), data = gridseq_oc, family = zero_inflated_poisson(link = "log", link_zi = "logit"), iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
 plot(conditional_effects(pc_bm3))
 pp_check(pc_bm3)
+mcmc_plot(pc_bm3)
 summary(pc_bm3)
 hypothesis(pc_bm3, "Intercept > Intercept + gridtypeTU")
+
+# plot with real data plotted over it
+partycomp <- plot(conditional_effects(pc_bm3), plot = FALSE)[[3]]
+
+pcompplot <- gridseq_oc %>% 
+  group_by(nAM, gridtype) %>%
+  summarize_at(vars("nAF"), list(mean = mean, sd = sd, nsample = length))
+
+pcompplot$se <- pcompplot$sd/sqrt(pcompplot$nsample)
+
+# with real means on
+ggplot() +  scale_color_manual(values = c("#81A956", "#C8800F")) + scale_fill_manual(values = c("#81A956", "#C8800F")) +
+  geom_point(data = pcompplot, aes(x = nAM, y = mean, color = gridtype, group = gridtype, alpha = nsample), size = 3, inherit.aes = FALSE) + 
+  scale_alpha_continuous(range = c(0.3,1)) +
+  geom_line(data = partycomp$data, aes(x = nAM, y = estimate__, color = gridtype, group = gridtype), size = 1.5) +
+  geom_ribbon(data = partycomp$data, aes(x = nAM, ymin = lower__, ymax = upper__, group = gridtype, fill = gridtype), alpha = 0.2) +
+  labs(x = "Number of adult males", y = "Number of adult females") +  theme_bw() + 
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
+        axis.text = element_text(size = 12)) 
+
+# with means and error bars
+ggplot() +  scale_color_manual(values = c("#81A956", "#C8800F")) + scale_fill_manual(values = c("#81A956", "#C8800F")) +
+  geom_point(data = pcompplot, aes(x = nAM, y = mean, color = gridtype),  size = 3, inherit.aes = FALSE, alpha = 0.5) +  
+  geom_errorbar(data = pcompplot, aes(x = nAM, ymin = mean - se, 
+                                      ymax =  mean + se, color= gridtype),
+                width=.2, linewidth = 1, alpha = 0.5) +
+  geom_line(data = partycomp$data, aes(x = nAM, y = estimate__, color = gridtype, group = gridtype), size = 1.5) +
+  geom_ribbon(data = partycomp$data, aes(x = nAM, ymin = lower__, ymax = upper__, group = gridtype, fill = gridtype), alpha = 0.2) +
+  labs(x = "Number of adult males", y = "Number of adult females") +  theme_bw() + 
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
+        axis.text = element_text(size = 12)) 
 
 ##### CO-OCCURRENCES ####
 
@@ -751,7 +823,8 @@ cooccurrences$tooluse_any <- factor(ifelse(cooccurrences$tooluse_1 == "TRUE" | c
 
 hist(hour(cooccurrences$seqstart))
 ggplot(data = cooccurrences, aes(x = hour(cooccurrences$seqstart), fill = tooluse_any)) + geom_histogram(bins = 12, col = "black") + facet_wrap(~tooluse_any) + scale_x_continuous(breaks = 6:18) +
-  theme_bw() + xlab("Hour")
+  theme_bw() + labs(fill = "Tool use", x = "Hour", y = "Number of co-occurrences") + theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.title = element_text(size = 14),
+                                                                                           legend.text = element_text(size = 12))
 max(unique(hour(cooccurrences$seqstart)))
 sum(cooccurrences$nJuvenile_1 > 0 | cooccurrences$nJuvenile_2 > 0)
 sum(cooccurrences$nAdult_1 > 0 | cooccurrences$nAdult_2 > 0)
@@ -764,6 +837,70 @@ hist(cooccurrences$distcam12)
 summary(cooccurrences$distcam12)
 agoutiseq_jt$year <- year(agoutiseq_jt$seq_start)
 length(unique(agoutiseq_jt$locationfactor[which(agoutiseq_jt$year == "2022")]))
+
+str(cooccurrences)
+
+
+cooccurrences$nrcap_lowest <- cooccurrences$nrcap_1
+cooccurrences$nrcap_lowest[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] <- cooccurrences$nrcap_2[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] 
+cooccurrences$nrcap_highest <- cooccurrences$nrcap_2
+cooccurrences$nrcap_highest[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] <- cooccurrences$nrcap_1[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] 
+
+
+cooccurrences$nrcap_lowest <- ifelse((cooccurrences$nrcap1 <= cooccurrences$nrcap_2) == TRUE, cooccurrence$nrcap1, 
+                                      ifelse(cooccurrences$nrcap_1 == cooccurrences$nrcap_2, cooccurrences$nrcap1, cooccurrences$nrcap_2))
+
+
+cooccurrences$tooluseoption_1 <- ifelse(str_detect(cooccurrences$cam1, "CEBUS") == TRUE, TRUE, FALSE)
+cooccurrences$tooluseoption_2 <- ifelse(str_detect(cooccurrences$cam2, "CEBUS") == TRUE, TRUE, FALSE)
+
+cooccurrences$truetooluse_1 <- cooccurrences$tooluse_1
+cooccurrences$truetooluse_1[which(cooccurrences$tooluseoption_1 == FALSE)] <- NA
+cooccurrences$truetooluse_2 <- cooccurrences$tooluse_2
+cooccurrences$truetooluse_2[which(cooccurrences$tooluseoption_2 == FALSE)] <- NA
+
+cooccurrences$tooluse <- ifelse(cooccurrences$truetooluse_1 == TRUE & cooccurrences$truetooluse_2 == TRUE, "both", 
+                                ifelse(cooccurrences$truetooluse_1 == FALSE & cooccurrences$truetooluse_2 == FALSE, "neither", 
+                                       ifelse(cooccurrences$truetooluse_1 == TRUE & cooccurrences$truetooluse_2 == FALSE | cooccurrences$truetooluse_1 == FALSE & cooccurrences$truetooluse_2 == TRUE, "one", NA)))
+
+table(cooccurrences$truetooluse_1, cooccurrences$tooluseoption_1)
+
+library(scales)
+ggplot(data = cooccurrences, aes(x = nrcap_lowest, y = nrcap_highest)) + geom_bin2d(binwidth = c(1,1)) + theme_bw() +
+  stat_bin2d(geom = "text", aes(label = ..count..), binwidth = 1, col = "white") + scale_fill_gradient(limits = c(0, 75), oob = squish) + 
+  theme(axis.text.x = element_text(hjust = -10, size = 14), axis.text.y = element_text(vjust = -1, size = 14), 
+        axis.ticks = element_blank(), legend.position = "none", axis.title = element_text(size = 18)) + labs(x = "Number of capuchins in smallest party", y = "Number of capuchins in largest party")
+
+ggplot(data = cooccurrences, aes(x = nrcap_lowest, y = nrcap_highest)) + geom_point() + stat_density_2d(geom = "raster", aes(fill = after_stat(density))) 
+
+
+str(cooccurrences)
+
+# trying out looking at explicitly spatial model
+
+agoutiseq_jt_order <- agoutiseq_jt[order(agoutiseq_jt$seq_start),]
+test <- agoutiseq_jt_order[15000:16000, c("longitude", "latitude", "uniqueloctag", "seqday", "seq_start")]
+
+ftable(test$seqday)
+unique(test$uniqueloctag)
+plot(test$longitude, test$latitude, type = "l")
+
+#one day
+test2 <- agoutiseq_jt_order[agoutiseq_jt_order$seqday == "2022-02-20", c("longitude", "latitude", "locationfactor")]
+
+devtools::install_version("DiagTest3Grp",version="1.6")
+
+P.move = df2move(test2, proj = "+init=EPSG:32616 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0", x = "longitude", y = "latitude", time = "seq_start")
+m <- align_move(P.move, res = 3, unit = "secs")
+frames <- frames_spatial(m, 
+                         map_service = "mapbox", map_type = "satellite", alpha = 0.5, path_size = 1.5, trace_show = TRUE, map_token = "pk.eyJ1IjoiZ29vbmVyNjE5NSIsImEiOiJja2cxMHB0ZG4wY3M1Mnhxd2QxMzFuZHdnIn0.k8zIUKu6KcV5ZXne3a04kg") %>%
+  add_labels(title = "Herd directionality in Oryx exposed to simulated predators", x = "Longitude", y = "Latitude") %>% # add some customizations, such as axis labels
+  add_northarrow(colour = "white", position = "bottomleft") %>% 
+  add_scalebar(colour = "black", position = "upperright", distance = 0.15) %>% 
+  add_timestamps(m, type = "label") %>%
+  add_progress()
+animate_frames(frames, out_file = "Oryx.movements.mp4")
+
 
 ######## MAP ############
 library(mapview)
