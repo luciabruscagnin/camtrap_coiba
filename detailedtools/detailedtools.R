@@ -276,7 +276,6 @@ detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] <- 
 # Age differences in efficiency (duration of sequence)
 # filter to only opened sequences
 # for now to be very conservative and only use good data, filter out itemtypes we have few observations for 
-ftable(detseq_o$item)
 detseq_o <- detseq[detseq$outcome == "opened" & detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown"),]
 
 boxplot(detseq_o$seqduration ~ detseq_o$Age)

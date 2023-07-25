@@ -23,7 +23,7 @@ library(geodist)
 library(sna)
 library(assortnet)
 library(ggnewscale)
-
+library(bisonR)
 
 ## Notes for analyses:
 
@@ -192,6 +192,46 @@ NTUgridagesex$COM <- membership(coms_NTU) #assign membership of communities
 plot(net_NTU, vertex.color =NTUgridagesex$col, edge.with = 20*E(net_NTU)$weight^2, mark.groups = coms_NTU)
 
 # largely appears to be one group, but I will still do a double-check of the IDs and try to identify more individuals in the big group sightings
+
+## with BISON
+head(NTUassoc_w)
+# need dataframe per dyad number of observations together
+# make dataset with 0s with all combinations
+head(NTUgridagesex)
+require(tidyr)
+NTUgridagesex$IDnumber <- as.numeric(NTUgridagesex$name)
+dyadsNTU <- expand.grid(ID1 = NTUgridagesex$IDnumber, ID2 = NTUgridagesex$IDnumber)
+dyadsNTU <- dyadsNTU[!dyadsNTU$ID1 == dyadsNTU$ID2,]
+dyadsNTU$dyad <- paste(pmin(dyadsNTU$ID1, dyadsNTU$ID2), pmax(dyadsNTU$ID1, dyadsNTU$ID2))
+dyadsNTU <- dyadsNTU[!duplicated(dyadsNTU$dyad),]
+
+dyadsNTU$obs <- 0
+
+for (i in 1:nrow(dyadsNTU)) {
+  index1= which(names(NTUassoc_w2) == NTUgridagesex$name[which(NTUgridagesex$IDnumber == dyadsNTU$ID1[i])])
+  index2= which(names(NTUassoc_w2) == NTUgridagesex$name[which(NTUgridagesex$IDnumber == dyadsNTU$ID2[i])])
+  dyadsNTU$obs[i] <- nrow(NTUassoc_w2[NTUassoc_w2[index1] > 0 & NTUassoc_w2[index2] > 0,])
+}
+
+dyadsNTU2 <- data.frame(ID1 = as.numeric(dyadsNTU$ID1), ID2 = as.numeric(dyadsNTU$ID2), 
+                       obs = as.numeric(dyadsNTU$obs))
+
+str(dyadsNTU2)
+
+# trying to do example from BISON package
+sim_data <- simulate_bison_model("binary", aggregated = FALSE)
+df <- sim_data$df_sim
+head(df)
+
+priors <- get_default_priors("binary")
+
+fit_edge <- bison_model(
+  (event | duration) ~ dyad(node_1_id, node_2_id),
+  data = df,
+  model_type = "binary",
+  priors = priors
+)
+rlang::last_trace()
 
 ### SNA TU GROUP ##########
 ## just out of interest, social network of TU group (based on all data)
@@ -825,6 +865,11 @@ hist(hour(cooccurrences$seqstart))
 ggplot(data = cooccurrences, aes(x = hour(cooccurrences$seqstart), fill = tooluse_any)) + geom_histogram(bins = 12, col = "black") + facet_wrap(~tooluse_any) + scale_x_continuous(breaks = 6:18) +
   theme_bw() + labs(fill = "Tool use", x = "Hour", y = "Number of co-occurrences") + theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.title = element_text(size = 14),
                                                                                            legend.text = element_text(size = 12))
+
+ggplot(data = cooccurrences, aes(x = hour(cooccurrences$seqstart))) + geom_histogram(bins = 12, col = "black", fill = "#C8800F") + scale_x_continuous(breaks = 6:18) +
+  theme_bw() + labs(fill = "Tool use", x = "Hour", y = "Number of co-occurrences") + theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.title = element_text(size = 14),
+                                                                                           legend.text = element_text(size = 12))
+
 max(unique(hour(cooccurrences$seqstart)))
 sum(cooccurrences$nJuvenile_1 > 0 | cooccurrences$nJuvenile_2 > 0)
 sum(cooccurrences$nAdult_1 > 0 | cooccurrences$nAdult_2 > 0)
@@ -909,5 +954,5 @@ library(sf)
 
 camcoords <- gridsequence[!duplicated(gridsequence$locationName), c("locationName", "longitude", "latitude")]
 all_cams <- st_as_sf(camcoords , coords = c("longitude", "latitude"), crs = 4326) #do it again if rading csv
-all_cams_map <- mapview(all_cams , col.regions="gold"  )
+all_cams_map <- mapview(all_cams , col.regions="black"  )
 all_cams_map
