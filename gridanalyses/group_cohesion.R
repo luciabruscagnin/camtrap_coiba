@@ -194,30 +194,6 @@ plot(net_NTU, vertex.color =NTUgridagesex$col, edge.with = 20*E(net_NTU)$weight^
 # largely appears to be one group, but I will still do a double-check of the IDs and try to identify more individuals in the big group sightings
 
 ## with BISON
-head(NTUassoc_w)
-# need dataframe per dyad number of observations together
-# make dataset with 0s with all combinations
-head(NTUgridagesex)
-require(tidyr)
-NTUgridagesex$IDnumber <- as.numeric(NTUgridagesex$name)
-dyadsNTU <- expand.grid(ID1 = NTUgridagesex$IDnumber, ID2 = NTUgridagesex$IDnumber)
-dyadsNTU <- dyadsNTU[!dyadsNTU$ID1 == dyadsNTU$ID2,]
-dyadsNTU$dyad <- paste(pmin(dyadsNTU$ID1, dyadsNTU$ID2), pmax(dyadsNTU$ID1, dyadsNTU$ID2))
-dyadsNTU <- dyadsNTU[!duplicated(dyadsNTU$dyad),]
-
-dyadsNTU$obs <- 0
-
-for (i in 1:nrow(dyadsNTU)) {
-  index1= which(names(NTUassoc_w2) == NTUgridagesex$name[which(NTUgridagesex$IDnumber == dyadsNTU$ID1[i])])
-  index2= which(names(NTUassoc_w2) == NTUgridagesex$name[which(NTUgridagesex$IDnumber == dyadsNTU$ID2[i])])
-  dyadsNTU$obs[i] <- nrow(NTUassoc_w2[NTUassoc_w2[index1] > 0 & NTUassoc_w2[index2] > 0,])
-}
-
-dyadsNTU2 <- data.frame(ID1 = as.numeric(dyadsNTU$ID1), ID2 = as.numeric(dyadsNTU$ID2), 
-                       obs = as.numeric(dyadsNTU$obs))
-
-str(dyadsNTU2)
-
 # trying to do example from BISON package
 sim_data <- simulate_bison_model("binary", aggregated = FALSE)
 df <- sim_data$df_sim
@@ -231,7 +207,44 @@ fit_edge <- bison_model(
   model_type = "binary",
   priors = priors
 )
-rlang::last_trace()
+plot_trace(fit_edge, par_ids = 2)
+plot_predictions(fit_edge, num_draws=20, type="density")
+plot_predictions(fit_edge, num_draws=20, type="point")
+plot_network(fit_edge, lwd=5)
+
+
+head(NTUassoc_w)
+# need dataframe per dyad number of observations together
+# make dataset with 0s with all combinations
+head(NTUgridagesex)
+dyadsNTU <- expand.grid(ID1 = NTUgridagesex$name, ID2 = NTUgridagesex$name)
+dyadsNTU <- dyadsNTU[!dyadsNTU$ID1 == dyadsNTU$ID2,]
+dyadsNTU$dyad <- paste(pmin(as.character(dyadsNTU$ID1), as.character(dyadsNTU$ID2)), pmax(as.character(dyadsNTU$ID1), as.character(dyadsNTU$ID2)))
+dyadsNTU <- dyadsNTU[!duplicated(dyadsNTU$dyad),]
+
+dyadsNTU$obs <- 0
+
+for (i in 1:nrow(dyadsNTU)) {
+  index1= which(names(NTUassoc_w2) == NTUgridagesex$name[dyadsNTU$ID1[i]])
+  index2= which(names(NTUassoc_w2) == NTUgridagesex$name[dyadsNTU$ID2[i]])
+  dyadsNTU$obs[i] <- nrow(NTUassoc_w2[NTUassoc_w2[index1] > 0 & NTUassoc_w2[index2] > 0,])
+}
+
+dyadsNTU$sample <- 259
+
+priors2 <- get_default_priors("count_conjugate")
+
+fit_edgeNTU <- bison_model(
+  (obs | sample) ~ dyad(ID1, ID2),
+  data = dyadsNTU,
+  model_type = "count_conjugate",
+  priors = priors2
+)
+
+summary(fit_edgeNTU)
+plot_predictions(fit_edgeNTU)
+plot_network(fit_edgeNTU, lwd=200)
+
 
 ### SNA TU GROUP ##########
 ## just out of interest, social network of TU group (based on all data)
@@ -285,6 +298,47 @@ inds$BINARY.DEGREE <- sna::degree(adj.m_TU, ignore.eval = TRUE)
 inds$WEIGHTED.DEGREE <- sna::degree(adj.m_TU, ignore.eval=FALSE) 
 # ABE is most central individual, followed by older females (OLG and BEA) 
 
+## BISON
+
+head(TUassoc_w)
+# need dataframe per dyad number of observations together
+# make dataset with 0s with all combinations
+head(inds)
+dyadsTU <- expand.grid(ID1 = inds$name, ID2 = inds$name)
+dyadsTU <- dyadsTU[!dyadsTU$ID1 == dyadsTU$ID2,]
+dyadsTU$dyad <- paste(pmin(as.character(dyadsTU$ID1), as.character(dyadsTU$ID2)), pmax(as.character(dyadsTU$ID1), as.character(dyadsTU$ID2)))
+dyadsTU <- dyadsTU[!duplicated(dyadsTU$dyad),]
+
+dyadsTU$obs <- 0
+
+for (i in 1:nrow(dyadsTU)) {
+  index1= which(names(TUassoc_w2) == inds$name[dyadsTU$ID1[i]])
+  index2= which(names(TUassoc_w2) == inds$name[dyadsTU$ID2[i]])
+  dyadsTU$obs[i] <- nrow(TUassoc_w2[TUassoc_w2[index1] > 0 & TUassoc_w2[index2] > 0,])
+}
+
+dyadsTU$sample <- 22814
+
+fit_edgeTU <- bison_model(
+  (obs | sample) ~ dyad(ID1, ID2),
+  data = dyadsTU,
+  model_type = "count_conjugate",
+  priors = priors2
+)
+
+# this doesnt seem to work, there is something about the sampling duration that I am missing. 
+# I can't get it to work without including duration, but we dont have duration here?? Annoying
+summary(fit_edgeTU)
+plot_predictions(fit_edgeTU)
+plot_network(fit_edgeTU, lwd=200)
+
+fit_brm <- bison_brm(
+  bison(node_strength(name)) ~ lifeStage + sex,
+  fit_edgeTU,
+  inds
+)
+summary(fit_brm)
+head(inds)
 ###### Trap shyness ####
 # inspired by McCarthy et al 2018
 # can look at 1: if party size increases over time/if individuals are more likely to be spotted over time (only first is feasible with our data I think)
