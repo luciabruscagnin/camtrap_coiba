@@ -857,7 +857,6 @@ TUdistmat_all <- geodist::geodist(TUcams)
 rownames(TUdistmat_all) <- TUcams$locationfactor
 colnames(TUdistmat_all) <- TUcams$locationfactor
 
-i <-  13295
 # make blank co-occurrence info data frame? 
 agoutiseq_jt$cooccurrence <- 0
 agoutiseq_jt$cooc_ID <- NA
@@ -866,6 +865,7 @@ cooccurrences <- data.frame(cooc_ID = "seqid", seqstart = NA, seqday = NA, cam1 
                             nAdult_1 = 0, nAdult_2 = 0, nAdult_3 = 0, nSubadult_1 = 0, nSubadult_2 = 0, nSubadult_3 = 0, nJuvenile_1 = 0, nJuvenile_2 = 0,
                             nJuvenile_3 = 0, nUU_1 = 0, nUU_2 = 0, nUU_3 = 0, tooluse_1 = NA, tooluse_2 = NA, tooluse_3 = NA)
 
+## taking 150 m < 60 seconds
 for (i in 1:nrow(agoutiseq_jt)) {
   ## at beginning have some kind of check if the sequenceID is already in the co-occurence dataframe, if so can skip everything
   if(sum(str_detect(cooccurrences$cooc_ID, paste(agoutiseq_jt$sequenceID[i]))) == 0) {
@@ -900,10 +900,67 @@ for (i in 1:nrow(agoutiseq_jt)) {
   print(i)
 }
 
+
+# Using lenient criterion (the further, the more time)
+# make curve for co-occurrences
+# so 150 meters < 60 seconds, but at 300 meters < 120 seconds (or different relationship)
+disttime <- data.frame(distance = seq(150, 1020, by = 10), time = 60)
+str(disttime)
+disttime$time[which(disttime$distance > 150)] <- 60 + ((disttime$distance[which(disttime$distance>150)]-150) * 0.4)
+
+cand_seq$flag <- ifelse(min(abs(difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s"))) < cand_seq$cutoff, 1, 0)
+cand_seq$cutoff[which.min(abs(difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s")))]
+
+for (i in 1:nrow(agoutiseq_jt)) {
+  ## at beginning have some kind of check if the sequenceID is already in the co-occurence dataframe, if so can skip everything
+  if(sum(str_detect(cooccurrences$cooc_ID, paste(agoutiseq_jt$sequenceID[i]))) == 0) {
+    dist <- as.data.frame(subset(TUdistmat_all, rownames(TUdistmat_all) %in% agoutiseq_jt$locationfactor[i])) 
+    cand_locs <- colnames(dist[,dist > 150]) # make list of candidate locations for co-occurrence (>150 m away)
+    # filter to sequence that are at candidate location and on same day as sequence we're looking at 
+    cand_seq <- agoutiseq_jt[agoutiseq_jt$locationfactor %in% cand_locs & agoutiseq_jt$seqday == agoutiseq_jt$seqday[i], c("sequenceID", "locationfactor", "seqday", "seq_start", "seq_end", "n", "nAdult", "nJuvenile","nSubadult", "nUU", "tooluse")]
+    dist_m <- melt(dist)
+    cand_seq$locationfactor <- as.character(cand_seq$locationfactor)
+    dist_m$variable <- as.character(dist_m$variable)
+    cand_seq <- left_join(cand_seq, dist_m, by = c("locationfactor" = "variable"))
+    # see if there are any co-occurrences
+    # if there is anything, then extract information from those sequences, both add to agoutiseq_jt dataframe, and to co-occurrence dataframe?
+    if(nrow(cand_seq) > 0) {
+      # identify the difftime cutoff for every row
+      cand_seq$cutoff <- disttime$time[findInterval(cand_seq$value, disttime$distance)]
+      cand_seq$flag <- ifelse(abs(difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s")) < cand_seq$cutoff, 1, 0)
+      if(sum(cand_seq$flag) > 0)  {
+        cand_seq$dtime <- difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s")
+        cand_seq_t <- cand_seq[cand_seq$flag == 1,]
+        cand_seq_t <- cand_seq_t[!duplicated(cand_seq_t$locationfactor),]
+        if(nrow(cand_seq_t) > 0) {
+          agoutiseq_jt$cooccurrence <- 1
+          agoutiseq_jt$cooc_ID[i] <- ifelse(nrow(cand_seq_t) == 1, paste(agoutiseq_jt$sequenceID[i], cand_seq_t$sequenceID[1], sep = ","),
+                                            paste(agoutiseq_jt$sequenceID[i], cand_seq_t$sequenceID[1], cand_seq_t$sequenceID[2], sep = ","))
+          cooccurrences[nrow(cooccurrences) +1,] <- c(agoutiseq_jt$cooc_ID[i], paste(agoutiseq_jt$seq_start[i]), paste(agoutiseq_jt$seqday[i]), paste(agoutiseq_jt$locationfactor[i]), 
+                                                      paste(cand_seq_t$locationfactor[1]), paste(cand_seq_t$locationfactor[2]), cand_seq_t$value[1], cand_seq_t$value[2], nrow(cand_seq_t), agoutiseq_jt$n[i], 
+                                                      cand_seq_t$n[1], cand_seq_t$n[2], agoutiseq_jt$nAdult[i], cand_seq_t$nAdult[1], cand_seq_t$nAdult[2],agoutiseq_jt$nSubadult[i], cand_seq_t$nSubadult[1], 
+                                                      cand_seq_t$nSubadult[2], agoutiseq_jt$nJuvenile[i], cand_seq_t$nJuvenile[1], cand_seq_t$nJuvenile[2], agoutiseq_jt$nUU[i], cand_seq_t$nUU[1], 
+                                                      cand_seq_t$nUU[2], paste(agoutiseq_jt$tooluse[i]), paste(cand_seq_t$tooluse[1]), paste(cand_seq_t$tooluse[2]))
+        }
+      }
+    }
+  }
+  print(i)
+}
+
+
 cooccurrences <- cooccurrences[-1,]
 cooccurrences[,7:22] <- as.numeric(unlist(cooccurrences[,7:22]))
-#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences.RDS")
-#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences.RDS")
+
+# > 150 m < 60 seconds criterion
+#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences_curve.RDS")
+#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences_curve.RDS")
+
+# flexible criterion depending on distance
+#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences_curve.RDS")
+#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences_curve.RDS")
+
+## Analyses
 
 sum(cooccurrences$tooluse_1 == TRUE | cooccurrences$tooluse_2 == TRUE)
 summary(cooccurrences$nrcap_1)
@@ -943,12 +1000,7 @@ str(cooccurrences)
 cooccurrences$nrcap_lowest <- cooccurrences$nrcap_1
 cooccurrences$nrcap_lowest[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] <- cooccurrences$nrcap_2[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] 
 cooccurrences$nrcap_highest <- cooccurrences$nrcap_2
-cooccurrences$nrcap_highest[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] <- cooccurrences$nrcap_1[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] 
-
-
-cooccurrences$nrcap_lowest <- ifelse((cooccurrences$nrcap1 <= cooccurrences$nrcap_2) == TRUE, cooccurrence$nrcap1, 
-                                      ifelse(cooccurrences$nrcap_1 == cooccurrences$nrcap_2, cooccurrences$nrcap1, cooccurrences$nrcap_2))
-
+cooccurrences$nrcap_highest[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1] <- cooccurrences$nrcap_1[cooccurrences$nrcap_2 <= cooccurrences$nrcap_1]
 
 cooccurrences$tooluseoption_1 <- ifelse(str_detect(cooccurrences$cam1, "CEBUS") == TRUE, TRUE, FALSE)
 cooccurrences$tooluseoption_2 <- ifelse(str_detect(cooccurrences$cam2, "CEBUS") == TRUE, TRUE, FALSE)
@@ -970,11 +1022,403 @@ ggplot(data = cooccurrences, aes(x = nrcap_lowest, y = nrcap_highest)) + geom_bi
   theme(axis.text.x = element_text(hjust = -10, size = 14), axis.text.y = element_text(vjust = -1, size = 14), 
         axis.ticks = element_blank(), legend.position = "none", axis.title = element_text(size = 18)) + labs(x = "Number of capuchins in smallest party", y = "Number of capuchins in largest party")
 
-ggplot(data = cooccurrences, aes(x = nrcap_lowest, y = nrcap_highest)) + geom_point() + stat_density_2d(geom = "raster", aes(fill = after_stat(density))) 
+######## GAUSSIAN PROCESSES ############
+
+# make sure statistical rethinking is installed
+require(rethinking)
+
+# put distance matrices on a scale that makes sense
+# now doing hundreds of meters
+TUdistmat2 <- round(TUdistmat/100,2)
+NTUdistmat2 <- round(NTUdistmat/100,2)
+
+## work with number of capuchins per sequence (poisson). 
+
+# try removing the zeros
+# try keeping the zeros in
 
 
-str(cooccurrences)
+## without 0s
+### Tool-users
+dTU <- gridseq_oc[gridseq_oc$gridtype == "TU",]
+dTU <- droplevels.data.frame(dTU)
+# index cameras
+dTU$camera <- as.numeric(dTU$locationfactor)
 
+# island example is collapsed to have one row per island. So we would need one row per camera. 
+# he uses poisson, if we want poisson too we could do total number of capuchins seen (very crude but ok)
+dTU_total <- aggregate(list(n = dTU$n, seq_length = dTU$seq_length), by = list(camera = dTU$camera, long = dTU$longitude, lat = dTU$latitude,  location = dTU$locationName), FUN = "sum")
+
+# more accurate would be average number of capuchins/rate. So this would be a gamma. Try that too
+# could do average number of capuchins seen? over all sequences?
+## IMPORTANT, HAVE ONE SEQUENCE 01b1e2b3-3a65-4165-a1ed-088f903de735 with a seq_length of 0, because it is only one picture. Not sure how this happened
+# for now just make it last 1 second
+dTU$seq_length[dTU$seq_length == 0] <- 1
+dTU_meannumber <- aggregate(dTU$n, by = list(camera = dTU$camera, long = dTU$longitude, lat = dTU$latitude, location = dTU$locationName), FUN = "mean")
+# later would probably need to do something like "capuchins per second"
+dTU$rate <- dTU$n/dTU$seq_length
+dTU_meanrate <- aggregate(dTU$rate, by = list(camera = dTU$camera,  long = dTU$longitude, lat = dTU$latitude,  location = dTU$locationName), FUN = "mean")
+
+## first just model the spatial covariance, null-model without any predictors
+# simulate priors
+n <- 30
+etasq <- rexp(n,2)
+rhosq <- rexp(n,0.5)
+
+plot(NULL, xlim = c(0,10), ylim = c(0,2), 
+     xlab = "distance (hundred m)",
+     ylab = "covariance")
+
+for(i in 1:n){
+  curve(etasq[i]*exp(-rhosq[i]*x^2),
+        add = TRUE, lwd = 4,
+        col = col.alpha(2,0.5))
+}
+
+
+dat_list <- list(
+  N = dTU_total$n,
+  C = 1:24,
+  D = TUdistmat2 )
+
+mTdist <- ulam(
+  alist(
+    N ~ dpois(lambda),
+    log(lambda) <- abar + a[C],
+    vector[24]:a ~ multi_normal(0, K),
+    matrix[24,24]:K <- cov_GPL2(D, etasq, rhosq, 0.01),
+    abar ~ normal(3, 0.5),
+    etasq ~ dexp(2),
+    rhosq ~ dexp(0.5)
+  ), data = dat_list, chains = 4, cores = 4, iter = 4000)
+
+precis(mTdist, 2)
+
+# visualize posterior
+post <- extract.samples(mTdist)
+
+# plot posterior median covariance function
+plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
+     xlim = c(0,10), ylim = c(0,2))
+
+# compute posterior mean covariance
+x_seq <- seq(from=0, to = 10, length.out = 100)
+pmcov <- sapply(x_seq, function(x) post$etasq*exp(-post$rhosq*x^2))
+pmcov_mu <- apply(pmcov, 2, mean)
+lines(x_seq, pmcov_mu, lwd = 2)
+
+# prior in red
+for(i in 1:n){
+  curve(etasq[i]*exp(-rhosq[i]*x^2),
+        add = TRUE, lwd = 2,
+        col = col.alpha("black",0.5))
+}
+
+# plot 60 functions sampled from the posterior
+for (i in 1:50) {
+  curve( post$etasq[i]*exp(-post$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("red",0.5) )
+}
+
+# compute posterior median covariance among societies
+K <- matrix(0, nrow = 24, ncol = 24)
+for (i in 1:24)
+  for (j in 1:24)
+    K[i,j] <- median(post$etasq) *
+  exp( - median(post$rhosq) * TUdistmat2[i,j]^2)
+diag(K) <- median(post$etasq) + 0.01
+
+# convert to correlation matrix
+Rho <- round(cov2cor(K), 2)
+# add row/col names for convenience
+colnames(Rho) <- colnames(TUdistmat2)
+rownames(Rho) <- colnames(Rho)
+
+# plot raw data and labels
+plot(dTU_total$long , dTU_total$lat , xlab="longitude" , ylab="latitude" ,
+      col="red"  , pch=16, xlim = c(-81.824, -81.815))
+labels <- as.character(dTU_total$location)
+text( dTU_total$long , dTU_total$lat , labels=labels , cex=0.7 , pos=c(2,4,3,3,4,1,3,2,4,2) )
+# overlay lines shaded by Rho
+for( i in 1:24 )
+  for ( j in 1:24 )
+    if ( i < j )
+      lines( c( dTU_total$long[i],dTU_total$long[j] ) , c( dTU_total$lat[i],dTU_total$lat[j] ) ,
+             lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
+
+## including "population", in our case, total sequence length
+dat_list <- list(
+  N = dTU_total$n,
+  C = 1:24,
+  P = dTU_total$seq_length,
+  D = TUdistmat2 )
+
+mTdist_TU2 <- ulam(
+  alist(
+    N ~ dpois(lambda),
+    lambda <- (abar*P^b/g)*exp(a[C]),
+    vector[24]:a ~ multi_normal(0, K),
+    transpars>matrix[24,24]:K <- 
+      cov_GPL2(D, etasq, rhosq, 0.01),
+    c(abar, b,g) ~ dexp(1),
+    etasq ~ dexp(2),
+    rhosq ~ dexp(0.5)
+  ), data = dat_list, chains = 4, cores = 4, iter = 4000)
+
+precis(mTdist_TU2, 3)
+
+# visualize posterior
+post2 <- extract.samples(mTdist_TU2)
+
+# plot posterior median covariance function
+plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
+     xlim = c(0,10), ylim = c(0,2))
+
+# prior in black
+for(i in 1:n){
+  curve(etasq[i]*exp(-rhosq[i]*x^2),
+        add = TRUE, lwd = 2,
+        col = col.alpha("black",0.5))
+}
+
+## null model in blue
+for (i in 1:50) {
+  curve( post$etasq[i]*exp(-post$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("blue",0.5) )
+}
+
+# plot 60 functions sampled from the posterior
+for (i in 1:50) {
+  curve( post2$etasq[i]*exp(-post2$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("red",0.5) )
+}
+
+# compute posterior median covariance among societies
+K <- matrix(0, nrow = 24, ncol = 24)
+for (i in 1:24)
+  for (j in 1:24)
+    K[i,j] <- median(post2$etasq) *
+  exp( - median(post2$rhosq) * TUdistmat2[i,j]^2)
+diag(K) <- median(post2$etasq) + 0.01
+
+# convert to correlation matrix
+Rho <- round(cov2cor(K), 2)
+# add row/col names for convenience
+colnames(Rho) <- colnames(TUdistmat2)
+rownames(Rho) <- colnames(Rho)
+
+# plot raw data and labels
+plot(dTU_total$long , dTU_total$lat , xlab="longitude" , ylab="latitude" ,
+     col="red"  , pch=16, xlim = c(-81.824, -81.815))
+labels <- as.character(dTU_total$location)
+text( dTU_total$long , dTU_total$lat , labels=labels , cex=0.7 , pos=c(2,4,3,3,4,1,3,2,4,2) )
+# overlay lines shaded by Rho
+for( i in 1:24 )
+  for ( j in 1:24 )
+    if ( i < j )
+      lines( c( dTU_total$long[i],dTU_total$long[j] ) , c( dTU_total$lat[i],dTU_total$lat[j] ) ,
+             lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
+
+
+# now on log seqlength scale , still want to make this plot
+# youtube video https://www.youtube.com/watch?v=PIuqxOBJqLU around 35:00
+# statistical rethinking around page 475 (figure 14.12)
+# compute posterior median relationship, ignoring distance 
+max(log(dTU_total$seq_length))
+
+# something goes wrong with code below
+logpop.seq <- seq( from=4 , to=9 , length.out=30 )
+lambda <- sapply( logpop.seq , function(lp) exp( post2$a + post2$bp*lp ) )
+lambda.median <- apply( lambda , 2 , median )
+lambda.PI80 <- apply( lambda , 2 , PI , prob=0.8 )
+# plot raw data and labels
+plot( d$logpop , d$total_tools , col=rangi2 , cex=psize , pch=16 ,
+      xlab="log population" , ylab="total tools" )
+text( d$logpop , d$total_tools , labels=labels , cex=0.7 ,
+      pos=c(4,3,4,2,2,1,4,4,4,2) )
+# display posterior predictions
+lines( logpop.seq , lambda.median , lty=2 )
+lines( logpop.seq , lambda.PI80[1,] , lty=2 )
+lines( logpop.seq , lambda.PI80[2,] , lty=2 )
+# overlay correlations
+for( i in 1:10 )
+  for ( j in 1:10 )
+    if ( i < j )
+      lines( c( d$logpop[i],d$logpop[j] ) ,
+             c( d$total_tools[i],d$total_tools[j] ) ,
+             lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
+
+
+### Non-tool-users
+dNTU <- gridseq_oc[gridseq_oc$gridtype == "NTU",]
+dNTU <- droplevels.data.frame(dNTU)
+# index cameras
+dNTU$camera <- as.numeric(dNTU$locationfactor)
+
+# island example is collapsed to have one row per island. So we would need one row per camera. 
+# he uses poisson, if we want poisson too we could do total number of capuchins seen (very crude but ok)
+dNTU_total <- aggregate(list(n = dNTU$n, seq_length = dNTU$seq_length), by = list(camera = dNTU$camera, long = dNTU$longitude, lat = dNTU$latitude,  location = dNTU$locationName), FUN = "sum")
+
+# more accurate would be average number of capuchins/rate. So this would be a gamma. Try that too
+# could do average number of capuchins seen? over all sequences?
+dNTU_meannumber <- aggregate(dNTU$n, by = list(camera = dNTU$camera, long = dNTU$longitude, lat = dNTU$latitude, location = dNTU$locationName), FUN = "mean")
+# later would probably need to do something like "capuchins per second"
+dNTU$rate <- dNTU$n/dNTU$seq_length
+dNTU_meanrate <- aggregate(dNTU$rate, by = list(camera = dNTU$camera,  long = dNTU$longitude, lat = dNTU$latitude,  location = dNTU$locationName), FUN = "mean")
+
+## first just model the spatial covariance, null-model without any predictors
+# simulate priors
+dat_list <- list(
+  N = dNTU_total$n,
+  C = 1:25,
+  D = NTUdistmat2 )
+
+mTdist_NTU <- ulam(
+  alist(
+    N ~ dpois(lambda),
+    log(lambda) <- abar + a[C],
+    vector[25]:a ~ multi_normal(0, K),
+    matrix[25,25]:K <- cov_GPL2(D, etasq, rhosq, 0.01),
+    abar ~ normal(3, 0.5),
+    etasq ~ dexp(2),
+    rhosq ~ dexp(0.5)
+  ), data = dat_list, chains = 4, cores = 4, iter = 4000)
+
+precis(mTdist_NTU, 2)
+
+# visualize posterior
+post <- extract.samples(mTdist_NTU)
+
+# plot posterior median covariance function
+plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
+     xlim = c(0,10), ylim = c(0,2))
+
+# compute posterior mean covariance
+x_seq <- seq(from=0, to = 10, length.out = 100)
+pmcov <- sapply(x_seq, function(x) post$etasq*exp(-post$rhosq*x^2))
+pmcov_mu <- apply(pmcov, 2, mean)
+lines(x_seq, pmcov_mu, lwd = 2)
+
+# prior in red
+for(i in 1:n){
+  curve(etasq[i]*exp(-rhosq[i]*x^2),
+        add = TRUE, lwd = 2,
+        col = col.alpha("black",0.5))
+}
+
+# plot 60 functions sampled from the posterior
+for (i in 1:50) {
+  curve( post$etasq[i]*exp(-post$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("red",0.5) )
+}
+
+# compute posterior median covariance among societies
+K <- matrix(0, nrow = 25, ncol = 25)
+for (i in 1:25)
+  for (j in 1:25)
+    K[i,j] <- median(post$etasq) *
+  exp( - median(post$rhosq) * NTUdistmat2[i,j]^2)
+diag(K) <- median(post$etasq) + 0.01
+
+# convert to correlation matrix
+Rho <- round(cov2cor(K), 2)
+# add row/col names for convenience
+colnames(Rho) <- colnames(NTUdistmat2)
+rownames(Rho) <- colnames(Rho)
+
+# plot raw data and labels
+plot(dNTU_total$long , dNTU_total$lat , xlab="longitude" , ylab="latitude" ,
+     col="red"  , pch=16, xlim = c(-81.798, -81.790))
+labels <- as.character(dNTU_total$location)
+text( dNTU_total$long , dNTU_total$lat , labels=labels , cex=0.7 , pos=c(2,4,3,3,4,1,3,2,4,2) )
+# overlay lines shaded by Rho
+for( i in 1:25 )
+  for ( j in 1:25 )
+    if ( i < j )
+      lines( c( dNTU_total$long[i],dNTU_total$long[j] ) , c( dNTU_total$lat[i],dNTU_total$lat[j] ) ,
+             lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
+
+
+## including "population", in our case, total sequence length
+dat_list <- list(
+  N = dNTU_total$n,
+  C = 1:25,
+  P = dNTU_total$seq_length,
+  D = NTUdistmat2 )
+
+mTdist_NTU2 <- ulam(
+  alist(
+    N ~ dpois(lambda),
+    lambda <- (abar*P^b/g)*exp(a[C]),
+    vector[25]:a ~ multi_normal(0, K),
+    transpars>matrix[25,25]:K <- 
+      cov_GPL2(D, etasq, rhosq, 0.01),
+    c(abar, b,g) ~ dexp(1),
+    etasq ~ dexp(2),
+    rhosq ~ dexp(0.5)
+  ), data = dat_list, chains = 4, cores = 4, iter = 4000)
+
+precis(mTdist_NTU2, 2)
+
+# visualize posterior
+post2 <- extract.samples(mTdist_NTU2)
+
+# plot posterior median covariance function
+plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
+     xlim = c(0,10), ylim = c(0,2))
+
+# prior in black
+for(i in 1:n){
+  curve(etasq[i]*exp(-rhosq[i]*x^2),
+        add = TRUE, lwd = 2,
+        col = col.alpha("black",0.5))
+}
+
+## null model in blue
+for (i in 1:50) {
+  curve( post$etasq[i]*exp(-post$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("blue",0.5) )
+}
+
+# plot 60 functions sampled from the posterior
+for (i in 1:50) {
+  curve( post2$etasq[i]*exp(-post2$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("red",0.5) )
+}
+
+# compute posterior median covariance among societies
+K <- matrix(0, nrow = 25, ncol = 25)
+for (i in 1:25)
+  for (j in 1:25)
+    K[i,j] <- median(post2$etasq) *
+  exp( - median(post2$rhosq) * NTUdistmat2[i,j]^2)
+diag(K) <- median(post2$etasq) + 0.01
+
+# convert to correlation matrix
+Rho <- round(cov2cor(K), 2)
+# add row/col names for convenience
+colnames(Rho) <- colnames(NTUdistmat2)
+rownames(Rho) <- colnames(Rho)
+
+# plot raw data and labels
+plot(dNTU_total$long , dNTU_total$lat , xlab="longitude" , ylab="latitude" ,
+     col="red"  , pch=16, xlim = c(-81.798, -81.790))
+labels <- as.character(dNTU_total$location)
+text( dNTU_total$long , dNTU_total$lat , labels=labels , cex=0.7 , pos=c(2,4,3,3,4,1,3,2,4,2) )
+# overlay lines shaded by Rho
+for( i in 1:24 )
+  for ( j in 1:24 )
+    if ( i < j )
+      lines( c( dNTU_total$long[i],dNTU_total$long[j] ) , c( dNTU_total$lat[i],dNTU_total$lat[j] ) ,
+             lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
+
+# so my first interpretation of this is that including distance only already doesn't show much covariance between cameras for the NTU but does for TU
+# hmmmm
+# is then interpretation correct that for NTU close cameras are similar and far apart are not similar and for TU there is more covariance between far cameras too?
+# look at this in more detail later
+
+
+### TRIALS #####
 # trying out looking at explicitly spatial model
 
 agoutiseq_jt_order <- agoutiseq_jt[order(agoutiseq_jt$seq_start),]
@@ -999,7 +1443,6 @@ frames <- frames_spatial(m,
   add_timestamps(m, type = "label") %>%
   add_progress()
 animate_frames(frames, out_file = "Oryx.movements.mp4")
-
 
 ######## MAP ############
 library(mapview)
