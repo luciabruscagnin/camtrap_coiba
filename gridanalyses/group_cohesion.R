@@ -900,16 +900,12 @@ for (i in 1:nrow(agoutiseq_jt)) {
   print(i)
 }
 
-
 # Using lenient criterion (the further, the more time)
 # make curve for co-occurrences
 # so 150 meters < 60 seconds, but at 300 meters < 120 seconds (or different relationship)
 disttime <- data.frame(distance = seq(150, 1020, by = 10), time = 60)
 str(disttime)
 disttime$time[which(disttime$distance > 150)] <- 60 + ((disttime$distance[which(disttime$distance>150)]-150) * 0.4)
-
-cand_seq$flag <- ifelse(min(abs(difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s"))) < cand_seq$cutoff, 1, 0)
-cand_seq$cutoff[which.min(abs(difftime(agoutiseq_jt$seq_start[i], cand_seq$seq_start, unit = "s")))]
 
 for (i in 1:nrow(agoutiseq_jt)) {
   ## at beginning have some kind of check if the sequenceID is already in the co-occurence dataframe, if so can skip everything
@@ -953,8 +949,8 @@ cooccurrences <- cooccurrences[-1,]
 cooccurrences[,7:22] <- as.numeric(unlist(cooccurrences[,7:22]))
 
 # > 150 m < 60 seconds criterion
-#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences_curve.RDS")
-#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences_curve.RDS")
+#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences.RDS")
+#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences.RDS")
 
 # flexible criterion depending on distance
 #saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences_curve.RDS")

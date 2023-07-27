@@ -140,6 +140,25 @@ deployment_info <- deployment_info[!deployment_info$locationName == "SURVEY-CEBU
 
 # drop columns we don't want to attach
 deployment_info2 <- deployment_info[, !names(deployment_info) %in% c("camera_id", "number")]
+
+# FYI, long/lats in agouti are sometimes different from ones in csv. assume that csv is correct
+# compare longitudes and latitudes from agouti with ones from csv
+test <- agoutigross[!duplicated(agoutigross$locationName), c("locationName", "longitude", "latitude")]
+test <- left_join(test, deployment_info2, "locationName")
+test <- test[,c("locationName", "longitude.x", "longitude.y", "latitude.x", "latitude.y")]
+test[,2:5] <- round(test[,2:5], 5)
+
+test$latitudematch <- ifelse(test$latitude.x == test$latitude.y, 1, 0)
+test$longitudematch <- ifelse(test$longitude.x == test$longitude.y, 1, 0)
+test$mismatch <- ifelse(test$latitudematch == 0 | test$longitudematch == 0, 1, 0)
+mismatches <- test[test$latitudematch == 0 | test$longitudematch == 0,]
+
+ggplot(test[test$mismatch == 1,], aes(label = locationName)) + geom_point(aes(x= longitude.x, y = latitude.x), col = "black") + 
+  geom_text(aes(x = longitude.x, y = latitude.x), hjust = 0, vjust = 0, col = "black") +
+  coord_cartesian(xlim = c(-81.8225, -81.816), ylim = c(7.266,7.273)) +
+  geom_point(aes(x = longitude.y, y = latitude.y), col = "red", alpha = 0.5) + geom_text(aes(x = longitude.y, y = latitude.y), hjust = 0, vjust = 0, col = "red") 
+
+# overwrite those in agoutigross with ones from csv
 agoutigross <- agoutigross[,!names(agoutigross) %in% c("longitude", "latitude")]
 
 agoutigross <- left_join(agoutigross, deployment_info2, "locationName")
