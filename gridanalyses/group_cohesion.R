@@ -949,12 +949,18 @@ cooccurrences <- cooccurrences[-1,]
 cooccurrences[,7:22] <- as.numeric(unlist(cooccurrences[,7:22]))
 
 # > 150 m < 60 seconds criterion
-#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences.RDS")
-#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences.RDS")
+#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences_fixedgps150.RDS")
+#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences_fixedgps150.RDS")
 
 # flexible criterion depending on distance
-#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences_curve.RDS")
-#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences_curve.RDS")
+#saveRDS(cooccurrences, "gridanalyses/RDS/cooccurrences_fixedgpscurve.RDS")
+#cooccurrences <- readRDS("gridanalyses/RDS/cooccurrences_fixedgpscurve.RDS")
+
+cooccurrences_old <- readRDS("gridanalyses/RDS/cooccurrences_wronggps150.RDS")
+cooccurrences_new <- readRDS("gridanalyses/RDS/cooccurrences_fixedgps150.RDS")
+missed <- cooccurrences[-which(cooccurrences_new$cooc_ID %in% cooccurrences_old$cooc_ID),]
+# so the reason we lost so many co occurrences when fixing the long/lat is because CEBUS-04 had a totally wrong location, so many cooccurrences where CEBUs-04 with CEBUS-01 or 02 (which are actually next to each other)
+# SO THE NEW CO-OCCURRENCES ARE CORRECT! 
 
 ## Analyses
 
