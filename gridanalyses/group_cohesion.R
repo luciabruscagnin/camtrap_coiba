@@ -1301,7 +1301,7 @@ pmcov <- sapply(x_seq, function(x) post$etasq*exp(-post$rhosq*x^2))
 pmcov_mu <- apply(pmcov, 2, mean)
 lines(x_seq, pmcov_mu, lwd = 2)
 
-# prior in red
+# prior in black
 for(i in 1:n){
   curve(etasq[i]*exp(-rhosq[i]*x^2),
         add = TRUE, lwd = 2,

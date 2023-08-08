@@ -1,6 +1,6 @@
 # Supplemental code for "Male-biased stone tool use by wild white-faced capuchins (Cebus capucinus imitator)
 
-# Zoë Goldsborough, Margaret Crofoot, Claudio Monteza-Moreno, Brendan Barrett
+# Zoë Goldsborough, Margaret Crofoot, Brendan Barrett
 # 2023
 
 # setwd("~/GitHub/camtrap_coiba/sexbias")
