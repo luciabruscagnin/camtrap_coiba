@@ -643,6 +643,7 @@ ggplot() + geom_line(data = partysize_day$data, aes(x = hour, y = log(estimate__
 # conditional effects instead of conditional smooths
 partysize_day2 <- plot(conditional_effects(ps_bm1), plot = FALSE)[[3]]
 #saveRDS(partysize_day2, "gridanalyses/RDS/partysize_day2.rds")
+#partysize_day2 <- readRDS("gridanalyses/RDS/partysize_day2.rds")
 # all in one plot
 partysize_day2 + labs(y = "Hour of the day", x = "Log of party size")
 
@@ -680,6 +681,15 @@ ggplot() + geom_point(data = psizeplot, aes(x = hour, y = mean, color = gridtype
     labs(x = "Hour of the day", y = "Estimated party size per sequence") +  theme_bw() + 
   theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
         axis.text = element_text(size = 12)) + coord_cartesian(ylim = c(0.5,3))
+
+# only gam, not real points
+ggplot() +   geom_line(data = partysize_day2p$data, aes(x = hour, y = estimate__, color = gridtype, group = gridtype), size = 2) + 
+  geom_ribbon(data = partysize_day2p$data, aes(x = hour, ymin = lower__, ymax = upper__, fill = gridtype), alpha = 0.1) +
+  scale_color_manual(values = c("#81A956", "#C8800F")) +   scale_fill_manual(values = c("#81A956", "#C8800F")) + facet_wrap(~gridtype) +
+  labs(x = "Hour of the day", y = "Estimated party size per sequence") +  theme_bw() + 
+  theme(strip.text.x = element_text(size = 16), axis.title = element_text(size = 16), legend.text =  element_text(size = 14), legend.title = element_text(size =14),
+        axis.text = element_text(size = 12)) + coord_cartesian(ylim = c(0.5,3))
+
 
 
 ### Seems like a continuous time modeling would be better
