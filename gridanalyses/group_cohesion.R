@@ -458,13 +458,13 @@ act_m2@act[1] * 24
 # plot both together on same axis
 plot(act_m1, yunit="density", data="none", las=1, lwd=2,
      tline=list(lwd=3, col = "#C8800F"), # Thick line 
-     cline=list(lty=2, col = "#C8800F")) # Supress confidence intervals
+     cline=list(lty=3, col = "#C8800F")) # Supress confidence intervals
 
 plot(act_m2, yunit="density", data="none", add=TRUE, 
-     tline=list(col="#81A956", lwd=3),
-     cline=list(lty=2, col="#81A956"))
+     tline=list(lty = 5, col="#81A956", lwd=3),
+     cline=list(lty=3, col="#81A956"))
 
-legend("topright", c("TU", "NTU"), col=c("#C8800F","#81A956"), lty=1, lwd=2)
+legend("topright", c("TU", "NTU"), col=c("#C8800F","#81A956"), lty=c(1,5), lwd=2)
 
 # overlap between the two
 compareCkern(act_m1, act_m2, reps = 100)
@@ -1060,6 +1060,14 @@ dTU$camera <- as.numeric(dTU$locationfactor)
 # island example is collapsed to have one row per island. So we would need one row per camera. 
 # he uses poisson, if we want poisson too we could do total number of capuchins seen (very crude but ok)
 dTU_total <- aggregate(list(n = dTU$n, seq_length = dTU$seq_length), by = list(camera = dTU$camera, long = dTU$longitude, lat = dTU$latitude,  location = dTU$locationName), FUN = "sum")
+## add distance to coast per camera
+# only available for Jicaron
+dist2coast_all <- read.csv("tide_analysis/allcams_gps.csv", header = TRUE)
+dist2coast_all <- dist2coast_all[ , c(2,5)]
+
+dTU_total <- left_join(dTU_total, dist2coast_all, by = c("location" = "camera_id"))
+#standardize
+dTU_total$distcoast_z <- as.numeric(scale(dTU_total$distcoast, center = TRUE, scale = TRUE))
 
 # more accurate would be average number of capuchins/rate. So this would be a gamma. Try that too
 # could do average number of capuchins seen? over all sequences?
@@ -1119,7 +1127,7 @@ pmcov <- sapply(x_seq, function(x) post$etasq*exp(-post$rhosq*x^2))
 pmcov_mu <- apply(pmcov, 2, mean)
 lines(x_seq, pmcov_mu, lwd = 2)
 
-# prior in red
+# prior in black
 for(i in 1:n){
   curve(etasq[i]*exp(-rhosq[i]*x^2),
         add = TRUE, lwd = 2,
@@ -1260,6 +1268,92 @@ for( i in 1:10 )
              c( d$total_tools[i],d$total_tools[j] ) ,
              lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
 
+## including distance to coast as predictor
+dat_list <- list(
+  N = dTU_total$n,
+  C = 1:24,
+  P = dTU_total$seq_length,
+  D = TUdistmat2,
+  X = dTU_total$distcoast_z)
+
+
+## discuss with Brendan how to incorporate distcoast in the ulam
+# now just added bX and X to lambda but that doesn't seem to be right?
+mTdist_TU3 <- ulam(
+  alist(
+    N ~ dpois(lambda),
+    lambda <- (abar*P^b/g)*exp(a[C]) + bX*X,
+    vector[24]:a ~ multi_normal(0, K),
+    transpars>matrix[24,24]:K <- 
+      cov_GPL2(D, etasq, rhosq, 0.01),
+    c(abar, b,g) ~ dexp(1),
+    bX ~ normal(0, 0.5),
+    etasq ~ dexp(2),
+    rhosq ~ dexp(0.5)
+  ), data = dat_list, chains = 4, cores = 4, iter = 4000)
+
+precis(mTdist_TU3, 3)
+
+# visualize posterior
+post3 <- extract.samples(mTdist_TU3)
+
+# plot posterior median covariance function
+plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
+     xlim = c(0,10), ylim = c(0,2))
+
+# prior in black
+for(i in 1:n){
+  curve(etasq[i]*exp(-rhosq[i]*x^2),
+        add = TRUE, lwd = 2,
+        col = col.alpha("black",0.5))
+}
+
+## null model in blue
+for (i in 1:50) {
+  curve( post$etasq[i]*exp(-post$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("blue",0.5) )
+}
+
+# population added
+for (i in 1:50) {
+  curve( post2$etasq[i]*exp(-post2$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("red",0.5) )
+}
+
+# population and distcoast
+for (i in 1:50) {
+  curve( post3$etasq[i]*exp(-post3$rhosq[i]*x^2) , add=TRUE , lwd = 2,
+         col=col.alpha("green",0.5) )
+}
+
+# compute posterior median covariance among societies
+K <- matrix(0, nrow = 24, ncol = 24)
+for (i in 1:24)
+  for (j in 1:24)
+    K[i,j] <- median(post3$etasq) *
+  exp( - median(post3$rhosq) * TUdistmat2[i,j]^2)
+diag(K) <- median(post3$etasq) + 0.01
+
+# convert to correlation matrix
+Rho <- round(cov2cor(K), 2)
+# add row/col names for convenience
+colnames(Rho) <- colnames(TUdistmat2)
+rownames(Rho) <- colnames(Rho)
+
+# plot raw data and labels
+plot(dTU_total$long , dTU_total$lat , xlab="longitude" , ylab="latitude" ,
+     col="red"  , pch=16, xlim = c(-81.824, -81.815))
+labels <- as.character(dTU_total$location)
+text( dTU_total$long , dTU_total$lat , labels=labels , cex=0.7 , pos=c(2,4,3,3,4,1,3,2,4,2) )
+# overlay lines shaded by Rho
+for( i in 1:24 )
+  for ( j in 1:24 )
+    if ( i < j )
+      lines( c( dTU_total$long[i],dTU_total$long[j] ) , c( dTU_total$lat[i],dTU_total$lat[j] ) ,
+             lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
+
+# not sure how to measure if distcoast affects covariance?
+
 
 ### Non-tool-users
 dNTU <- gridseq_oc[gridseq_oc$gridtype == "NTU",]
@@ -1270,6 +1364,11 @@ dNTU$camera <- as.numeric(dNTU$locationfactor)
 # island example is collapsed to have one row per island. So we would need one row per camera. 
 # he uses poisson, if we want poisson too we could do total number of capuchins seen (very crude but ok)
 dNTU_total <- aggregate(list(n = dNTU$n, seq_length = dNTU$seq_length), by = list(camera = dNTU$camera, long = dNTU$longitude, lat = dNTU$latitude,  location = dNTU$locationName), FUN = "sum")
+
+dNTU_total <- left_join(dNTU_total, dist2coast_all, by = c("location" = "camera_id"))
+#standardize
+dNTU_total$distcoast_z <- as.numeric(scale(dNTU_total$distcoast, center = TRUE, scale = TRUE))
+
 
 # more accurate would be average number of capuchins/rate. So this would be a gamma. Try that too
 # could do average number of capuchins seen? over all sequences?
