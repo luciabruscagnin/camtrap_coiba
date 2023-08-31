@@ -222,6 +222,8 @@ cap_agesex_infant <- as.data.frame(as.matrix(ftable(agoutigross_cap$sequenceID[w
 colnames(cap_agesex_infant) <- c("nAF_infant", "nAM_infant", "nAU_infant", "nJF_infant", "nJM_infant", "nJU_infant", "nSF_infant", "nSM_infant", "nSU_infant", 
                           "nUF_infant", "nUM_infant", "nUU_infant")
 cap_agesex_infant$sequenceID <- rownames(cap_agesex_infant)
+## there is a bit of an error here, where sometimes for the dorsal infant themselves "infant care" was coded, so they get counted as an unknown juvenile carrying an infant
+## THIS IS NOT YET FIXED, SEEMS TO ALSO BE FOR CASES WHERE INFANT WAS NOT CODED AS INFANT CARE!! 
 
 # number of neck infants
 cap_neck_infant <- as.data.frame(ftable(agoutigross$sequenceID[which(str_detect(agoutigross$comments.x, "neck infant") == TRUE)]))

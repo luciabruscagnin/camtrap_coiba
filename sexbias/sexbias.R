@@ -143,7 +143,7 @@ ggplot(data = m_type_pred, aes(x = locationtype, y = .epred_prop)) +
   scale_color_manual(values = cols) +
   scale_y_continuous(lim = c(0,1)) +
   guides(color = "none", fill = "none") +
-  labs(x = "Locationtype", y = "Female:male ratio") +
+  labs(x = "Location type", y = "Female:male ratio") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 #dev.off()
@@ -402,7 +402,7 @@ ggplot(data = m_type_predb, aes(x = locationtype, y = .epred_prop)) + geom_violi
   scale_color_manual(values = cols) +
   scale_y_continuous(lim = c(0,1)) +
   guides(color = "none", fill = "none") +
-  labs(x = "Locationtype", y = "Ratio females with infants:females without infants") +
+  labs(x = "Location type", y = "Ratio females with infants:females without infants") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 #dev.off()
@@ -652,7 +652,7 @@ dis_graph$agesex <- factor(dis_graph$variable, levels = c("adult female", "adult
 ggplot(dis_graph, aes(x = agesex, y = value, group = type, fill = type)) + geom_bar(stat = "identity", position = position_dodge()) + 
   geom_text(aes(label=value), position=position_dodge(width=0.9), vjust=-0.25) +
   geom_text(stat = "unique", aes(label = opportunity), position = position_dodge(width = 0), vjust = -0.5, fontface = "italic" ) +
-  labs( x = "Age-sex class", y = "Number of times observed", fill = "Role in displacement" ) +   scale_fill_grey() +
+  labs( x = "Age-sex class", y = "Number of displacement events", fill = "Role in displacement" ) +   scale_fill_grey() +
   theme_bw() + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 14), legend.title = element_text(size=12),
                      legend.text = element_text(size=11)) 
 #dev.off()
