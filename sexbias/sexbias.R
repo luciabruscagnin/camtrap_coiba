@@ -743,7 +743,7 @@ ggplot(scr_graph, aes(x = agesex, y = prop, group = type, fill = type)) + geom_b
 # what do females on Coiba consume?
 ftable(agoutiseq_ct$tool_item[which(agoutiseq_ct$tu_nAF >0)])
 
-# tool use in streambeds
+# tool use in streambeds on Jicaron
 tooluse_s <- agoutiseq_jt[which(agoutiseq_jt$tooluse == "TRUE" & agoutiseq_jt$locationtype == "streambed"),]
 sum(tooluse_s$tu_nAM)
 sum(tooluse_s$tu_nJuvenile)
