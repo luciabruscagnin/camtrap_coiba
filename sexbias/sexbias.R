@@ -3,7 +3,7 @@
 # Zoë Goldsborough, Margaret Crofoot, Brendan Barrett
 # 2023
 
-# setwd("~/GitHub/camtrap_coiba/sexbias")
+# setwd("~/GitHub/sexbias")
 
 ## Packages required
 require(brms)
