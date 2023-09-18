@@ -9,11 +9,11 @@ setwd("D:/")
 # IMPORTANT: Make sure all the folders are already fully labeled with their final name, so CEBUS-02-R10. 
 
 # say which directory is the 'station' directory 
-wd_createStationDir <- file.path("raw/", "R12")
+wd_createStationDir <- file.path("raw/", "R13")
 # define where the raw data is
-wd_images_raw<- file.path("raw/R12")
+wd_images_raw<- file.path("raw/R13")
 # define where the renamed data has to go
-wd_images_raw_renamed <- file.path("renamed/R12")
+wd_images_raw_renamed <- file.path("renamed/R13")
 
 # rename the entire folder of R11
 # this will rename all the JPGs, not the MP4s!!

@@ -19,13 +19,13 @@ library(fitdistrplus)
 ## NOTE: check how to extract end location of second hammer when they switch (code hammerend loc again?)
 
 # load tsv file with aggregated BORIS output
-dettools <- read.csv("detailedtools/ZGdetailedtoolscoding.csv")
+dettools1 <- read.csv("detailedtools/ZGdetailedtoolscoding.csv")
 # Meredith's csv
-#dettools2 <- read.csv("detailedtools/EXP-ANV-01-R11_MKWC.csv")
+dettools2 <- read.csv("detailedtools/EXP-ANV-01-R11_MC.csv")
 # Leonie's csv
 dettools3 <- read.csv("detailedtools/CEBUS-02-R11_2022_LRdetailedtoolscoding.csv")
 
-dettools <- rbind(dettools, dettools3)
+dettools <- rbind(dettools1, dettools2, dettools3)
 
 # sort so that observations from the same video are clustered together and it's chronological
 dettools <- dettools[order(dettools$Observation.id),]
@@ -256,9 +256,9 @@ dettools_r2$hammerID2 <- str_trim(dettools_r2$hammerID2)
 
 # sequence level dataframe (only for analyzing things like nr of pounds/duration. things that are fixed per sequence)
 detseq <- dettools_r2[!duplicated(dettools_r2$sequenceID),]
-detseq$split <- seqdat$split[which(detseq$sequenceID == seqdat$sequenceID)]
+detseq <- left_join(detseq, seqdat[,c("sequenceID", "split")], by = "sequenceID")
 
-# add a pount if the hammerstone was "inhand" or if there is a split
+# add a pound if the hammerstone was "inhand" or if there is a split
 detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] <- detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] + 1
 
 #saveRDS(detseq, "detailedtools/RDS/detseq.rds")
@@ -276,7 +276,7 @@ detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] <- 
 # Age differences in efficiency (duration of sequence)
 # filter to only opened sequences
 # for now to be very conservative and only use good data, filter out itemtypes we have few observations for 
-detseq_o <- detseq[detseq$outcome == "opened" & detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown"),]
+detseq_o <- detseq[detseq$outcome == "opened" & detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown", "almendrared"),]
 
 boxplot(detseq_o$seqduration ~ detseq_o$Age)
 
@@ -368,7 +368,7 @@ m_type_pred2 <- m_e2 %>%
                                Age = detseq_o$Age,
                                anviltype = detseq_o$anviltype))
 
-# age difference in duration to open item
+# age difference in number of pounds to open item
 ggplot(data = m_type_pred2, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
   stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_pounds, color = Age), geom = "point", fun = "mean",
                size = 4) +
@@ -379,7 +379,7 @@ ggplot(data = m_type_pred2, aes(x = Age, y = .epred)) + geom_violin(aes(color = 
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
 
-# item difference in duration to open item
+# item difference in number of pounds to open item
 ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color = item, fill = item), alpha = 0.4) +
   stat_summary(detseq_o[which(detseq_o$item %in% c("almendrabrown", "almendragreen")),], inherit.aes = FALSE, mapping=aes(x = item, y = n_pounds, color = item), geom = "point", fun = "mean",
                size = 4) +
@@ -394,8 +394,7 @@ ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color =
 m_e2b <- brm(n_pounds ~ age_of + item + age_of*item, data = detseq_o[detseq_o$split == FALSE,], iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "poisson")
 plot(conditional_effects(m_e2b))
 
-### FROM HERE ON OUT NEED TO CHANGE TO NOT USING DETSEQ_O BUT JUST DETSEQ. 
-# doesnt need to just be opened sequences but can do all?
+## Mistakes
 range(detseq_o$n_pounds[which(str_detect(detseq_o$item, "almendra") == TRUE & detseq_o$Age == "Juvenile")])
 mean(detseq_o$n_pounds[which(str_detect(detseq_o$item, "almendra") == TRUE & detseq_o$Age == "Juvenile")])
 
@@ -422,7 +421,7 @@ m_type_pred3 <- m_e3 %>%
                                item = detseq_o$item,
                                anviltype = detseq_o$anviltype))
 
-# age difference in duration to open item
+# age difference in misstrikes
 ggplot(data = m_type_pred3, aes(x = Age, y = .epred)) + geom_boxplot(aes(color = Age, fill = Age), alpha = 0.4) +
   stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_miss, color = Age), geom = "point", fun = "mean",
                size = 4) +
@@ -473,7 +472,7 @@ m_type_pred4 <- m_e4 %>%
                                item = detseq_o$item,
                                anviltype = detseq_o$anviltype))
 
-# age difference in duration to open item
+# age difference in number of repositions
 ggplot(data = m_type_pred4, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
   stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_reposit, color = Age), geom = "point", fun = "mean",
                size = 4) +
@@ -522,11 +521,20 @@ ggplot(detseq_o[detseq_o$split == FALSE,], aes(y = seqduration, x = n_pounds, co
 
 # improvement over time?
 head(detseq_o2)
-ggplot(detseq_o2) + geom_smooth(aes(x = videostart, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = videostart, y = n_pounds, color = "n_pounds")) + 
-  geom_smooth(aes(x = videostart, y = n_reposit,  color = "n_repositions"))  + facet_wrap(~subjectID, scales = "free") + theme_bw() + scale_color_manual("", breaks = c("n_miss", "n_pounds", "n_repositions"),
+ggplot(detseq_o2[!detseq_o2$subjectID == "JOE" & detseq_o2$location == "EXP-ANV-01",]) + geom_smooth(aes(x = videostart, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = videostart, y = n_pounds, color = "n_pounds")) + 
+  geom_smooth(aes(x = videostart, y = n_reposit,  color = "n_repositions"))  + facet_wrap(~subjectID, scales = "free")  + theme_bw() + scale_color_manual("", breaks = c("n_miss", "n_pounds", "n_repositions"),
                                                                                                                                                          values = c("red", "blue", "green"))
 # would probably have to be some kind of GAM, that also includes other things that affects these things (item, anviltype)
 # either work with actual number or do maybe a julian day or something? and then split by ID? 
 
 ggplot(detseq_o2[detseq_o2$split == FALSE,]) + geom_smooth(aes(x = videostart, y = seqduration)) + facet_wrap(~subjectID, scales = "free") + theme_bw() 
 ftable(detseq_o2$seqduration)
+
+
+#### HAMMER TIME #####
+
+ggplot(detseq_o, aes(x=coder, y=n_pounds)) + 
+  geom_violin()
+
+library(stringr)
+ftable(detseq$location[which(detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown", "almendrared"))])
