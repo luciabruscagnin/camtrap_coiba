@@ -7,26 +7,22 @@
 library(stringr)
 library(dplyr)
 library(tidyr)
-library(brms)
 library(ggplot2)
-require(tidybayes)
-library(fitdistrplus)
-
 
 ## NOTE: add code about catching when anvil type switches (e.g. if it's wooden anvil at comment seq_start, or when they switch back to stone/wood)
-### NOTE: when they start with hammerstone "inhand", add 1 pound (and some seconds?) or if we have enough exclude those from analyses
-# also if you have seq_cont (so a split) add 1 pound
 ## NOTE: check how to extract end location of second hammer when they switch (code hammerend loc again?)
 
-# load tsv file with aggregated BORIS output
+### Loading dataset ####
+# load csv files with aggregated BORIS output (from BORIScoding/ExportedData Google Drive)
+# Zoë's csv
 dettools1 <- read.csv("detailedtools/ZGdetailedtoolscoding.csv")
 # Meredith's csv
 dettools2 <- read.csv("detailedtools/EXP-ANV-01-R11_MC.csv")
 # Leonie's csv
 dettools3 <- read.csv("detailedtools/CEBUS-02-R11_2022_LRdetailedtoolscoding.csv")
 
+# bind all three datasets together (after making sure they have the same number and order of columns)
 dettools <- rbind(dettools1, dettools2, dettools3)
-
 # sort so that observations from the same video are clustered together and it's chronological
 dettools <- dettools[order(dettools$Observation.id),]
 
@@ -37,17 +33,19 @@ dettools_r <- data.frame("videoID" = dettools$Observation.id, "codingdate" = det
                          "modifier1" = dettools$Modifier..1,  "modifier2" = dettools$Modifier..2,  "modifier3" = dettools$Modifier..3,  "modifier4" = dettools$Modifier..4, 
                          "starttime" = dettools$Start..s., "comment" = dettools$Comment.start)
 
+# take out Zoë's coding of "female" tool use for other project
+# note: if we have any other test sequences, we can filter them out here
 dettools_r <- dettools_r[!dettools_r$videoID == "femaletooluse1",]
 
-## creature unique sequence ID that is same for sequences continuing across multiple videos
-## and different for 2 or 3 sequences in the same video
-### NOTE: it is crucial that seq_start is the first thing and seq_end the last thing in each sequence!!!! 
+### Create unique sequence ID #### 
+# Sequence ID that is same for sequences continuing across multiple videos
+# and different for 2 or 3 sequences in the same video
+### NOTE: it is crucial for this to work that seq_start is the first thing and seq_end the last thing in each sequence!!!! 
 
 # change seq_end to seq_cont if it has the continue modifier
 dettools_r$behavior[which(str_detect(dettools_r$modifier1, "cont") == TRUE)] <- "seqcont"
 
-# assign unique sequence ID to each sequence (Location + Coder + Ascending number)
-# create ascending number.
+# create ascending number for each sequence
 curseq <- 1
 cache <- 1
 dettools_r$seqnumber <- NA
@@ -76,14 +74,19 @@ dettools_r$location <- ifelse(str_detect(dettools_r$videoID, "EXP-ANV") == TRUE,
 dettools_r$mediadate <- sapply(str_split(dettools_r$videoID, "__"), '[', 2)
 dettools_r$sequenceID <- paste(dettools_r$location, dettools_r$mediadate, dettools_r$seqnumber, sep = "_" )
 
-## pull out all modifiers per sequence
+head(dettools_r$sequenceID)
+
+### Extract modifiers per sequence ####
 # make dataframe with sequence_level information and populate it, then left_join at the end
 seqdat <- data.frame(sequenceID = unique(dettools_r$sequenceID))
+# here every row is a sequence
 
-# what item is being consumed
+## what item is being consumed
 seqdat$item[which(seqdat$sequenceID == dettools_r[dettools_r$behavior == "seqstart",]$sequenceID)] <-  dettools_r[dettools_r$behavior == "seqstart",]$modifier1[which(seqdat$sequenceID == dettools_r[dettools_r$behavior == "seqstart",]$sequenceID)]
+ftable(seqdat$item)
+# see overwhelming majority of consumed items are almendras
 
-# hammerstone information
+## hammerstone information
 # note: anvil location can be in modifier 3 or modifier 4
 hammers <- dettools_r[dettools_r$behavior == "hammerstone",]
 hammers$h_startloc <- hammers$modifier1
@@ -95,19 +98,37 @@ hammers <- hammers[which(hammers$h_startloc != "None"),]
 # check that the next line works correctly to identify unmarked and unknown hammerstones
 hammers$hammerID <- ifelse(hammers$modifier2 != "None", hammers$modifier2, hammers$comment)
 hammers <- hammers[,c("sequenceID", "h_startloc", "h_endloc", "hammerID")]
+# sometimes there is additional whitespace or a comment attached to the hammerstone ID, pull those out
+# first exclude the ones where hammerstone ID is as it should be (or has check attached to it)
+hammers$hammerID[! hammers$hammerID %in% c("FRE", "unmarked", "BAM", "PEB", "unknown", "WIL", "DWA", "BCH", "LCH", 
+                                           "DWA_A", "DWA_B", "DPL", "DPL_A", "check ID", "DPL_A CHECK", "")] <-
+  str_trim(str_extract(hammers$hammerID[! hammers$hammerID %in% c("FRE", "unmarked", "BAM", "PEB", "unknown", "WIL", "DWA", "BCH", "LCH", 
+                                                                  "DWA_A", "DWA_B", "DPL", "DPL_A", "check ID", "DPL_A CHECK", "")],
+                       "([:upper:]|[:space:]){2,}"))
+
+# generate lists of blanks that we missed so we can correct them
+blank <- hammers$sequenceID[which(hammers$hammerID == "")]
+blank_videonames_ZG <- unique(dettools_r$videoID[which(dettools_r$sequenceID %in% blank & dettools_r$coder == "ZG")])
+blank_videonames_MKWC <- unique(dettools_r$videoID[which(dettools_r$sequenceID %in% blank & dettools_r$coder == "MKWC")])
+blank_videonames_LC <- unique(dettools_r$videoID[which(dettools_r$sequenceID %in% blank & dettools_r$coder == "LC")])
 
 seqdat <- left_join(seqdat, hammers, "sequenceID")
+ftable(seqdat$hammerID)
 
-# sequence end information
+## sequence end information
 seqendings <- dettools_r[dettools_r$behavior == "seqend" | dettools_r$behavior == "seqcont",]
 # outcome
 seqendings$outcome <- seqendings$modifier1
+ftable(seqendings$outcome)
 # displacement
 seqendings$displacement <- seqendings$modifier3
+ftable(seqendings$displacement)
 # social attention
 seqendings$socatt <- seqendings$modifier4
+ftable(seqendings$socatt)
 # scrounging
 seqendings$scrounging <- seqendings$modifier2
+ftable(seqendings$scrounging)
 
 # filter out seqcont ones after making sure their information is included
 seqendings <- seqendings[!seqendings$outcome == "seqcont", c("sequenceID", "outcome", "displacement", "socatt", "scrounging")]
@@ -117,6 +138,8 @@ seqdat <- left_join(seqdat, seqendings, "sequenceID")
 # I think that is all the sequence specific info, attach this to the main dataframe
 dettools_r2 <- left_join(dettools_r, seqdat, "sequenceID")
 
+### Extract modifiers on behavior level  ####
+# (so not aggregated to sequence)
 # specify pound type
 dettools_r2$poundtype <- ifelse(dettools_r2$behavior == "pound", dettools_r2$modifier1, NA)
 # specify one-footed yes/no
@@ -152,6 +175,15 @@ for (i in 1:nrow(dettools_r2)) {
 # extract location of hammerstone they switched to 
 dettools_r2$h_switchloc <- ifelse(dettools_r2$behavior == "hammerswitch", dettools_r2$modifier1, NA)
 
+# add information on hammerstone switch to sequence-level dataframe
+# there are sometimes many hammerstone switches in one sequence, so it is not straightforward to add all the IDs to the sequence level dataframe
+# for now add the number of switches per sequence as a sequence-level variable
+switchsequences <- dettools_r2$sequenceID[which(dettools_r2$behavior == "hammerswitch")]
+switches <- aggregate(dettools_r2$behavior[dettools_r2$sequenceID %in% switchsequences & dettools_r2$behavior == "hammerswitch"], by = list(sequenceID = dettools_r2$sequenceID[dettools_r2$sequenceID %in% switchsequences & dettools_r2$behavior == "hammerswitch"]), FUN = length)
+seqdat$hammerswitches <- 0
+seqdat$hammerswitches[seqdat$sequenceID %in% switchsequences] <- switches$x
+ftable(seqdat$hammerswitches)
+
 ## incorporate what type of anvil it is
 # at EXP-ANV is stone, at CEBUS-02 is wood
 seqdat$anviltype <- ifelse(str_detect(seqdat$sequenceID, "CEBUS-02") == TRUE, "wood", "stone")
@@ -177,9 +209,16 @@ for (i in 1:nrow(dettools_r2)) {
   }
 }
 
-## so anviltype2 and hammerID2 are the correct variables
+# add number of anvilswitches to seqdat
+aswitchsequences <- dettools_r2$sequenceID[which(dettools_r2$behavior == "anvilswitch")]
+aswitches <- aggregate(dettools_r2$behavior[dettools_r2$sequenceID %in% aswitchsequences & dettools_r2$behavior == "anvilswitch"], by = list(sequenceID = dettools_r2$sequenceID[dettools_r2$sequenceID %in% aswitchsequences & dettools_r2$behavior == "anvilswitch"]), FUN = length)
+seqdat$anvilswitches <- 0
+seqdat$anvilswitches[seqdat$sequenceID %in% aswitchsequences] <- aswitches$x
+ftable(seqdat$anvilswitches)
 
+## so in dettools_r2 anviltype2 and hammerID2 are the correct variables
 
+### Get metrics of efficiency aggregated per sequence #### 
 # calculate duration 
 # need to extract the start and end time of the videos
 dettools_r2$videostart <- as.POSIXct(paste(sapply(str_split(dettools_r2$videoID, "__"), '[', 2), sapply(str_split(dettools_r2$videoID, "__"), '[', 3), sep = " "), tz = "America/Panama", format = "%Y-%m-%d %H-%M-%S") 
@@ -252,289 +291,41 @@ dettools_r2$Sex[which(is.na(dettools_r2$Sex) == TRUE)] <- ifelse(str_detect(dett
                                                                  ifelse(str_detect(dettools_r2$subjectID[which(is.na(dettools_r2$Sex) == TRUE)], "female") == TRUE, "Female", "Unknown")) 
 # have some extra  spaces that snuck in
 dettools_r2$Age <- str_trim(dettools_r2$Age)
+# make age ordered factor for easy plotting
+dettools_r2$age_of <- factor(dettools_r2$Age, ordered = TRUE, levels = c("Juvenile", "Subadult", "Adult"))
 dettools_r2$hammerID2 <- str_trim(dettools_r2$hammerID2)
+# extract deployment number
+dettools_r2$deployment <- ifelse(str_detect(dettools_r2$videoID, "R11") == TRUE, "R11", 
+                                 ifelse(str_detect(dettools_r2$videoID, "R12") == TRUE, "R12", "R13"))
+# make variable types correct
+dettools_r2$mediadate <- as.POSIXct(dettools_r2$mediadate)
+
+dettools_r2 <- left_join(dettools_r2, seqdat[,c("sequenceID", "split")], by = "sequenceID")
 
 # sequence level dataframe (only for analyzing things like nr of pounds/duration. things that are fixed per sequence)
 detseq <- dettools_r2[!duplicated(dettools_r2$sequenceID),]
-detseq <- left_join(detseq, seqdat[,c("sequenceID", "split")], by = "sequenceID")
+detseq <- left_join(detseq, seqdat[,c("sequenceID", "hammerswitches", "anvilswitches")], by = "sequenceID")
 
 # add a pound if the hammerstone was "inhand" or if there is a split
 detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] <- detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] + 1
 
+### Datasets we are now left with ####
+# detseq #
+# aggregated to one row per sequence, contains all information on efficiency etc
+head(detseq)
+detseq <- detseq[,c("videoID", "codingdate", "medianame", "videolength", "coder", "subjectID", "seqnumber", "location",
+                    "mediadate", "sequenceID", "item", "h_startloc", "h_endloc", "hammerID", "outcome", "displacement", 
+                    "socatt", "scrounging", "anviltype", "videostart", "videoend", "seqduration", "n_pounds", "n_miss", 
+                    "n_reposit", "Age", "Sex", "split", "hammerswitches", "anvilswitches", "age_of", "deployment")]
 #saveRDS(detseq, "detailedtools/RDS/detseq.rds")
 
-####### INITIAL ANALYSES/MESSING AROUND ########
-## move this to a different script later
-
-### IF SEQUENCE IS SPLIT then we can "reliably" still look at the duration of the sequence in seconds (tho likely overestimation?)
-# but to be safe probably shouldnt include these when looking at number of pounds as we def miss at least 1 maybe more pounds in between
-# maybe exclude them in general if we have enough data, think about it
-# definitely include whether it was split yes/no as a random effect/fixed effect 
-
-## add itemtype as well 
-
-# Age differences in efficiency (duration of sequence)
-# filter to only opened sequences
-# for now to be very conservative and only use good data, filter out itemtypes we have few observations for 
-detseq_o <- detseq[detseq$outcome == "opened" & detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown", "almendrared"),]
-
-boxplot(detseq_o$seqduration ~ detseq_o$Age)
-
-# age as ordered factor?
-detseq_o$age_of <- factor(detseq_o$Age, ordered = TRUE, levels = c("Juvenile", "Subadult", "Adult"))
-
-ggplot(detseq_o, aes(x=age_of, y=seqduration)) + 
-  geom_violin()
-
-descdist(detseq_o$seqduration)
-
-testdist1.1 <- fitdist(detseq_o$seqduration, "norm")
-plot(testdist1.1)
-
-testdist1.2 <- fitdist(detseq_o$seqduration, "gamma")
-plot(testdist1.2)
-
-
-### comparing duration
-# items of interest: anviltype and maybe hammerID?
-head(detseq_o)
-
-m_e1 <- brm(seqduration ~ Age + item*anviltype + split, data = detseq_o, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "gamma")
-#saveRDS(m_e1, "detailedtools/RDS/m_e1.rds")
-summary(m_e1)
-mcmc_plot(m_e1)
-pp_check(m_e1)
-plot(conditional_effects(m_e1))
-
-# make violin plot
-m_type_pred <- m_e1 %>% 
-  epred_draws(newdata = tibble(item = detseq_o$item,
-                               Age = detseq_o$Age,
-                               split = detseq_o$split,
-                               anviltype = detseq_o$anviltype))
-
-# age difference in duration to open item
-ggplot(data = m_type_pred, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) + ylim(0,50) +
-  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = seqduration, color = Age), geom = "point", fun = "mean",
-               size = 4) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  guides(color = "none", fill = "none") +
-  labs(x = "Age", y = "Seconds required to open item") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
-
-# item difference in duration to open item
-ggplot(data = m_type_pred, aes(x = item, y = .epred)) + geom_violin(aes(color = item, fill = item), alpha = 0.4) + ylim(0,100) +
-  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = item, y = seqduration, color = item), geom = "point", fun = "mean",
-               size = 4) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  guides(color = "none", fill = "none") +
-  labs(x = "Item type", y = "Seconds required to open item") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
-
-## including interaction of age and item (once we have more reliable data for each item type)
-#m_e1b <- brm(seqduration ~ age_of + item + age_of*item + split, data = detseq_o, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "gamma")
-plot(conditional_effects(m_e1b))
-
-
-## Age differences in efficiency (number of pounds)
-boxplot(detseq_o$n_pounds ~ detseq_o$Age)
-ggplot(detseq_o, aes(x=Age, y=n_pounds)) + 
-  geom_violin()
-
-descdist(detseq_o$n_pounds)
-
-testdist2.1 <- fitdist(detseq_o$n_pounds, "pois")
-plot(testdist2.1)
-
-# if we're being very safe, for now exclude split sequences as we likely missed pounds off camera 
-# and only include green and brown almendras and exclude itemtypes we dont have many observations for
-m_e2 <- brm(n_pounds ~ Age + item*anviltype, data = detseq_o[which(detseq_o$split == FALSE),], family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
-#saveRDS(m_e2, "detailedtools/RDS/m_e2.rds")
-summary(m_e2)
-pp_check(m_e2)
-mcmc_plot(m_e2)
-plot(conditional_effects(m_e2))
-
-hypothesis(m_e2, "Intercept  > Intercept + anviltypewood", alpha = 0.05)
-
-
-# make violin plot
-m_type_pred2 <- m_e2 %>% 
-  epred_draws(newdata = tibble(item = detseq_o$item,
-                               Age = detseq_o$Age,
-                               anviltype = detseq_o$anviltype))
-
-# age difference in number of pounds to open item
-ggplot(data = m_type_pred2, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
-  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_pounds, color = Age), geom = "point", fun = "mean",
-               size = 4) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  guides(color = "none", fill = "none") +
-  labs(x = "Age", y = "Number of pounds required to open item") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
-
-# item difference in number of pounds to open item
-ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color = item, fill = item), alpha = 0.4) +
-  stat_summary(detseq_o[which(detseq_o$item %in% c("almendrabrown", "almendragreen")),], inherit.aes = FALSE, mapping=aes(x = item, y = n_pounds, color = item), geom = "point", fun = "mean",
-               size = 4) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  guides(color = "none", fill = "none") +
-  labs(x = "Item type", y = "Number of pounds required to open item") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
-## including interaction of age and item (once we have more reliable data for each item type)
-m_e2b <- brm(n_pounds ~ age_of + item + age_of*item, data = detseq_o[detseq_o$split == FALSE,], iter = 1000, chain = 2, core = 2, backend = "cmdstanr", family = "poisson")
-plot(conditional_effects(m_e2b))
-
-## Mistakes
-range(detseq_o$n_pounds[which(str_detect(detseq_o$item, "almendra") == TRUE & detseq_o$Age == "Juvenile")])
-mean(detseq_o$n_pounds[which(str_detect(detseq_o$item, "almendra") == TRUE & detseq_o$Age == "Juvenile")])
-
-
-## Age differences in efficiency (number of mistakes)
-boxplot(detseq_o$n_miss ~ detseq_o$Age)
-ggplot(detseq_o, aes(x=Age, y=n_miss)) + 
-  geom_violin()
-
-descdist(detseq_o$n_miss)
-testdist3.1 <- fitdist(detseq_o$n_miss, "pois")
-plot(testdist3.1)
-
-
-m_e3 <- brm(n_miss ~ Age + item*anviltype, data = detseq_o, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
-#saveRDS(m_e3, "detailedtools/RDS/m_e3.rds")
-summary(m_e3)
-pp_check(m_e3)
-plot(conditional_effects(m_e3))
-
-# make violin plot
-m_type_pred3 <- m_e3 %>% 
-  epred_draws(newdata = tibble(Age = detseq_o$Age,
-                               item = detseq_o$item,
-                               anviltype = detseq_o$anviltype))
-
-# age difference in misstrikes
-ggplot(data = m_type_pred3, aes(x = Age, y = .epred)) + geom_boxplot(aes(color = Age, fill = Age), alpha = 0.4) +
-  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_miss, color = Age), geom = "point", fun = "mean",
-               size = 4) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  guides(color = "none", fill = "none") +
-  labs(x = "Age", y = "Average number of mistakes per tool use sequence") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
-# individual variation in how many mistakes are made
-knownids <- data.frame(ID = c("TER", "SPT", "BAL", "TOM", "PEA", "SMG", "ZIM", "MIC", "LAR", "JOE"))
-for (i in 1:nrow(knownids)) {
-  knownids$nrow[i] <- nrow(detseq_o[which(detseq_o$subjectID == knownids$ID[i]),])
-}
-
-detseq_o2 <- left_join(detseq_o[which(detseq_o$subjectID %in% knownids$ID),], knownids, by = c("subjectID" = "ID"))
-
-ggplot(detseq_o2, aes(x=subjectID, y=n_miss, color = Age, fill = Age)) + 
-  geom_violin(alpha = 0.4) + geom_text(aes(y = 7.5, x = subjectID, label = nrow)) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  labs(x = "Age", y = "Average number of mistakes per tool use sequence") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
-## model with only identified individuals
-m_e3b <- brm(n_miss ~ Age + item*anviltype + (1|subjectID), data = detseq_o2, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
-#saveRDS(m_e3b, "detailedtools/RDS/m_e3b.rds")
-plot(conditional_effects(m_e3b))
-
-## Age differences in efficiency (number of repositions)
-boxplot(detseq_o$n_reposit ~ detseq_o$Age)
-ggplot(detseq_o, aes(x=Age, y=n_reposit)) + 
-  geom_violin()
-
-
-m_e4 <- brm(n_reposit ~ Age + item*anviltype, data = detseq_o, family = "poisson", iter = 2000, chain = 2, core = 2, backend = "cmdstanr")
-#saveRDS(m_e4, "detailedtools/RDS/m_e4.rds")
-summary(m_e4)
-mcmc_plot(m_e4)
-pp_check(m_e4)
-plot(conditional_effects(m_e4))
-
-# make violin plot
-m_type_pred4 <- m_e4 %>% 
-  epred_draws(newdata = tibble(Age = detseq_o$Age,
-                               item = detseq_o$item,
-                               anviltype = detseq_o$anviltype))
-
-# age difference in number of repositions
-ggplot(data = m_type_pred4, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
-  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_reposit, color = Age), geom = "point", fun = "mean",
-               size = 4) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  guides(color = "none", fill = "none") +
-  labs(x = "Age", y = "Average number of repositions per sequence") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
-
-# individual variation
-
-ggplot(detseq_o2, aes(x=subjectID, y=n_reposit, color = Age, fill = Age)) + 
-  geom_violin(alpha = 0.4) + geom_text(aes(y = 9.5, x = subjectID, label = nrow)) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  labs(x = "Age", y = "Average number of repositions per tool use sequence") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
-
-## still account for individual ID (when we can)
-
-
-# some exploration just messing around
-
-library(reshape2)
-melt_detseq <- melt(detseq_o2, measure.vars = c("n_pounds", "n_miss", "n_reposit"))
-
-ggplot(melt_detseq) + geom_violin(aes(y = value, x = variable, color = variable, fill = variable), alpha = 0.4) +
-  stat_summary(melt_detseq, inherit.aes = FALSE, mapping=aes(x = variable, y = value, color = variable), geom = "point", fun = "mean",
-               size = 4) +
-  facet_wrap(~factor(subjectID, levels = c("BAL", "PEA", "TER",  "ZIM", "LAR", "MIC", "SPT", "SMG", "TOM"))) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  labs(x = "Age", y = "Average number of repositions per sequence") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
-# relationship between nr of pounds and how long the sequence lasts
-ggplot(detseq_o[detseq_o$split == FALSE,], aes(y = seqduration, x = n_pounds, color = Age, shape = Age)) + geom_point(size = 3) + geom_smooth() + 
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  labs(y = "Seconds needed to open item", x = "Number of pounds needed to open item") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
-# improvement over time?
-head(detseq_o2)
-ggplot(detseq_o2[!detseq_o2$subjectID == "JOE" & detseq_o2$location == "EXP-ANV-01",]) + geom_smooth(aes(x = videostart, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = videostart, y = n_pounds, color = "n_pounds")) + 
-  geom_smooth(aes(x = videostart, y = n_reposit,  color = "n_repositions"))  + facet_wrap(~subjectID, scales = "free")  + theme_bw() + scale_color_manual("", breaks = c("n_miss", "n_pounds", "n_repositions"),
-                                                                                                                                                         values = c("red", "blue", "green"))
-# would probably have to be some kind of GAM, that also includes other things that affects these things (item, anviltype)
-# either work with actual number or do maybe a julian day or something? and then split by ID? 
-
-ggplot(detseq_o2[detseq_o2$split == FALSE,]) + geom_smooth(aes(x = videostart, y = seqduration)) + facet_wrap(~subjectID, scales = "free") + theme_bw() 
-ftable(detseq_o2$seqduration)
-
-
-#### HAMMER TIME #####
-
-ggplot(detseq_o, aes(x=coder, y=n_pounds)) + 
-  geom_violin()
-
-library(stringr)
-ftable(detseq$location[which(detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown", "almendrared"))])
+# dettools_r2 #
+# not aggregated, every row is a behavior, for detailed looks at the behavior in the sequences
+head(dettools_r2)
+dettools_r2 <- dettools_r2[,c("videoID", "codingdate", "medianame", "videolength", "coder", "subjectID", "behavior", "comment", 
+                              "seqnumber", "location", "mediadate", "sequenceID", "item", "h_startloc", "h_endloc", 
+                              "outcome", "displacement", "socatt", "scrounging", "onefoot", "overhead", "onehand", "tailsupport",
+                              "mistaketype", "repostype", "hammerID2", "h_switchloc", "anviltype2", 
+                              "videostart", "videoend", "seqduration", "n_pounds", "n_miss", 
+                              "n_reposit", "Age", "Sex", "split", "age_of", "deployment")]
+#saveRDS(dettools_r2, "detailedtools/RDS/dettools_r2.rds")
