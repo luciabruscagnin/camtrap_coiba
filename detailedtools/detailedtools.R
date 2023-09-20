@@ -299,6 +299,9 @@ dettools_r2$deployment <- ifelse(str_detect(dettools_r2$videoID, "R11") == TRUE,
                                  ifelse(str_detect(dettools_r2$videoID, "R12") == TRUE, "R12", "R13"))
 # make variable types correct
 dettools_r2$mediadate <- as.POSIXct(dettools_r2$mediadate)
+# fix occurrences of DWA after fracture (2022-03-11), should be DWA_A
+dettools_r2$hammerID[which(dettools_r2$mediadate > "2022-03-11" & dettools_r2$hammerID == "DWA")] <- "DWA_A"
+dettools_r2$hammerID2[which(dettools_r2$mediadate > "2022-03-11" & dettools_r2$hammerID2 == "DWA")] <- "DWA_A"
 
 dettools_r2 <- left_join(dettools_r2, seqdat[,c("sequenceID", "split")], by = "sequenceID")
 

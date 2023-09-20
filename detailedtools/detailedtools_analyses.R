@@ -11,6 +11,10 @@ library(brms)
 library(ggplot2)
 library(tidybayes)
 library(fitdistrplus)
+library(reshape2)
+library(lubridate)
+library(mgcv)
+library(gratia)
 
 ## NOTES ###
 # If we have enough data, ideally exclude sequences that are split across multiple videos (split == TRUE)
@@ -31,12 +35,44 @@ detseq_o <- detseq[detseq$outcome == "opened" & detseq$item %in% c("almendrabrow
 ggplot(detseq_o, aes(x=coder, y=n_pounds)) + 
   geom_violin()
 
+### What is being processed when? ####
+
 # now looking only at EXP-ANV-01-R11 as that is the only one fully coded
 # later could look at all sites/times
 # for this plot exclude really rare items
 ggplot(detseq[detseq$deployment == "R11" & detseq$location == "EXP-ANV-01" & 
                 detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown", "almendrared"),], 
        aes(x = mediadate, fill = item)) + geom_histogram() + theme_bw() + facet_wrap(~item)
+
+## GAM model
+# multinomial model (?) item being processed depending on day of the year*location interaction
+# make month variable
+detseq$month <- month(detseq$mediadate)
+# for now don't have enough years, but later could include year
+detseq$year <- year(detseq$mediadate)
+
+detseq_gam <- detseq[detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown", "almendrared"),]
+detseq_gam$itemF <- as.factor(detseq_gam$item)
+detseq_gam$locationF <- as.factor(detseq_gam$location)
+
+# brms
+# smooth version 
+alm_bm1 <- brm(itemF ~ s(month, bs ="cc", k = 11, by = locationF) + locationF, data=detseq_gam, family="categorical", 
+               knots = list(month = c(0.5,12.5)), chains=2, cores = 4, backend = "cmdstanr", save_pars = save_pars(all = TRUE),
+               iter = 1000)
+
+# saveRDS(alm_bm1, file = "detailedtools/RDS/alm_bm1.rds")
+# alm_bm1 <- readRDS("detailedtools/RDS/alm_bm1.rds")
+
+summary(alm_bm1)
+mcmc_plot(alm_bm1)
+plot(conditional_smooths(alm_bm1, categorical = TRUE))
+plot(conditional_effects(alm_bm1, categorical = TRUE))
+
+# best plot
+conditions <- make_conditions(alm_bm1, "locationF")
+alm_plot <- plot(conditional_effects(alm_bm1, categorical = TRUE, conditions = conditions), plot = FALSE)[[2]]
+alm_plot + labs(y = "Total tool use duration per day (seconds)", x = "Day of the year") + theme_bw()
 
 ### Efficiency ####
 ## Comparing efficiency between age classes on opened sequences, multiple measures
@@ -51,7 +87,6 @@ ggplot(detseq[detseq$deployment == "R11" & detseq$location == "EXP-ANV-01" &
 # The hammerstone (when we have reliable IDs, include hammerstone ID as random effect)
 # Identity of tool user (when we only use subset with identified individuals, random effect)
 # Whether sequence is split across two videos or not (with pounds miss some, durations are longer)
-
 
 ### IF SEQUENCE IS SPLIT then we can "reliably" still look at the duration of the sequence in seconds (though likely overestimation?)
 # but to be safe probably shouldnt include these when looking at number of pounds as we miss at least 1 (maybe more) pounds in between
@@ -126,6 +161,14 @@ descdist(detseq_oi$n_pounds)
 
 testdist2.1 <- fitdist(detseq_oi$n_pounds, "pois")
 plot(testdist2.1)
+
+# relationship between nr of pounds and how long the sequence lasts
+ggplot(detseq_oi, aes(y = seqduration, x = n_pounds, color = Age, shape = Age)) + geom_point(size = 3) + geom_smooth() + 
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  labs(y = "Seconds needed to open item", x = "Number of pounds needed to open item") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
 
 # Model 2: Number of pounds depending on age, including item, anviltype, and individual ID as random effect
 m_e2 <- brm(n_pounds ~ Age + item*anviltype + (1|subjectID), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
@@ -268,12 +311,9 @@ ggplot(detseq_o2, aes(x=subjectID, y=n_reposit, color = Age, fill = Age)) +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+#### Exploring individual variation and development #####
 
-## FROM HERE ON OUT DID NOT CLEAN YET ### 
-
-# some exploration just messing around
-
-library(reshape2)
+# comparing n_pounds, n_miss, n_reposit for known individuals
 melt_detseq <- melt(detseq_o2, measure.vars = c("n_pounds", "n_miss", "n_reposit"))
 
 ggplot(melt_detseq) + geom_violin(aes(y = value, x = variable, color = variable, fill = variable), alpha = 0.4) +
@@ -286,29 +326,45 @@ ggplot(melt_detseq) + geom_violin(aes(y = value, x = variable, color = variable,
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
-# relationship between nr of pounds and how long the sequence lasts
-ggplot(detseq_o[detseq_o$split == FALSE,], aes(y = seqduration, x = n_pounds, color = Age, shape = Age)) + geom_point(size = 3) + geom_smooth() + 
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  labs(y = "Seconds needed to open item", x = "Number of pounds needed to open item") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
 # improvement over time?
 head(detseq_o2)
-ggplot(detseq_o2[!detseq_o2$subjectID == "JOE" & detseq_o2$location == "EXP-ANV-01",]) + geom_smooth(aes(x = videostart, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = videostart, y = n_pounds, color = "n_pounds")) + 
+ggplot(detseq_o2[detseq_o2$location == "EXP-ANV-01",]) + geom_smooth(aes(x = videostart, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = videostart, y = n_pounds, color = "n_pounds")) + 
   geom_smooth(aes(x = videostart, y = n_reposit,  color = "n_repositions"))  + facet_wrap(~subjectID, scales = "free")  + theme_bw() + scale_color_manual("", breaks = c("n_miss", "n_pounds", "n_repositions"),
                                                                                                                                                           values = c("red", "blue", "green"))
 # would probably have to be some kind of GAM, that also includes other things that affects these things (item, anviltype)
 # either work with actual number or do maybe a julian day or something? and then split by ID? 
 
-ggplot(detseq_o2[detseq_o2$split == FALSE,]) + geom_smooth(aes(x = videostart, y = seqduration)) + facet_wrap(~subjectID, scales = "free") + theme_bw() 
-ftable(detseq_o2$seqduration)
+### Hammerstones #####
+
+# how often do they transport hammerstone in?
+# on all sequences, including those that didnt finish
+ftable(detseq$h_startloc)
+ggplot(detseq, aes(x = h_startloc, fill = h_startloc)) + geom_histogram(stat = "count") + theme_bw() + facet_wrap(~age_of)
+ggplot(detseq, aes(x = h_endloc, fill = h_endloc)) + geom_histogram(stat = "count") + theme_bw() + facet_wrap(~age_of)
+
+# so mostly juveniles transport hammers in, but they are also the ones who usually leave the hammerstone not on the anvil
+# so could be artefact of repeat sequences where they dont put the hammerstone back properly so have to fetch it for the new sequence
+
+## Hammerstone identities ##
+# what hammerstone is used to process what item?
+# what is the average number of pounds per hammerstone?
+
+# filter to opened sequences, with hammerstone IDs known
+detseq_oh <- detseq_o[detseq_o$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB") & detseq_o$split == FALSE,]
+
+# number of pounds per hammerstone
+ggplot(detseq_oh[detseq_oh$Age == "Adult" | detseq_oh$Age == "Subadult",], aes(x=hammerID, y=n_pounds, fill = location)) + 
+  geom_violin() + theme_bw() + facet_wrap(~item, scales = "free_x")
+
+# what items are being opened with what hammerstone
+ggplot(detseq[detseq$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB"),], aes(x = item, fill = item)) + geom_histogram(stat = "count") + theme_bw() + facet_wrap(~hammerID, scales = "free_x")
+
+## hammer timeline
+ggplot(detseq_oh[detseq_oh$deployment == "R11" & detseq_oh$location == "EXP-ANV-01",], 
+       aes(x = mediadate, fill = hammerID)) + geom_histogram() + theme_bw() + facet_wrap(~hammerID)
 
 
-#### HAMMER TIME #####
 
-ggplot(detseq_o, aes(x=coder, y=n_pounds)) + 
-  geom_violin()
 
-library(stringr)
-ftable(detseq$location[which(detseq$item %in% c("almendrabrown", "almendragreen", "almendraunknown", "almendrared"))])
+
+
