@@ -72,7 +72,7 @@ plot(conditional_effects(alm_bm1, categorical = TRUE))
 # best plot
 conditions <- make_conditions(alm_bm1, "locationF")
 alm_plot <- plot(conditional_effects(alm_bm1, categorical = TRUE, conditions = conditions), plot = FALSE)[[2]]
-alm_plot + labs(y = "Total tool use duration per day (seconds)", x = "Day of the year") + theme_bw()
+alm_plot + theme_bw()
 
 ### Efficiency ####
 ## Comparing efficiency between age classes on opened sequences, multiple measures
@@ -203,7 +203,7 @@ ggplot(data = m_type_pred2, aes(x = Age, y = .epred)) + geom_violin(aes(color = 
   guides(color = "none", fill = "none") +
   labs(x = "Age", y = "Number of pounds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
+                     axis.title = element_text(size = 14))
 
 # item difference in number of pounds to open item
 ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color = item, fill = item), alpha = 0.4) +
@@ -222,6 +222,7 @@ testdist3.1 <- fitdist(detseq_oi$n_miss, "pois")
 plot(testdist3.1)
 
 # Model 3: Number of misstrikes depending on age, item, anviltype and subjectID as random effect
+## ZERO-INFLATED POISSON
 m_e3 <- brm(n_miss ~ Age + item*anviltype + (1|subjectID), data = detseq_o, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
 # saving and loading model
 # saveRDS(m_e3, "detailedtools/RDS/m_e3.rds")
@@ -350,21 +351,40 @@ ggplot(detseq, aes(x = h_endloc, fill = h_endloc)) + geom_histogram(stat = "coun
 # what is the average number of pounds per hammerstone?
 
 # filter to opened sequences, with hammerstone IDs known
-detseq_oh <- detseq_o[detseq_o$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB") & detseq_o$split == FALSE,]
+detseq_oh <- detseq_o[detseq_o$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB", "BRK", "BOA", "BOA_A") & detseq_o$split == FALSE,]
 
 # number of pounds per hammerstone
+ftable(detseq_oh$hammerID)
 ggplot(detseq_oh[detseq_oh$Age == "Adult" | detseq_oh$Age == "Subadult",], aes(x=hammerID, y=n_pounds, fill = location)) + 
   geom_violin() + theme_bw() + facet_wrap(~item, scales = "free_x")
 
 # what items are being opened with what hammerstone
-ggplot(detseq[detseq$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB"),], aes(x = item, fill = item)) + geom_histogram(stat = "count") + theme_bw() + facet_wrap(~hammerID, scales = "free_x")
+ggplot(detseq[detseq$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB", "BRK", "BOA"),], aes(x = item, fill = item)) + geom_histogram(stat = "count") + theme_bw() + facet_wrap(~hammerID, scales = "free_x")
 
 ## hammer timeline
 ggplot(detseq_oh[detseq_oh$deployment == "R11" & detseq_oh$location == "EXP-ANV-01",], 
-       aes(x = mediadate, fill = hammerID)) + geom_histogram() + theme_bw() + facet_wrap(~hammerID)
+       aes(x = mediadate, fill = hammerID)) + geom_histogram() + theme_bw() 
+ggplot(detseq_oh[detseq_oh$location == "CEBUS-02",], 
+       aes(x = mediadate, fill = hammerID)) + geom_histogram() + theme_bw() 
 
+# are some individuals contributing a lot to the accumulation at a site
+ggplot(detseq[detseq$subjectID %in% unique(detseq_oi$subjectID),], 
+       aes(x = subjectID, fill = Age)) + geom_histogram(stat = "count") +
+  theme_bw() + facet_grid(cols = vars(location), rows = vars(deployment))
 
+# individuals preferences for hammerstones
+ggplot(detseq[detseq$subjectID %in% unique(detseq_oi$subjectID) & detseq$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB", "BRK", "BOA", "BOA_A") & detseq$location == "EXP-ANV-01" & detseq$deployment == "R11",], 
+      aes(x = subjectID, fill = Age)) + geom_histogram(stat = "count") +
+  theme_bw() + facet_wrap(~hammerID)
 
+ggplot(detseq[detseq$subjectID %in% unique(detseq_oi$subjectID) & detseq$hammerID %in% c("BAM", "BCH", "DPL", "DWA", "DWA_A", "DWA_B", "FRE", "LCH", "PEB", "BRK", "BOA", "BOA_A") & detseq$location == "CEBUS-02",], 
+       aes(x = subjectID, fill = Age)) + geom_histogram(stat = "count") +
+  theme_bw() + facet_wrap(~hammerID)
 
+# descriptives
+ftable(detseq_o$socatt)
+ftable(detseq_o$displacement)
+ftable(detseq_o$scrounging)
 
-
+ftable(dettools_r2$mistaketype)
+ftable(dettools_r2$repostype)
