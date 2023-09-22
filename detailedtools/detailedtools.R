@@ -260,23 +260,65 @@ colnames(nr_pounds) <- c("sequenceID", "n_pounds")
 
 dettools_r2 <- left_join(dettools_r2, nr_pounds, "sequenceID")
 
-# nr of misstrikes
-missonly <- dettools_r2[dettools_r2$behavior == "misstrike",]
-nr_miss <- missonly %>%
+# nr of misstrikes (true miss)
+missonly <- dettools_r2[dettools_r2$behavior == "misstrike" & str_detect(dettools_r2$mistaketype, "None") == TRUE,]
+nr_miss <- missonly %>% 
   dplyr::count(sequenceID)
 colnames(nr_miss) <- c("sequenceID", "n_miss")
 
 dettools_r2 <- left_join(dettools_r2, nr_miss, "sequenceID")
 dettools_r2$n_miss[which(is.na(dettools_r2$n_miss) == TRUE)] <- 0
 
-# nr of repositions
-reponly <- dettools_r2[dettools_r2$behavior == "reposit",]
-nr_repos <- reponly %>%
+# nr of misstrikes (item flies)
+fliesonly <- dettools_r2[dettools_r2$behavior == "misstrike" & str_detect(dettools_r2$mistaketype, "itemflies") == TRUE,]
+nr_flies <- fliesonly %>% 
   dplyr::count(sequenceID)
-colnames(nr_repos) <- c("sequenceID", "n_reposit")
+colnames(nr_flies) <- c("sequenceID", "n_flies")
 
-dettools_r2 <- left_join(dettools_r2, nr_repos, "sequenceID")
-dettools_r2$n_reposit[which(is.na(dettools_r2$n_reposit) == TRUE)] <- 0
+dettools_r2 <- left_join(dettools_r2, nr_flies, "sequenceID")
+dettools_r2$n_flies[which(is.na(dettools_r2$n_flies) == TRUE)] <- 0
+
+# nr of misstrikes (hammer lost)
+hlossonly <- dettools_r2[dettools_r2$behavior == "misstrike" & str_detect(dettools_r2$mistaketype, "hammerlost") == TRUE,]
+nr_hloss <- hlossonly %>% 
+  dplyr::count(sequenceID)
+colnames(nr_hloss) <- c("sequenceID", "n_hloss")
+
+dettools_r2 <- left_join(dettools_r2, nr_hloss, "sequenceID")
+dettools_r2$n_hloss[which(is.na(dettools_r2$n_hloss) == TRUE)] <- 0
+
+# make combined metric
+dettools_r2$n_misstotal <- dettools_r2$n_miss + dettools_r2$n_flies + dettools_r2$n_hloss
+
+# nr of repositions (hammer)
+hreponly <- dettools_r2[dettools_r2$behavior == "reposit" & dettools_r2$repostype == "hammer",]
+nr_hrepos <- hreponly %>%
+  dplyr::count(sequenceID)
+colnames(nr_hrepos) <- c("sequenceID", "n_hamreposit")
+
+dettools_r2 <- left_join(dettools_r2, nr_hrepos, "sequenceID")
+dettools_r2$n_hamreposit[which(is.na(dettools_r2$n_hamreposit) == TRUE)] <- 0
+
+# nr of repositions (item)
+ireponly <- dettools_r2[dettools_r2$behavior == "reposit" & dettools_r2$repostype == "item",]
+nr_irepos <- ireponly %>%
+  dplyr::count(sequenceID)
+colnames(nr_irepos) <- c("sequenceID", "n_itemreposit")
+
+dettools_r2 <- left_join(dettools_r2, nr_irepos, "sequenceID")
+dettools_r2$n_itemreposit[which(is.na(dettools_r2$n_itemreposit) == TRUE)] <- 0
+
+# nr of repositions (peel)
+peelonly <- dettools_r2[dettools_r2$behavior == "reposit" & dettools_r2$repostype == "peel",]
+nr_peel <- peelonly %>%
+  dplyr::count(sequenceID)
+colnames(nr_peel) <- c("sequenceID", "n_peel")
+
+dettools_r2 <- left_join(dettools_r2, nr_peel, "sequenceID")
+dettools_r2$n_peel[which(is.na(dettools_r2$n_peel) == TRUE)] <- 0
+
+# combined metric (hammer and item repositioning, not peeling)
+dettools_r2$n_reposit <- dettools_r2$n_hamreposit + dettools_r2$n_itemreposit
 
 ## add age/sex to IDS
 # load in file with capuchin age and sexes. KEEP THIS UP TO DATE
@@ -318,7 +360,8 @@ detseq$n_pounds[which(detseq$h_startloc == "inhand" | detseq$split == TRUE)] <- 
 head(detseq)
 detseq <- detseq[,c("videoID", "codingdate", "medianame", "videolength", "coder", "subjectID", "seqnumber", "location",
                     "mediadate", "sequenceID", "item", "h_startloc", "h_endloc", "hammerID", "outcome", "displacement", 
-                    "socatt", "scrounging", "anviltype", "videostart", "videoend", "seqduration", "n_pounds", "n_miss", 
+                    "socatt", "scrounging", "anviltype", "videostart", "videoend", "seqduration", "n_pounds", "n_miss",
+                    "n_flies", "n_hloss", "n_misstotal", "n_itemreposit", "n_hamreposit", "n_peel",
                     "n_reposit", "Age", "Sex", "split", "hammerswitches", "anvilswitches", "age_of", "deployment")]
 #saveRDS(detseq, "detailedtools/RDS/detseq.rds")
 
@@ -330,5 +373,6 @@ dettools_r2 <- dettools_r2[,c("videoID", "codingdate", "medianame", "videolength
                               "outcome", "displacement", "socatt", "scrounging", "onefoot", "overhead", "onehand", "tailsupport",
                               "mistaketype", "repostype", "hammerID2", "h_switchloc", "anviltype2", 
                               "videostart", "videoend", "seqduration", "n_pounds", "n_miss", 
+                              "n_flies", "n_hloss", "n_misstotal", "n_itemreposit", "n_hamreposit", "n_peel",
                               "n_reposit", "Age", "Sex", "split", "age_of", "deployment")]
 #saveRDS(dettools_r2, "detailedtools/RDS/dettools_r2.rds")

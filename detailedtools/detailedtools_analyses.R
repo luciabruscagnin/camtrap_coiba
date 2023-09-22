@@ -217,25 +217,32 @@ ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color =
                      axis.title = element_text(size = 14)) 
 
 #### 3. Number of mistakes #####
+
+# look at item flying, hammer loss and missing separately
+# are items more likely to fly on stone or wood?
+t.test(detseq_oi$n_flies ~ as.factor(detseq_oi$anviltype))
+# seems like flying happens more at stone than wood ( but also coded more there now)
+
+## 3a: True misses (n_miss)
 descdist(detseq_oi$n_miss)
 testdist3.1 <- fitdist(detseq_oi$n_miss, "pois")
 plot(testdist3.1)
 
-# Model 3: Number of misstrikes depending on age, item, anviltype and subjectID as random effect
+# Model 3a: Number of misstrikes (true misses) depending on age, item, anviltype and subjectID as random effect
 ## ZERO-INFLATED POISSON
-m_e3 <- brm(n_miss ~ Age + item*anviltype + (1|subjectID), data = detseq_o, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
+m_e3a <- brm(n_miss ~ Age + item*anviltype + (1|subjectID), data = detseq_o, family = zero_inflated_poisson, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
 # saving and loading model
-# saveRDS(m_e3, "detailedtools/RDS/m_e3.rds")
-# m_e3 <- readRDS("detailedtools/RDS/m_e3.rds")
+# saveRDS(m_e3a, "detailedtools/RDS/m_e3a.rds")
+# m_e3a <- readRDS("detailedtools/RDS/m_e3a.rds")
 
 # diagnostics
-summary(m_e3)
-mcmc_plot(m_e3)
-pp_check(m_e3)
-plot(conditional_effects(m_e3))
+summary(m_e3a)
+mcmc_plot(m_e3a)
+pp_check(m_e3a)
+plot(conditional_effects(m_e3a))
 
 # make violin plot
-m_type_pred3 <- m_e3 %>% 
+m_type_pred3 <- m_e3a %>% 
   epred_draws(newdata = tibble(Age = detseq_oi$Age,
                                item = detseq_oi$item,
                                anviltype = detseq_oi$anviltype,
@@ -252,6 +259,72 @@ ggplot(data = m_type_pred3, aes(x = Age, y = .epred)) + geom_boxplot(aes(color =
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+## 3b: Item flying (itemflies)
+
+# Model 3b: Number of item flies depending on age, item, anviltype and subjectID as random effect
+## ZERO-INFLATED POISSON
+m_e3b <- brm(n_flies ~ Age + item*anviltype + (1|subjectID), data = detseq_o, family = zero_inflated_poisson, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
+# saving and loading model
+# saveRDS(m_e3b, "detailedtools/RDS/m_e3b.rds")
+# m_e3b <- readRDS("detailedtools/RDS/m_e3b.rds")
+
+# diagnostics
+summary(m_e3b)
+mcmc_plot(m_e3b)
+pp_check(m_e3b)
+plot(conditional_effects(m_e3b))
+
+# make violin plot
+m_type_pred3b <- m_e3b %>% 
+  epred_draws(newdata = tibble(Age = detseq_oi$Age,
+                               item = detseq_oi$item,
+                               anviltype = detseq_oi$anviltype,
+                               subjectID = detseq_oi$subjectID))
+
+# age difference in items flying
+ggplot(data = m_type_pred3b, aes(x = Age, y = .epred)) + geom_boxplot(aes(color = Age, fill = Age), alpha = 0.4) +
+  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_flies, color = Age), geom = "point", fun = "mean",
+               size = 4) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  guides(color = "none", fill = "none") +
+  labs(x = "Age", y = "Average number of items flying per tool use sequence") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
+## 3c: Losing hammer (hammerlost)
+
+# Model 3c: Number of hammer losses depending on age, item, anviltype and subjectID as random effect
+## ZERO-INFLATED POISSON
+m_e3c <- brm(n_hloss ~ Age + item*anviltype + (1|subjectID), data = detseq_o, family = zero_inflated_poisson, iter = 1000, chain = 2, core = 2, backend = "cmdstanr", control = list(adapt_delta = 0.99))
+# saving and loading model
+# saveRDS(m_e3c, "detailedtools/RDS/m_e3c.rds")
+# m_e3c <- readRDS("detailedtools/RDS/m_e3c.rds")
+
+# diagnostics
+summary(m_e3c)
+mcmc_plot(m_e3c)
+pp_check(m_e3c)
+plot(conditional_effects(m_e3c))
+
+# make violin plot
+m_type_pred3c <- m_e3c %>% 
+  epred_draws(newdata = tibble(Age = detseq_oi$Age,
+                               item = detseq_oi$item,
+                               anviltype = detseq_oi$anviltype,
+                               subjectID = detseq_oi$subjectID))
+
+# age difference in hammer losses
+ggplot(data = m_type_pred3c, aes(x = Age, y = .epred)) + geom_boxplot(aes(color = Age, fill = Age), alpha = 0.4) +
+  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_hloss, color = Age), geom = "point", fun = "mean",
+               size = 4) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  guides(color = "none", fill = "none") +
+  labs(x = "Age", y = "Average number of hammer losses per tool use sequence") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
 # individual variation in how many mistakes are made
 # only take individuals with enough sequences observed
 ftable(detseq_oi$subjectID)
@@ -262,6 +335,30 @@ for (i in 1:nrow(knownids)) {
 
 detseq_o2 <- left_join(detseq_o[which(detseq_o$subjectID %in% knownids$ID),], knownids, by = c("subjectID" = "ID"))
 
+ggplot(detseq_o2, aes(x=subjectID, y=n_misstotal, color = Age, fill = Age)) + 
+  geom_violin(alpha = 0.4) + geom_text(aes(y = 7.5, x = subjectID, label = nrow)) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  labs(x = "Age", y = "Average number of mistakes per tool use sequence") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
+ggplot(detseq_o2, aes(x=subjectID, y=n_flies, color = Age, fill = Age)) + 
+  geom_violin(alpha = 0.4) + geom_text(aes(y = 7.5, x = subjectID, label = nrow)) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  labs(x = "Age", y = "Average number of mistakes per tool use sequence") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
+ggplot(detseq_o2, aes(x=subjectID, y=n_hloss, color = Age, fill = Age)) + 
+  geom_violin(alpha = 0.4) + geom_text(aes(y = 7.5, x = subjectID, label = nrow)) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  labs(x = "Age", y = "Average number of mistakes per tool use sequence") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
 ggplot(detseq_o2, aes(x=subjectID, y=n_miss, color = Age, fill = Age)) + 
   geom_violin(alpha = 0.4) + geom_text(aes(y = 7.5, x = subjectID, label = nrow)) +
   scale_fill_viridis_d(option = "plasma", end = 0.8) +
@@ -270,30 +367,32 @@ ggplot(detseq_o2, aes(x=subjectID, y=n_miss, color = Age, fill = Age)) +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
+
 #### 4. Number of repositions #####
 
-# Model 4: Number of repositions depending on age, item, anviltype and subject ID as random effect
-m_e4 <- brm(n_reposit ~ Age + item*anviltype + (1|subjectID), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+## 4a: repositions of item
+# Model 4a: Number of repositions depending on age, item, anviltype and subject ID as random effect
+m_e4a <- brm(n_itemreposit ~ Age + item*anviltype + (1|subjectID), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
 # saving and loading model
-# saveRDS(m_e4, "detailedtools/RDS/m_e4.rds")
-# readRDS("detailedtools/RDS/m_e4.rds")
+# saveRDS(m_e4a, "detailedtools/RDS/m_e4a.rds")
+# readRDS("detailedtools/RDS/m_e4a.rds")
 
 # diagnostics
-summary(m_e4)
-mcmc_plot(m_e4)
-pp_check(m_e4)
-plot(conditional_effects(m_e4))
+summary(m_e4a)
+mcmc_plot(m_e4a)
+pp_check(m_e4a)
+plot(conditional_effects(m_e4a))
 
 # make violin plot
-m_type_pred4 <- m_e4 %>% 
+m_type_pred4 <- m_e4a %>% 
   epred_draws(newdata = tibble(Age = detseq_oi$Age,
                                item = detseq_oi$item,
                                anviltype = detseq_oi$anviltype,
                                subjectID = detseq_oi$subjectID))
 
-# age difference in number of repositions
+# age difference in number of item repositions
 ggplot(data = m_type_pred4, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
-  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_reposit, color = Age), geom = "point", fun = "mean",
+  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_itemreposit, color = Age), geom = "point", fun = "mean",
                size = 4) +
   scale_fill_viridis_d(option = "plasma", end = 0.8) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
@@ -301,6 +400,69 @@ ggplot(data = m_type_pred4, aes(x = Age, y = .epred)) + geom_violin(aes(color = 
   labs(x = "Age", y = "Average number of repositions per sequence") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
+
+## 4b: repositions of hammers
+# Model 4b: Number of hammer repositions depending on age, item, anviltype and subject ID as random effect
+m_e4b <- brm(n_hamreposit ~ Age + item*anviltype + (1|subjectID), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+# saving and loading model
+# saveRDS(m_e4b, "detailedtools/RDS/m_e4b.rds")
+# readRDS("detailedtools/RDS/m_e4b.rds")
+
+# diagnostics
+summary(m_e4b)
+mcmc_plot(m_e4b)
+pp_check(m_e4b)
+plot(conditional_effects(m_e4b))
+
+# make violin plot
+m_type_pred4b <- m_e4b %>% 
+  epred_draws(newdata = tibble(Age = detseq_oi$Age,
+                               item = detseq_oi$item,
+                               anviltype = detseq_oi$anviltype,
+                               subjectID = detseq_oi$subjectID))
+
+# age difference in number of hammer repositions
+ggplot(data = m_type_pred4b, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
+  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_hamreposit, color = Age), geom = "point", fun = "mean",
+               size = 4) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  guides(color = "none", fill = "none") +
+  labs(x = "Age", y = "Average number of repositions per sequence") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
+## 4c: peeling
+# Model 4c: Number of peels depending on age, item, anviltype and subject ID as random effect
+m_e4c <- brm(n_peel ~ Age + item*anviltype + (1|subjectID), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+# saving and loading model
+# saveRDS(m_e4c, "detailedtools/RDS/m_e4c.rds")
+# readRDS("detailedtools/RDS/m_e4c.rds")
+
+# diagnostics
+summary(m_e4c)
+mcmc_plot(m_e4c)
+pp_check(m_e4c)
+plot(conditional_effects(m_e4c))
+
+# make violin plot
+m_type_pred4c <- m_e4c %>% 
+  epred_draws(newdata = tibble(Age = detseq_oi$Age,
+                               item = detseq_oi$item,
+                               anviltype = detseq_oi$anviltype,
+                               subjectID = detseq_oi$subjectID))
+
+# age difference in number of peels
+ggplot(data = m_type_pred4c, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
+  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_itemreposit, color = Age), geom = "point", fun = "mean",
+               size = 4) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  guides(color = "none", fill = "none") +
+  labs(x = "Age", y = "Average number of repositions per sequence") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
 
 # individual variation
 
