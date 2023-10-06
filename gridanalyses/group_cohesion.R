@@ -1103,8 +1103,8 @@ for(i in 1:n){
 
 
 dat_list <- list(
-  N = dTU_total$n,
-  C = 1:24,
+  N = dTU$n,
+  C = dTU$camera,
   D = TUdistmat2 )
 
 mTdist <- ulam(
@@ -1117,6 +1117,10 @@ mTdist <- ulam(
     etasq ~ dexp(2),
     rhosq ~ dexp(0.5)
   ), data = dat_list, chains = 4, cores = 4, iter = 4000)
+
+# save and load model
+#saveRDS(mTdist_TU, "gridanalyses/RDS/mTdist_TU.rds")
+#mTdist_TU <- readRDS("gridanalyses/RDS/mTdist_TU.rds")
 
 precis(mTdist, 2)
 
@@ -1131,13 +1135,13 @@ plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
 x_seq <- seq(from=0, to = 10, length.out = 100)
 pmcov <- sapply(x_seq, function(x) post$etasq*exp(-post$rhosq*x^2))
 pmcov_mu <- apply(pmcov, 2, mean)
-lines(x_seq, pmcov_mu, lwd = 2)
+lines(x_seq, pmcov_mu, lwd = 3)
 
 # prior in black
 for(i in 1:n){
   curve(etasq[i]*exp(-rhosq[i]*x^2),
         add = TRUE, lwd = 2,
-        col = col.alpha("black",0.5))
+        col = col.alpha("black",0.25))
 }
 
 # plot 60 functions sampled from the posterior
@@ -1174,9 +1178,9 @@ for( i in 1:24 )
 
 ## including "population", in our case, total sequence length
 dat_list <- list(
-  N = dTU_total$n,
-  C = 1:24,
-  P = dTU_total$seq_length,
+  N = dTU$n,
+  C = dTU$camera,
+  P = dTU$seq_length,
   D = TUdistmat2 )
 
 mTdist_TU2 <- ulam(
@@ -1191,6 +1195,10 @@ mTdist_TU2 <- ulam(
     rhosq ~ dexp(0.5)
   ), data = dat_list, chains = 4, cores = 4, iter = 4000)
 
+# save and load model
+#saveRDS(mTdist_TU2, "gridanalyses/RDS/mTdist_TU2.rds")
+#mTdist_TU2 <- readRDS("gridanalyses/RDS/mTdist_TU2.rds")
+
 precis(mTdist_TU2, 3)
 
 # visualize posterior
@@ -1204,7 +1212,7 @@ plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
 for(i in 1:n){
   curve(etasq[i]*exp(-rhosq[i]*x^2),
         add = TRUE, lwd = 2,
-        col = col.alpha("black",0.5))
+        col = col.alpha("black",0.25))
 }
 
 ## null model in blue
@@ -1244,7 +1252,6 @@ for( i in 1:24 )
     if ( i < j )
       lines( c( dTU_total$long[i],dTU_total$long[j] ) , c( dTU_total$lat[i],dTU_total$lat[j] ) ,
              lwd=2 , col=col.alpha("black",Rho[i,j]^2) )
-
 
 # now on log seqlength scale , still want to make this plot
 # youtube video https://www.youtube.com/watch?v=PIuqxOBJqLU around 35:00
@@ -1386,8 +1393,8 @@ dNTU_meanrate <- aggregate(dNTU$rate, by = list(camera = dNTU$camera,  long = dN
 ## first just model the spatial covariance, null-model without any predictors
 # simulate priors
 dat_list <- list(
-  N = dNTU_total$n,
-  C = 1:25,
+  N = dNTU$n,
+  C = dNTU$camera,
   D = NTUdistmat2 )
 
 mTdist_NTU <- ulam(
@@ -1400,6 +1407,10 @@ mTdist_NTU <- ulam(
     etasq ~ dexp(2),
     rhosq ~ dexp(0.5)
   ), data = dat_list, chains = 4, cores = 4, iter = 4000)
+
+# save and load model
+#saveRDS(mTdist_NTU, "gridanalyses/RDS/mTdist_NTU.rds")
+#mTdist_NTU <- readRDS("gridanalyses/RDS/mTdist_NTU.rds")
 
 precis(mTdist_NTU, 2)
 
@@ -1414,13 +1425,13 @@ plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
 x_seq <- seq(from=0, to = 10, length.out = 100)
 pmcov <- sapply(x_seq, function(x) post$etasq*exp(-post$rhosq*x^2))
 pmcov_mu <- apply(pmcov, 2, mean)
-lines(x_seq, pmcov_mu, lwd = 2)
+lines(x_seq, pmcov_mu, lwd = 3)
 
 # prior in black
 for(i in 1:n){
   curve(etasq[i]*exp(-rhosq[i]*x^2),
         add = TRUE, lwd = 2,
-        col = col.alpha("black",0.5))
+        col = col.alpha("black",0.25))
 }
 
 # plot 60 functions sampled from the posterior
@@ -1458,9 +1469,9 @@ for( i in 1:25 )
 
 ## including "population", in our case, total sequence length
 dat_list <- list(
-  N = dNTU_total$n,
-  C = 1:25,
-  P = dNTU_total$seq_length,
+  N = dNTU$n,
+  C = dNTU$camera,
+  P = dNTU$seq_length,
   D = NTUdistmat2 )
 
 mTdist_NTU2 <- ulam(
@@ -1475,6 +1486,9 @@ mTdist_NTU2 <- ulam(
     rhosq ~ dexp(0.5)
   ), data = dat_list, chains = 4, cores = 4, iter = 4000)
 
+#saveRDS(mTdist_NTU2, "gridanalyses/RDS/mTdist_NTU2.rds")
+#mTdist_NTU2 <- readRDS("gridanalyses/RDS/mTdist_NTU2.rds")
+
 precis(mTdist_NTU2, 2)
 
 # visualize posterior
@@ -1484,11 +1498,17 @@ post2 <- extract.samples(mTdist_NTU2)
 plot(NULL, xlab = "distance (hundred m)", ylab = "covariance",
      xlim = c(0,10), ylim = c(0,2))
 
+# compute posterior mean covariance
+x_seq <- seq(from=0, to = 10, length.out = 100)
+pmcov <- sapply(x_seq, function(x) post$etasq*exp(-post$rhosq*x^2))
+pmcov_mu <- apply(pmcov, 2, mean)
+lines(x_seq, pmcov_mu, lwd = 3)
+
 # prior in black
 for(i in 1:n){
   curve(etasq[i]*exp(-rhosq[i]*x^2),
         add = TRUE, lwd = 2,
-        col = col.alpha("black",0.5))
+        col = col.alpha("black",0.25))
 }
 
 ## null model in blue
