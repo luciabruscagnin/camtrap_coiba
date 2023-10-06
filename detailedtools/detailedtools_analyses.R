@@ -536,7 +536,11 @@ ggplot(melt_detseq) + geom_violin(aes(y = value, x = variable, color = variable,
 # either work with actual number or do maybe a julian day or something? and then split by ID? 
 
 ## Individual variation in technique
-# very basic, pie chart of types of 
+# very basic, pie chart of types of pounds
+
+
+
+
 
 
 ### Hammerstones #####

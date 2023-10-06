@@ -1042,6 +1042,62 @@ TUdistmat <- readRDS("gridanalyses/RDS/TUdistmat.rds")
 NTUdistmat <- readRDS("gridanalyses/RDS/NTUdistmat.rds")
 gridseq_oc <- readRDS("gridanalyses/RDS/gridseq_oc.rds")
 
+dTU <- gridseq_oc[gridseq_oc$gridtype == "TU",]
+dTU <- droplevels.data.frame(dTU)
+# index cameras
+dTU$camera <- as.numeric(dTU$locationfactor)
+
+dNTU <- gridseq_oc[gridseq_oc$gridtype == "NTU",]
+dNTU <- droplevels.data.frame(dNTU)
+# index cameras
+dNTU$camera <- as.numeric(dNTU$locationfactor)
+
+## visualize the data we have
+
+# TU and NTU separate
+# per month (?)
+# information captured:
+# one row per camera, number of sequences in a day (or a hash per sequence). Color can reflect number of capuchins per sequence. 
+# Could do it on time and show all the times of the sequences within a day (limit to daytime hours?)
+
+# subset to things we need for graph
+dTU_graph <- dTU[,c("seq_startday", "locationfactor", "n", "seq_length", "seq_start", "camera")]
+dNTU_graph <- dNTU[,c("seq_startday", "locationfactor", "n", "seq_length", "seq_start", "camera")]
+
+rbPal <- colorRampPalette(c("blue", "red"))
+colors <- data.frame(n = 1:16, color = rbPal(16))
+
+cameraTU_index <- data.frame(index = sort(unique(dTU_graph$camera)), cameralocation = sort(unique(dTU_graph$locationfactor)))
+cameraNTU_index <- data.frame(index = sort(unique(dNTU_graph$camera)), cameralocation = sort(unique(dNTU_graph$locationfactor)))
+
+#TU group - first half of deployment (until 18th of September 2022)
+par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
+plot(camera ~ seq_start, data = dTU_graph[dTU_graph$seq_start < "2022-09-19",], pch = 21, yaxt = "n",  ylab = NA, xaxs ="i", col = colors$color[n], xlim = c(as.POSIXct("2022-05-12"), as.POSIXct("2022-09-20")))
+axis(2, at=cameraTU_index$index , labels=cameraTU_index$cameralocation, las=2 , cex.axis=1 , tick=TRUE , lwd.ticks=0 , hadj=0.8)
+legend("right",  inset=c(-0.15,0), pch=21, col=colors$color, as.character(colors$n), horiz=FALSE , cex=1 ,  xjust = 0.5, title = "# capuchins" )
+title("Tool-users")
+
+# TU group - second half of deployment (18th of september - end)
+par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
+plot(camera ~ seq_start, data = dTU_graph[dTU_graph$seq_start > "2022-09-18",], pch = 21, yaxt = "n",  ylab = NA, xaxs ="i", col = colors$color[n], xlim = c(as.POSIXct("2022-09-17"), as.POSIXct("2023-01-26")))
+axis(2, at=cameraTU_index$index , labels=cameraTU_index$cameralocation, las=2 , cex.axis=1 , tick=TRUE , lwd.ticks=0 , hadj=0.8)
+legend("right",  inset=c(-0.15,0), pch=21, col=colors$color, as.character(colors$n), horiz=FALSE , cex=1 ,  xjust = 0.5, title = "# capuchins" )
+title("Tool-users")
+
+# NTU group - first half of deployment (until 18th of september)
+par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
+plot(camera ~ seq_start, data = dNTU_graph[dNTU_graph$seq_start < "2022-09-19",], pch = 21, yaxt = "n",  ylab = NA, xaxs ="i", col = colors$color[n], xlim = c(as.POSIXct("2022-05-09"), as.POSIXct("2022-09-20")))
+axis(2, at=cameraNTU_index$index , labels=cameraNTU_index$cameralocation, las=2 , cex.axis=1 , tick=TRUE , lwd.ticks=0 , hadj=0.8)
+legend("right",  inset=c(-0.15,0), pch=21, col=colors$color, as.character(colors$n), horiz=FALSE , cex=1 ,  xjust = 0.5, title = "# capuchins" )
+title("Non-tool-users")
+
+# NTU group - second half of deployment (18th of september - end)
+par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
+plot(camera ~ seq_start, data = dNTU_graph[dNTU_graph$seq_start > "2022-09-18",], pch = 21, yaxt = "n",  ylab = NA, xaxs ="i", col = colors$color[n], xlim = c(as.POSIXct("2022-09-17"), as.POSIXct("2023-01-27")))
+axis(2, at=cameraNTU_index$index , labels=cameraNTU_index$cameralocation, las=2 , cex.axis=1 , tick=TRUE , lwd.ticks=0 , hadj=0.8)
+legend("right",  inset=c(-0.15,0), pch=21, col=colors$color, as.character(colors$n), horiz=FALSE , cex=1 ,  xjust = 0.5, title = "# capuchins" )
+title("Non-tool-users")
+
 # make sure statistical rethinking is installed
 require(rethinking)
 
@@ -1058,10 +1114,7 @@ NTUdistmat2 <- round(NTUdistmat/100,2)
 
 ## without 0s
 ### Tool-users
-dTU <- gridseq_oc[gridseq_oc$gridtype == "TU",]
-dTU <- droplevels.data.frame(dTU)
-# index cameras
-dTU$camera <- as.numeric(dTU$locationfactor)
+
 
 # island example is collapsed to have one row per island. So we would need one row per camera. 
 # he uses poisson, if we want poisson too we could do total number of capuchins seen (very crude but ok)
@@ -1369,10 +1422,6 @@ for( i in 1:24 )
 
 
 ### Non-tool-users
-dNTU <- gridseq_oc[gridseq_oc$gridtype == "NTU",]
-dNTU <- droplevels.data.frame(dNTU)
-# index cameras
-dNTU$camera <- as.numeric(dNTU$locationfactor)
 
 # island example is collapsed to have one row per island. So we would need one row per camera. 
 # he uses poisson, if we want poisson too we could do total number of capuchins seen (very crude but ok)
