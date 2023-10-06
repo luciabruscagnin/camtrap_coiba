@@ -143,7 +143,7 @@ ggplot(data = m_type_pred, aes(x = Age, y = .epred)) + geom_violin(aes(color = A
   guides(color = "none", fill = "none") +
   labs(x = "Age", y = "Seconds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
+                     axis.title = element_text(size = 14))
 
 # item difference in duration to open item
 ggplot(data = m_type_pred, aes(x = item, y = .epred)) + geom_violin(aes(color = item, fill = item), alpha = 0.4) + ylim(0,100) +
@@ -154,7 +154,7 @@ ggplot(data = m_type_pred, aes(x = item, y = .epred)) + geom_violin(aes(color = 
   guides(color = "none", fill = "none") +
   labs(x = "Item type", y = "Seconds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) + facet_wrap(~anviltype)
+                     axis.title = element_text(size = 14)) 
 
 #### 2. Number of pounds #####
 descdist(detseq_oi$n_pounds)
@@ -476,26 +476,68 @@ ggplot(detseq_o2, aes(x=subjectID, y=n_reposit, color = Age, fill = Age)) +
 
 #### Exploring individual variation and development #####
 
+# focus only on identifiable individuals and data from EXP-ANV-01 R11 (which is complete)
+detseq_o2c <- detseq_o2[detseq_o2$deployment == "R11",]
+ftable(detseq_o2c$item)
+ftable(detseq_o2c$subjectID)
+# make subjectID factor that is ordered based on age
+detseq_o2c$subjectID <- factor(detseq_o2c$subjectID, levels = c("ZIM", "PEA", "BAL", "TER", "MIC", "LAR", "SPT", "TOM", "SMG"))
+
+## What items they process over time
+ggplot(detseq_o2c[detseq_o2c$location == "EXP-ANV-01",], aes(x = mediadate, fill = item)) + geom_histogram() + facet_wrap(~ subjectID) + theme_bw()
+
+# old plot showing change in n_pound, n_miss and n_reposit (but not accounting for itemtype)
+ggplot(detseq_o2c[detseq_o2c$location == "EXP-ANV-01",]) + geom_smooth(aes(x = mediadate, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = mediadate, y = n_pounds, color = "n_pounds")) + 
+  geom_smooth(aes(x = mediadate, y = n_itemreposit,  color = "n_repositions"))  + facet_wrap(~subjectID, scales = "free")  + theme_bw() + scale_color_manual("", breaks = c("n_miss", "n_pounds", "n_repositions"),
+                                                                                                                                                             values = c("red", "blue", "green"))
+
+# how n_pounds changes over time, but ideally staying within each itemtype.
+ggplot(detseq_o2c[detseq_o2c$item == c("almendrabrown"),]) + geom_point(aes(x = mediadate, y = n_pounds, shape = location), alpha = 0.4, color = "brown", size = 3) + geom_smooth(aes(x = mediadate, y = n_pounds), color = "brown") + 
+  facet_wrap(~subjectID) + theme_bw() + ggtitle("Brown Almendra") + labs(x = "Date", y = "Number of pounds to open item") +theme(axis.text = element_text(size = 12),
+                                                                                  axis.title = element_text(size = 14)) 
+
+ggplot(detseq_o2c[detseq_o2c$item == c("almendragreen"),]) + geom_point(aes(x = mediadate, y = n_pounds, shape = location), alpha = 0.4, color = "darkgreen", size = 3) + geom_smooth(aes(x = mediadate, y = n_pounds), color = "darkgreen") + 
+  facet_wrap(~subjectID) + theme_bw() + ggtitle("Green Almendra") + labs(x = "Date", y = "Number of pounds to open item") +theme(axis.text = element_text(size = 12),
+                                                                                                                                 axis.title = element_text(size = 14)) 
+
+# how misstrikes (real misses) change over time, within each itemtype
+ggplot(detseq_o2c[detseq_o2c$item == c("almendrabrown"),]) + geom_point(aes(x = mediadate, y = n_miss, shape = location), alpha = 0.4, color = "brown", size = 3) + geom_smooth(aes(x = mediadate, y = n_miss), color = "brown") + 
+  facet_wrap(~subjectID) + theme_bw() + ggtitle("Brown Almendra") + labs(x = "Date", y = "Number of mistakes") +theme(axis.text = element_text(size = 12),
+                                                                                                                                 axis.title = element_text(size = 14)) + ylim(c(0,10))
+
+# how itemrepositions change over time
+ggplot(detseq_o2c[detseq_o2c$item == c("almendrabrown"),]) + geom_point(aes(x = mediadate, y = n_itemreposit, shape = location), alpha = 0.4, color = "brown", size = 3) + geom_smooth(aes(x = mediadate, y = n_itemreposit), color = "brown") + 
+  facet_wrap(~subjectID) + theme_bw() + ggtitle("Brown Almendra") + labs(x = "Date", y = "Number of repositions per sequence") +theme(axis.text = element_text(size = 12),
+                                                                                                                      axis.title = element_text(size = 14)) + ylim(c(0,10))
+
+# combining n_pounds and n_repositions
+ggplot(detseq_o2c[detseq_o2c$item == c("almendrabrown"),]) + geom_point(aes(x = mediadate, y = n_pounds, color = "Pounds"), shape = 16, alpha = 0.4, size = 3) + 
+  geom_point(aes(x = mediadate, y = n_itemreposit, color = "Item repositions"), shape = 17, alpha = 0.4, size = 3) + geom_smooth(aes(x = mediadate, y = n_pounds, color = "Pounds")) +  
+  geom_smooth(aes(x = mediadate, y = n_itemreposit, color = "Item repositions")) + 
+  facet_wrap(~subjectID, scales = "free_y") + theme_bw() + ggtitle("Brown Almendra") + scale_color_manual("", breaks = c("Pounds", "Item repositions"),
+                                                                                                          values = c("blue", "darkred")) +
+  labs(x = "Date", y = "Number per sequence") +theme(axis.text = element_text(size = 12),  axis.title = element_text(size = 14)) 
+
 # comparing n_pounds, n_miss, n_reposit for known individuals
-melt_detseq <- melt(detseq_o2, measure.vars = c("n_pounds", "n_miss", "n_reposit"))
+melt_detseq <- melt(detseq_o2c, measure.vars = c("n_pounds", "n_misstotal", "n_itemreposit"))
 
 ggplot(melt_detseq) + geom_violin(aes(y = value, x = variable, color = variable, fill = variable), alpha = 0.4) +
   stat_summary(melt_detseq, inherit.aes = FALSE, mapping=aes(x = variable, y = value, color = variable), geom = "point", fun = "mean",
                size = 4) +
-  facet_wrap(~factor(subjectID, levels = c("BAL", "PEA", "TER",  "ZIM", "LAR", "MIC", "SPT", "SMG", "TOM"))) +
+  facet_wrap(~subjectID) +
   scale_fill_viridis_d(option = "plasma", end = 0.8) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
   labs(x = "Age", y = "Average number of repositions per sequence") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
-# improvement over time?
-head(detseq_o2)
-ggplot(detseq_o2[detseq_o2$location == "EXP-ANV-01",]) + geom_smooth(aes(x = videostart, y = n_miss, color = "n_miss")) + geom_smooth(aes(x = videostart, y = n_pounds, color = "n_pounds")) + 
-  geom_smooth(aes(x = videostart, y = n_reposit,  color = "n_repositions"))  + facet_wrap(~subjectID, scales = "free")  + theme_bw() + scale_color_manual("", breaks = c("n_miss", "n_pounds", "n_repositions"),
-                                                                                                                                                          values = c("red", "blue", "green"))
+
 # would probably have to be some kind of GAM, that also includes other things that affects these things (item, anviltype)
 # either work with actual number or do maybe a julian day or something? and then split by ID? 
+
+## Individual variation in technique
+# very basic, pie chart of types of 
+
 
 ### Hammerstones #####
 

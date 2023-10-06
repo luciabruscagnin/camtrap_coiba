@@ -1036,6 +1036,12 @@ ggplot(data = cooccurrences, aes(x = nrcap_lowest, y = nrcap_highest)) + geom_bi
 
 ######## GAUSSIAN PROCESSES ############
 
+## For Brendan: can start running from here
+# load data in 
+TUdistmat <- readRDS("gridanalyses/RDS/TUdistmat.rds")
+NTUdistmat <- readRDS("gridanalyses/RDS/NTUdistmat.rds")
+gridseq_oc <- readRDS("gridanalyses/RDS/gridseq_oc.rds")
+
 # make sure statistical rethinking is installed
 require(rethinking)
 
