@@ -536,9 +536,17 @@ ggplot(melt_detseq) + geom_violin(aes(y = value, x = variable, color = variable,
 # either work with actual number or do maybe a julian day or something? and then split by ID? 
 
 ## Individual variation in technique
-# very basic, pie chart of types of pounds
+# very basic, bar chart of types of pounds
 
+# work not with detseq_o2 but non-aggregated dataset
+str(dettools_r2)
+# filter to known individuals and opened 
+dettools_r2oi <- dettools_r2[dettools_r2$subjectID %in% knownids$ID & dettools_r2$outcome == "opened",]
 
+ggplot(data = dettools_r2oi[dettools_r2oi$behavior == "pound" & dettools_r2oi$poundtype %in% c("crouch", "stand", "jump"),], aes(x = poundtype, fill = subjectID)) + geom_histogram(stat = "count") + facet_wrap(~ subjectID)
+ggplot(data = dettools_r2oi[dettools_r2oi$behavior == "pound" & dettools_r2oi$poundtype %in% c("crouch", "stand", "jump"),], aes(x = onefoot, fill = subjectID)) + geom_histogram(stat = "count") + facet_wrap(~ subjectID)
+
+# also look into GHC code and make sunburst of order of behaviors. Maybe limiting to one type of almendra (or separate for green and brown?)
 
 
 

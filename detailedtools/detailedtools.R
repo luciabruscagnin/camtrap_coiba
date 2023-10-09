@@ -370,9 +370,10 @@ detseq <- detseq[,c("videoID", "codingdate", "medianame", "videolength", "coder"
 head(dettools_r2)
 dettools_r2 <- dettools_r2[,c("videoID", "codingdate", "medianame", "videolength", "coder", "subjectID", "behavior", "comment", 
                               "seqnumber", "location", "mediadate", "sequenceID", "item", "h_startloc", "h_endloc", 
-                              "outcome", "displacement", "socatt", "scrounging", "onefoot", "overhead", "onehand", "tailsupport",
+                              "outcome", "displacement", "socatt", "scrounging", "poundtype", "onefoot", "overhead", "onehand", "tailsupport",
                               "mistaketype", "repostype", "hammerID2", "h_switchloc", "anviltype2", 
                               "videostart", "videoend", "seqduration", "n_pounds", "n_miss", 
                               "n_flies", "n_hloss", "n_misstotal", "n_itemreposit", "n_hamreposit", "n_peel",
                               "n_reposit", "Age", "Sex", "split", "age_of", "deployment")]
 #saveRDS(dettools_r2, "detailedtools/RDS/dettools_r2.rds")
+
