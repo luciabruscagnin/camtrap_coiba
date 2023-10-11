@@ -1605,6 +1605,36 @@ for( i in 1:24 )
 
 
 ### TRIALS #####
+
+### looking at how many 1 individual sequences we get 
+hist(gridsequence_c$n[gridsequence_c$gridtype == "TU"])
+hist(gridsequence_c$n[gridsequence_c$gridtype == "NTU"])
+
+## this is on all data tool site
+# level of observation
+str(agouticlean)
+agouticlean_jt <- agouticlean[agouticlean$island == "Jicaron" & agouticlean$tool_site == 1,]
+v <- as.data.frame(ftable(agouticlean_jt$name))
+# IDs where we have many observations
+ids <- as.character(v$Var1[which(v$Freq > 20)])
+
+agouticlean_jti <- agouticlean_jt[agouticlean_jt$name %in% ids,]
+# number of 1 sequences
+ggplot(data = agouticlean_jti, aes(x = n)) + geom_histogram(stat = "count") + facet_wrap(~name, scales = "free")
+
+# hist of sequences depending on age-sex
+# filter to age-sex that we have enough data for
+agesex <- as.data.frame(ftable(agouticlean_jt$agesexF)) 
+agouticlean_jtas <- agouticlean_jt[agouticlean_jt$agesexF %in% agesex$Var1[which(agesex$Freq > 50)],]
+ggplot(data = agouticlean_jtas, aes(x = n)) + geom_histogram(stat = "count") + facet_wrap(~agesexF, scales = "free")
+
+# only grid data
+ggplot(data = gridclean_c[gridclean_c$gridtype == "TU",], aes(x = n)) + geom_histogram(stat = "count") + facet_wrap(~agesexF, scales = "free")
+ggplot(data = gridclean_c[gridclean_c$gridtype == "NTU",], aes(x = n)) + geom_histogram(stat = "count") + facet_wrap(~agesexF, scales = "free")
+
+# also just out of interest, when we have the ID data, do we see individuals more at specific locations?
+ggplot(data = agouticlean_jti, aes(x = locationName)) + geom_histogram(stat = "count") + facet_wrap(~name)
+
 # trying out looking at explicitly spatial model
 
 agoutiseq_jt_order <- agoutiseq_jt[order(agoutiseq_jt$seq_start),]

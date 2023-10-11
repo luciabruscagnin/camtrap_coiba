@@ -162,14 +162,6 @@ descdist(detseq_oi$n_pounds)
 testdist2.1 <- fitdist(detseq_oi$n_pounds, "pois")
 plot(testdist2.1)
 
-# relationship between nr of pounds and how long the sequence lasts
-ggplot(detseq_oi, aes(y = seqduration, x = n_pounds, color = Age, shape = Age)) + geom_point(size = 3) + geom_smooth() + 
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  labs(y = "Seconds needed to open item", x = "Number of pounds needed to open item") +
-  theme_bw() + theme(axis.text = element_text(size = 12),
-                     axis.title = element_text(size = 14)) 
-
-
 # Model 2: Number of pounds depending on age, including item, anviltype, and individual ID as random effect
 m_e2 <- brm(n_pounds ~ Age + item*anviltype + (1|subjectID), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
 # save and load model
@@ -215,6 +207,51 @@ ggplot(data = m_type_pred2, aes(x = item, y = .epred)) + geom_violin(aes(color =
   labs(x = "Item type", y = "Number of pounds required to open item") +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
+
+#### 2a. Number of pounds per second (with offset of sequence duration) #####
+# relationship between nr of pounds and how long the sequence lasts
+ggplot(detseq_oi, aes(y = seqduration, x = n_pounds, color = Age, shape = Age)) + geom_point(size = 3) + geom_smooth() + 
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  labs(y = "Seconds needed to open item", x = "Number of pounds needed to open item") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14)) 
+
+
+# Model 2a: Number of pounds depending on age, including item, anviltype, and individual ID as random effect, and sequence duration as offset
+m_e2a <- brm(n_pounds ~ Age + item*anviltype + (1|subjectID) + offset(log(seqduration)), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
+# save and load model
+# saveRDS(m_e2a, "detailedtools/RDS/m_e2a.rds")
+# m_e2a <- readRDS("detailedtools/RDS/m_e2a.rds")
+
+# diagnostics
+summary(m_e2a)
+pp_check(m_e2a)
+mcmc_plot(m_e2a)
+plot(conditional_effects(m_e2a))
+
+# to test hypotheses
+hypothesis(m_e2a, "Intercept  > Intercept + anviltypewood", alpha = 0.05)
+hypothesis(m_e2a, "Intercept  < Intercept + AgeJuvenile", alpha = 0.05)
+
+# visualizing
+# make violin plot
+m_type_pred2 <- m_e2a %>% 
+  epred_draws(newdata = tibble(item = detseq_oi$item,
+                               Age = detseq_oi$Age,
+                               anviltype = detseq_oi$anviltype,
+                               subjectID = detseq_oi$subjectID,
+                               seqduration = detseq_oi$seqduration))
+
+# age difference in number of pounds to open item
+ggplot(data = m_type_pred2, aes(x = Age, y = .epred)) + geom_violin(aes(color = Age, fill = Age), alpha = 0.4) +
+  stat_summary(detseq_o, inherit.aes = FALSE, mapping=aes(x = Age, y = n_pounds, color = Age), geom = "point", fun = "mean",
+               size = 4) +
+  scale_fill_viridis_d(option = "plasma", end = 0.8) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  guides(color = "none", fill = "none") +
+  labs(x = "Age", y = "Number of pounds required to open item") +
+  theme_bw() + theme(axis.text = element_text(size = 12),
+                     axis.title = element_text(size = 14))
 
 #### 3. Number of mistakes #####
 
@@ -474,7 +511,7 @@ ggplot(detseq_o2, aes(x=subjectID, y=n_reposit, color = Age, fill = Age)) +
   theme_bw() + theme(axis.text = element_text(size = 12),
                      axis.title = element_text(size = 14)) 
 
-#### Exploring individual variation and development #####
+### Exploring individual variation and development ####
 
 # focus only on identifiable individuals and data from EXP-ANV-01 R11 (which is complete)
 detseq_o2c <- detseq_o2[detseq_o2$deployment == "R11",]
@@ -534,6 +571,16 @@ ggplot(melt_detseq) + geom_violin(aes(y = value, x = variable, color = variable,
 
 # would probably have to be some kind of GAM, that also includes other things that affects these things (item, anviltype)
 # either work with actual number or do maybe a julian day or something? and then split by ID? 
+detseq_o2$time <- as.numeric(difftime(detseq_o2$mediadate, min(detseq_o2$mediadate), unit = "days"))
+head(detseq_o2c$time)
+detseq_o2$subjectID_F <- as.factor(detseq_o2$subjectID)
+detseq_o2$Age_f <- as.factor(detseq_o2$Age)
+
+str(detseq_o2c)
+dev_gam1 <- gam(n_pounds ~ s(time, by = Age_f) + Age_f + s(subjectID_F, bs = "re"), data = detseq_o2[detseq_o2$item == "almendrabrown",], family = "poisson", method = "REML")
+summary(dev_gam1)
+draw(dev_gam1)
+plot(dev_gam1)
 
 ## Individual variation in technique
 # very basic, bar chart of types of pounds
@@ -547,8 +594,6 @@ ggplot(data = dettools_r2oi[dettools_r2oi$behavior == "pound" & dettools_r2oi$po
 ggplot(data = dettools_r2oi[dettools_r2oi$behavior == "pound" & dettools_r2oi$poundtype %in% c("crouch", "stand", "jump"),], aes(x = onefoot, fill = subjectID)) + geom_histogram(stat = "count") + facet_wrap(~ subjectID)
 
 # also look into GHC code and make sunburst of order of behaviors. Maybe limiting to one type of almendra (or separate for green and brown?)
-
-
 
 
 ### Hammerstones #####
