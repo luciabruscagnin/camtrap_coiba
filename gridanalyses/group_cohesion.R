@@ -1001,7 +1001,11 @@ sum(cooccurrences$nSubadult_1 > 0 | cooccurrences$nSubadult_2 > 0)
 ggplot(data = cooccurrences, aes(x = month(cooccurrences$seqstart), fill = as.factor(year(cooccurrences$seqstart)))) + geom_histogram(bins = 12, col = "black")  + theme_bw() + scale_x_continuous(breaks = 0:12) +
   labs(fill = "Year") + xlab("Month")
 
+# co-occurrences depending on distance
 hist(cooccurrences$distcam12)
+blub2 <- aggregate(cooccurrences$distcam12, by = list(cam1 = cooccurrences$cam1, cam2 = cooccurrences$cam2, distcam = cooccurrences$distcam12), FUN = ftable)
+
+
 summary(cooccurrences$distcam12)
 agoutiseq_jt$year <- year(agoutiseq_jt$seq_start)
 length(unique(agoutiseq_jt$locationfactor[which(agoutiseq_jt$year == "2022")]))
@@ -1033,6 +1037,126 @@ ggplot(data = cooccurrences, aes(x = nrcap_lowest, y = nrcap_highest)) + geom_bi
   stat_bin2d(geom = "text", aes(label = ..count..), binwidth = 1, col = "white") + scale_fill_gradient(limits = c(0, 75), oob = squish) + 
   theme(axis.text.x = element_text(hjust = -10, size = 14), axis.text.y = element_text(vjust = -1, size = 14), 
         axis.ticks = element_blank(), legend.position = "none", axis.title = element_text(size = 18)) + labs(x = "Number of capuchins in smallest party", y = "Number of capuchins in largest party")
+
+### co-occurrences only grid
+# widening timeframe, 2 min instead of 1
+disttime2 <- data.frame(distance = seq(150, 1020, by = 10), time = 120)
+str(disttime2)
+disttime2$time[which(disttime2$distance > 150)] <- 120 + ((disttime2$distance[which(disttime2$distance>150)]-150) * 0.8)
+
+## TU 
+gridseq_ocTU <- gridseq_oc[gridseq_oc$gridtype == "TU" & ! gridseq_oc$sequenceID %in% unfamiliars,]
+# distance matrix is already made
+TUdistmat
+
+# make blank co-occurrence info data frame? 
+gridseq_ocTU$cooccurrence <- 0
+gridseq_ocTU$cooc_ID <- NA
+
+cooccurrences_TU_TU <- data.frame(cooc_ID = "seqid", seqstart = NA, seqday = NA, cam1 = NA, cam2 = NA, cam3 =NA, distcam12 = 0, distcam13 = 0, nrseq = 0, nrcap_1 = 0, nrcap_2 = 0, nrcap_3 = 0,
+                            nAdult_1 = 0, nAdult_2 = 0, nAdult_3 = 0, nSubadult_1 = 0, nSubadult_2 = 0, nSubadult_3 = 0, nJuvenile_1 = 0, nJuvenile_2 = 0,
+                            nJuvenile_3 = 0, nUU_1 = 0, nUU_2 = 0, nUU_3 = 0, tooluse_1 = NA, tooluse_2 = NA, tooluse_3 = NA)
+
+for (i in 1:nrow(gridseq_ocTU)) {
+  ## at beginning have some kind of check if the sequenceID is already in the co-occurence dataframe, if so can skip everything
+  if(sum(str_detect(cooccurrences_TU$cooc_ID, paste(gridseq_ocTU$sequenceID[i]))) == 0) {
+    dist <- as.data.frame(subset(TUdistmat_all, rownames(TUdistmat_all) %in% gridseq_ocTU$locationfactor[i])) 
+    cand_locs <- colnames(dist[,dist > 150]) # make list of candidate locations for co-occurrence (>150 m away)
+    # filter to sequence that are at candidate location and on same day as sequence we're looking at 
+    cand_seq <- gridseq_ocTU[gridseq_ocTU$locationfactor %in% cand_locs & gridseq_ocTU$seqday == gridseq_ocTU$seqday[i], c("sequenceID", "locationfactor", "seqday", "seq_start", "seq_end", "n", "nAdult", "nJuvenile","nSubadult", "nUU", "tooluse")]
+    dist_m <- melt(dist)
+    cand_seq$locationfactor <- as.character(cand_seq$locationfactor)
+    dist_m$variable <- as.character(dist_m$variable)
+    cand_seq <- left_join(cand_seq, dist_m, by = c("locationfactor" = "variable"))
+    # see if there are any co-occurrences
+    # if there is anything, then extract information from those sequences, both add to gridseq_ocTU dataframe, and to co-occurrence dataframe?
+    if(nrow(cand_seq) > 0) {
+      # identify the difftime cutoff for every row
+      cand_seq$cutoff <- disttime2$time[findInterval(cand_seq$value, disttime2$distance)]
+      cand_seq$flag <- ifelse(abs(difftime(gridseq_ocTU$seq_start[i], cand_seq$seq_start, unit = "s")) < cand_seq$cutoff, 1, 0)
+      if(sum(cand_seq$flag) > 0)  {
+        cand_seq$dtime <- difftime(gridseq_ocTU$seq_start[i], cand_seq$seq_start, unit = "s")
+        cand_seq_t <- cand_seq[cand_seq$flag == 1,]
+        cand_seq_t <- cand_seq_t[!duplicated(cand_seq_t$locationfactor),]
+        if(nrow(cand_seq_t) > 0) {
+          gridseq_ocTU$cooccurrence <- 1
+          gridseq_ocTU$cooc_ID[i] <- ifelse(nrow(cand_seq_t) == 1, paste(gridseq_ocTU$sequenceID[i], cand_seq_t$sequenceID[1], sep = ","),
+                                            paste(gridseq_ocTU$sequenceID[i], cand_seq_t$sequenceID[1], cand_seq_t$sequenceID[2], sep = ","))
+          cooccurrences_TU[nrow(cooccurrences_TU) +1,] <- c(gridseq_ocTU$cooc_ID[i], paste(gridseq_ocTU$seq_start[i]), paste(gridseq_ocTU$seqday[i]), paste(gridseq_ocTU$locationfactor[i]), 
+                                                      paste(cand_seq_t$locationfactor[1]), paste(cand_seq_t$locationfactor[2]), cand_seq_t$value[1], cand_seq_t$value[2], nrow(cand_seq_t), gridseq_ocTU$n[i], 
+                                                      cand_seq_t$n[1], cand_seq_t$n[2], gridseq_ocTU$nAdult[i], cand_seq_t$nAdult[1], cand_seq_t$nAdult[2],gridseq_ocTU$nSubadult[i], cand_seq_t$nSubadult[1], 
+                                                      cand_seq_t$nSubadult[2], gridseq_ocTU$nJuvenile[i], cand_seq_t$nJuvenile[1], cand_seq_t$nJuvenile[2], gridseq_ocTU$nUU[i], cand_seq_t$nUU[1], 
+                                                      cand_seq_t$nUU[2], paste(gridseq_ocTU$tooluse[i]), paste(cand_seq_t$tooluse[1]), paste(cand_seq_t$tooluse[2]))
+        }
+      }
+    }
+  }
+  print(i)
+}
+
+cooccurrences_TU <- cooccurrences_TU[-1,]
+cooccurrences_TU[,7:22] <- as.numeric(unlist(cooccurrences_TU[,7:22]))
+
+hist(cooccurrences_TU$distcam12)
+
+## NTU 
+unfamiliars_NTU <- agouticlean$sequenceID[which(str_detect(agouticlean$comments.x, "unfamiliar") == TRUE & agouticlean$tool_site == 0 & agouticlean$island == "Jicaron")]
+gridseq_ocNTU <- gridseq_oc[gridseq_oc$gridtype == "NTU" & ! gridseq_oc$sequenceID %in% unfamiliars_NTU,]
+
+# distance matrix is already made
+NTUdistmat
+
+# make blank co-occurrence info data frame? 
+gridseq_ocNTU$cooccurrence <- 0
+gridseq_ocNTU$cooc_ID <- NA
+
+cooccurrences_NTU <- data.frame(cooc_ID = "seqid", seqstart = NA, seqday = NA, cam1 = NA, cam2 = NA, cam3 =NA, distcam12 = 0, distcam13 = 0, nrseq = 0, nrcap_1 = 0, nrcap_2 = 0, nrcap_3 = 0,
+                                  nAdult_1 = 0, nAdult_2 = 0, nAdult_3 = 0, nSubadult_1 = 0, nSubadult_2 = 0, nSubadult_3 = 0, nJuvenile_1 = 0, nJuvenile_2 = 0,
+                                  nJuvenile_3 = 0, nUU_1 = 0, nUU_2 = 0, nUU_3 = 0, tooluse_1 = NA, tooluse_2 = NA, tooluse_3 = NA)
+
+for (i in 1:nrow(gridseq_ocNTU)) {
+  ## at beginning have some kind of check if the sequenceID is already in the co-occurence dataframe, if so can skip everything
+  if(sum(str_detect(cooccurrences_NTU$cooc_ID, paste(gridseq_ocNTU$sequenceID[i]))) == 0) {
+    dist <- as.data.frame(subset(TUdistmat_all, rownames(TUdistmat_all) %in% gridseq_ocNTU$locationfactor[i])) 
+    cand_locs <- colnames(dist[,dist > 150]) # make list of candidate locations for co-occurrence (>150 m away)
+    # filter to sequence that are at candidate location and on same day as sequence we're looking at 
+    cand_seq <- gridseq_ocNTU[gridseq_ocNTU$locationfactor %in% cand_locs & gridseq_ocNTU$seqday == gridseq_ocNTU$seqday[i], c("sequenceID", "locationfactor", "seqday", "seq_start", "seq_end", "n", "nAdult", "nJuvenile","nSubadult", "nUU", "tooluse")]
+    dist_m <- melt(dist)
+    cand_seq$locationfactor <- as.character(cand_seq$locationfactor)
+    dist_m$variable <- as.character(dist_m$variable)
+    cand_seq <- left_join(cand_seq, dist_m, by = c("locationfactor" = "variable"))
+    # see if there are any co-occurrences
+    # if there is anything, then extract information from those sequences, both add to gridseq_ocNTU dataframe, and to co-occurrence dataframe?
+    if(nrow(cand_seq) > 0) {
+      # identify the difftime cutoff for every row
+      cand_seq$cutoff <- disttime2$time[findInterval(cand_seq$value, disttime2$distance)]
+      cand_seq$flag <- ifelse(abs(difftime(gridseq_ocNTU$seq_start[i], cand_seq$seq_start, unit = "s")) < cand_seq$cutoff, 1, 0)
+      if(sum(cand_seq$flag) > 0)  {
+        cand_seq$dtime <- difftime(gridseq_ocNTU$seq_start[i], cand_seq$seq_start, unit = "s")
+        cand_seq_t <- cand_seq[cand_seq$flag == 1,]
+        cand_seq_t <- cand_seq_t[!duplicated(cand_seq_t$locationfactor),]
+        if(nrow(cand_seq_t) > 0) {
+          gridseq_ocNTU$cooccurrence <- 1
+          gridseq_ocNTU$cooc_ID[i] <- ifelse(nrow(cand_seq_t) == 1, paste(gridseq_ocNTU$sequenceID[i], cand_seq_t$sequenceID[1], sep = ","),
+                                            paste(gridseq_ocNTU$sequenceID[i], cand_seq_t$sequenceID[1], cand_seq_t$sequenceID[2], sep = ","))
+          cooccurrences_NTU[nrow(cooccurrences_NTU) +1,] <- c(gridseq_ocNTU$cooc_ID[i], paste(gridseq_ocNTU$seq_start[i]), paste(gridseq_ocNTU$seqday[i]), paste(gridseq_ocNTU$locationfactor[i]), 
+                                                            paste(cand_seq_t$locationfactor[1]), paste(cand_seq_t$locationfactor[2]), cand_seq_t$value[1], cand_seq_t$value[2], nrow(cand_seq_t), gridseq_ocNTU$n[i], 
+                                                            cand_seq_t$n[1], cand_seq_t$n[2], gridseq_ocNTU$nAdult[i], cand_seq_t$nAdult[1], cand_seq_t$nAdult[2],gridseq_ocNTU$nSubadult[i], cand_seq_t$nSubadult[1], 
+                                                            cand_seq_t$nSubadult[2], gridseq_ocNTU$nJuvenile[i], cand_seq_t$nJuvenile[1], cand_seq_t$nJuvenile[2], gridseq_ocNTU$nUU[i], cand_seq_t$nUU[1], 
+                                                            cand_seq_t$nUU[2], paste(gridseq_ocNTU$tooluse[i]), paste(cand_seq_t$tooluse[1]), paste(cand_seq_t$tooluse[2]))
+        }
+      }
+    }
+  }
+  print(i)
+}
+
+cooccurrences_NTU <- cooccurrences_NTU[-1,]
+cooccurrences_NTU[,7:22] <- as.numeric(unlist(cooccurrences_NTU[,7:22]))
+
+hist(cooccurrences_NTU$distcam12)
+
+
 
 ######## GAUSSIAN PROCESSES ############
 
