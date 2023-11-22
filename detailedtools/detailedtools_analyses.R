@@ -582,19 +582,128 @@ summary(dev_gam1)
 draw(dev_gam1)
 plot(dev_gam1)
 
+### Technique ####
 ## Individual variation in technique
 # very basic, bar chart of types of pounds
 
 # work not with detseq_o2 but non-aggregated dataset
 str(dettools_r2)
-# filter to known individuals and opened 
-dettools_r2oi <- dettools_r2[dettools_r2$subjectID %in% knownids$ID & dettools_r2$outcome == "opened",]
+# filter to known individuals and opened, not split, hammerstone not already in hand and only brown almendras? trying to keep most things consistent
+dettools_r2oi <- dettools_r2[dettools_r2$subjectID %in% knownids$ID & dettools_r2$outcome == "opened" & dettools_r2$item == "almendrabrown" & dettools_r2$split == FALSE & !dettools_r2$h_startloc == "inhand",]
+# also filter out to only the behaviors (so remove hammerstone for sure)
+dettools_r2oi <- dettools_r2oi[!dettools_r2oi$behavior %in% c("hammerstone"), ]
 
 ggplot(data = dettools_r2oi[dettools_r2oi$behavior == "pound" & dettools_r2oi$poundtype %in% c("crouch", "stand", "jump"),], aes(x = poundtype, fill = subjectID)) + geom_histogram(stat = "count") + facet_wrap(~ subjectID)
 ggplot(data = dettools_r2oi[dettools_r2oi$behavior == "pound" & dettools_r2oi$poundtype %in% c("crouch", "stand", "jump"),], aes(x = onefoot, fill = subjectID)) + geom_histogram(stat = "count") + facet_wrap(~ subjectID)
 
-# also look into GHC code and make sunburst of order of behaviors. Maybe limiting to one type of almendra (or separate for green and brown?)
+# make new behavior comment that also includes what type of pound it is 
+dettools_r2oi$behavior[which(dettools_r2oi$behavior == "pound")] <- ifelse(dettools_r2oi$poundtype[which(dettools_r2oi$behavior == "pound")] =="stand", "standpound", 
+                                 ifelse(dettools_r2oi$poundtype[which(dettools_r2oi$behavior == "pound")] == "crouch", "crouchpound", "jumppound"))
+dettools_r2oi$behavior[which(dettools_r2oi$behavior == "reposit")] <- ifelse(dettools_r2oi$repostype[which(dettools_r2oi$behavior == "reposit")] == "peel", "peel", "reposit")
 
+## sunburst
+require(sunburstR)
+#function to be able to suppress the NA's
+paste5 <- function(..., sep = " ", collapse = NULL, na.rm = F) {
+  if (na.rm == F)
+    paste(..., sep = sep, collapse = collapse)
+  else
+    if (na.rm == T) {
+      paste.na <- function(x, sep) {
+        x <- gsub("^\\s+|\\s+$", "", x)
+        ret <- paste(na.omit(x), collapse = sep)
+        is.na(ret) <- ret == ""
+        return(ret)
+      }
+      df <- data.frame(..., stringsAsFactors = F)
+      ret <- apply(df, 1, FUN = function(x) paste.na(x, sep))
+      
+      if (is.null(collapse))
+        ret
+      else {
+        paste.na(ret, sep = collapse)
+      }
+    }
+}
+
+#make sure it doesn't round to the nearest 10
+custom.message = "function (d) {
+  root = d;
+  while (root.parent) {
+    root = root.parent
+  }
+  p = (100*d.value/root.value).toPrecision(3);
+  msg = p+' %<br/>'+d.value+' of '+root.value;
+  return msg;
+}"
+
+cols <- data.frame(col = c("purple",  # anvilswitch
+          "#990F0F",  # crouchpound
+          "#005000", # jumppound
+          "yellow", #misstrike
+          "#008600", # peel
+          "#009292", # reposit
+          "darkblue", # standpound
+          "#e0e2e3", #seqend
+          "orange"), behavior = c("anvilswitch", "crouchpound", "jumppound", "misstrike", "peel", "reposit", "standpound", "seqend", "hammerswitch"))
+
+unique(sunbursttools_s$behavior)
+## make a sunburst, would want to be able to split by adult, subadult, juvenile (I think?)
+# need columns: sequenceID, individual, age, behavior, get number of what number of behavior it is in the sequence
+sunbursttools <- dettools_r2oi[,c("sequenceID", "subjectID", "Age", "behavior")]
+
+sunbursttools$nr <- ave(sunbursttools$sequenceID, sunbursttools$sequenceID, FUN = seq_along)
+hist(as.numeric(sunbursttools$nr))
+sunbursttools$nr_n <- as.numeric(sunbursttools$nr)
+# so okay some go really long.. Potentially could consider only taking the ones that don't go beyond 10
+long_sequences <- unique(sunbursttools$sequenceID[which(sunbursttools$nr_n > 10)])
+sunbursttools_s <- subset(sunbursttools, ! sunbursttools$sequenceID %in% long_sequences)
+sunbursttools_s <- sunbursttools_s[complete.cases(sunbursttools_s),]
+
+suntoolsC <- dcast(sunbursttools_s, sequenceID ~ nr, value.var = "behavior")
+
+#steps to make sunburst
+suntoolsC$First <- suntoolsC$`1`
+suntoolsC$Second <- suntoolsC$`2`
+suntoolsC$Third <- suntoolsC$`3`
+suntoolsC$Fourth <- suntoolsC$`4`
+suntoolsC$Fifth <- suntoolsC$`5`
+suntoolsC$Sixth <- suntoolsC$`6`
+suntoolsC$Seventh <- suntoolsC$`7`
+suntoolsC$Eighth <- suntoolsC$`8`
+suntoolsC$Ninth <- suntoolsC$`9`
+suntoolsC$Tenth <- suntoolsC$`10`
+
+suntoolsC$sequence <- with(suntoolsC, paste5(Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, sep = "-", na.rm = T))
+
+# general sunburst
+sunburst(data.frame(table(suntoolsC$sequence)), colors = cols, explanation = custom.message)
+
+# still need to make colors the same across sunbursts!! 
+# https://stackoverflow.com/questions/49993198/how-to-specify-the-colors-and-toggle-labels-for-each-category-in-r-sunburst
+# https://community.plotly.com/t/sunburst-color-levels-r/33253/5
+# https://stackoverflow.com/questions/70246083/how-to-setup-a-color-per-category-accross-all-layers-of-a-sunburst-plotly-graph
+
+# adults
+adultsequences <- unique(sunbursttools_s$sequenceID[which(sunbursttools_s$Age == "Adult")])
+suntoolsC_adult <- suntoolsC[suntoolsC$sequenceID %in% adultsequences,]
+
+sunburst(data.frame(table(suntoolsC_adult$sequence)), explanation = custom.message)
+
+# subadults
+subadultsequences <- unique(sunbursttools_s$sequenceID[which(sunbursttools_s$Age == "Subadult")])
+suntoolsC_subadult <- suntoolsC[suntoolsC$sequenceID %in% subadultsequences,]
+
+sunburst(data.frame(table(suntoolsC_subadult$sequence)), explanation = custom.message)
+
+# juveniles
+juvsequences <- unique(sunbursttools_s$sequenceID[which(sunbursttools_s$Age == "Juvenile")])
+suntoolsC_juv <- suntoolsC[suntoolsC$sequenceID %in% juvsequences,]
+
+sunburst(data.frame(table(suntoolsC_juv$sequence)), explanation = custom.message)
+
+## potentially could look only at the pound progression (so only have jumppound, standpound, crouchpound)
+# but this does look like a good visual tool for comparison (once I have the same behaviors in the same colors across sunbursts)
 
 ### Hammerstones #####
 

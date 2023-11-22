@@ -376,4 +376,3 @@ dettools_r2 <- dettools_r2[,c("videoID", "codingdate", "medianame", "videolength
                               "n_flies", "n_hloss", "n_misstotal", "n_itemreposit", "n_hamreposit", "n_peel",
                               "n_reposit", "Age", "Sex", "split", "age_of", "deployment")]
 #saveRDS(dettools_r2, "detailedtools/RDS/dettools_r2.rds")
-
