@@ -412,7 +412,7 @@ ggplot(detseq_o2, aes(x=subjectID, y=n_miss, color = Age, fill = Age)) +
 m_e4a <- brm(n_itemreposit ~ Age + item*anviltype + (1|subjectID), data = detseq_oi, family = "poisson", iter = 1000, chain = 2, core = 2, backend = "cmdstanr")
 # saving and loading model
 # saveRDS(m_e4a, "detailedtools/RDS/m_e4a.rds")
-# readRDS("detailedtools/RDS/m_e4a.rds")
+# m_e4a <- readRDS("detailedtools/RDS/m_e4a.rds")
 
 # diagnostics
 summary(m_e4a)
@@ -647,7 +647,6 @@ cols <- data.frame(col = c("purple",  # anvilswitch
           "#e0e2e3", #seqend
           "orange"), behavior = c("anvilswitch", "crouchpound", "jumppound", "misstrike", "peel", "reposit", "standpound", "seqend", "hammerswitch"))
 
-unique(sunbursttools_s$behavior)
 ## make a sunburst, would want to be able to split by adult, subadult, juvenile (I think?)
 # need columns: sequenceID, individual, age, behavior, get number of what number of behavior it is in the sequence
 sunbursttools <- dettools_r2oi[,c("sequenceID", "subjectID", "Age", "behavior")]
