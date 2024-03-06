@@ -1,5 +1,11 @@
 #agoutisequence_c contains also observations without capuchin detection
 library(dplyr)
+library(lme4)
+library(devtools)
+library(marginaleffects)
+library(ggeffects)
+library(ggplot2)
+library(tidyverse)
 setwd("C:/Users/Lucia/Desktop/IRT3 - thesis/camtrap_coiba-main (github)/camtrap_coiba-main")
 agoutisequence_c<-read.csv("agoutisequence_c.csv")
 str(agoutisequence_c)
@@ -85,206 +91,209 @@ cebus_inspection_data_cebus01 <- agoutisequence_c %>%
   filter(locationName == "CEBUS-01" & n_inspect ==1)
 unique(cebus_inspection_data_cebus01$seqday)
 
+plot(capuchin_cleaned$inspection_rate ~ capuchin_cleaned$date)
+capuchin_cleaned
 
-####from "activity_other.R"
-require(lubridate)
-require(brms)
-require(lme4)
-require(dplyr)
-require(ggplot2)
-require(fitdistrplus)
-require(mgcv)
-require(gratia)
-
-### Camera Inspection ####
-# For now overall, but could split into age/sex categories
-# have nr of capuchins per sequence inspecting the camera
-
-# get day of deployment (from 1 up) by doing date of sequence - start date deployment?
-str(agoutisequence_c)
-#create a column where there is the difference of the start day of the sequence and the start day of the deployment
-#the sequence can start on the deployment start day or later
-agoutisequence_c$depdays <- as.numeric(difftime(agoutisequence_c$seq_startday, agoutisequence_c$dep_startday, units = "days"))
-#extract depnr from the tag, which is its numerical part 
-agoutisequence_c$depnr <- as.numeric(unlist(regmatches(agoutisequence_c$tags, gregexpr("[[:digit:]]+", agoutisequence_c$tags))))
-agoutisequence_c$depnrF <- factor(agoutisequence_c$depnr, order = TRUE)
-
-## only consider sequences with capuchins, all deployments?
-#tags, I have 12 tags, R9 is missing and one is "Caution | R11"
-unique(agoutisequence_c$tags)
-#depnr is from the tags, I have numbers from 1 to 12, 9 is missing
-unique(agoutisequence_c$depnr)
-
-agouti_inspect <- agoutisequence_c[agoutisequence_c$capuchin == 1,]
-# can either use nr of capuchins per sequence inspecting
-# or proportion of capuchins per sequence inspecting (over detections?)
-agouti_inspect$prop_inspect <- agouti_inspect$n_inspect/agouti_inspect$n
-
-
-# NEED TO CHANGE THE DEPLOYMENT NR TO 'NR OF DEPLOYMENTS IN THIS GROUP'. 
-# below is a very roundabout way (im sure it can be done in 1/2 lines). But it works!
-# the number we have now (depnr) is really just the number of the deployment
-#for each unique locationfactor I have the nr (extracted from tags) of the deployments
-depnrs <- aggregate(depnr ~ locationfactor, data = agouti_inspect, FUN = unique)
-#I calculate the nr of different deployments per each locationfactor (CEBUS 02,..), I can have up to 7 different deployments
-depnrs$nrdep <- lengths(depnrs$depnr)
-
-#sort the agouti_inspect dataframe by locationfactor and depnr
-agouti_inspect <- agouti_inspect[order(agouti_inspect$locationfactor, agouti_inspect$depnr),]
-# Create new columns for up to 7 deployments in depnrs and initialize them to NA
-depnrs$seconddep <- NA
-depnrs$thirddep <- NA
-depnrs$fourthdep <- NA
-depnrs$fifthdep <- NA
-depnrs$sixthdep <- NA
-depnrs$seventhdep <- NA
-for(i in 1:nrow(depnrs)) {
-  depnrs$depnr[[i]] <- sort((depnrs$depnr)[[i]])
-  #assign the first deployment to the firstdep column
-  depnrs$firstdep[i] <- depnrs$depnr[[i]][1]
-  if(depnrs$nrdep[i] > 1) {
-    depnrs$seconddep[i] <- depnrs$depnr[[i]][2]
-  }
-  if(depnrs$nrdep[i] > 2) {
-    depnrs$thirddep[i] <- depnrs$depnr[[i]][3]
-  }
-  if(depnrs$nrdep[i] > 3) {
-    depnrs$fourthdep[i] <- depnrs$depnr[[i]][4] 
-  }
-  if(depnrs$nrdep[i] > 4) {
-    depnrs$fifthdep[i] <- depnrs$depnr[[i]][5]
-  }
-  if(depnrs$nrdep[i] > 5) {
-    depnrs$sixthdep[i] <- depnrs$depnr[[i]][6]
-  }
-  if(depnrs$nrdep[i] > 6) {
-    depnrs$seventhdep[i] <- depnrs$depnr[[i]][7]}
+ccr1<-capuchin_cleaned[which(capuchin_cleaned$tags=="R1"),]
+str(ccr1)
+for (i in sort(unique(ccr1$locationID))){
+  plot(inspection_rate ~ date , data=ccr1[ccr1$locationID==i,])
 }
-agouti_inspect$depnr2 <- NA
-#left join "agouti_inspect" with "depnrs", excluding the second column (the one specifing the vector with the nr of the deployments)
-agouti_inspect <- left_join(agouti_inspect, depnrs[,-2], by  = "locationfactor")
-#???create a new column "depnr2" in agouti_inspect so that if a deployment's number (depnr) matches the first deployment number (firstdep) within its group, it is assigned the position or value 1 in the depnr2 column.
-agouti_inspect$depnr2 <- ifelse(agouti_inspect$depnr == agouti_inspect$firstdep, 1,
-                                ifelse(agouti_inspect$depnr == agouti_inspect$seconddep, 2,
-                                       ifelse(agouti_inspect$depnr == agouti_inspect$thirddep, 3,
-                                              ifelse(agouti_inspect$depnr == agouti_inspect$fourthdep, 4,
-                                                     ifelse(agouti_inspect$depnr == agouti_inspect$fifthdep, 5,
-                                                            ifelse(agouti_inspect$depnr == agouti_inspect$sixthdep, 6,
-                                                                   NA))))))
+unique(ccr1$locationID)
+#I have 15 different locationsID in R1, so 15 plots
 
-agouti_inspect$depnr2 <- factor(agouti_inspect$depnr2, order = TRUE)
+###inspection_rate against date of R1###
+Sys.setlocale("LC_TIME", "en_US.UTF-8") #set language to english
+plot(inspection_rate ~ date , data=ccr1, main = "R1") 
+#Is the linear model appropriate? Let's check the assumptions.
+m1 <- lm(inspection_rate ~ date , data=ccr1) #it is bad because the date seems to have a positive effect on the inspection rate, this is due to the fact that it does not consider 0s (no inspections) in between 
+#1. Linearity: we are far from linearity, a lm is not appropriate
+lines(lowess(ccr1$date, ccr1$inspection_rate), col = "red") #the lowess line highlights the absence of linearity
+plot(m1, which = 1)
+#2. Zero inflation
+#count the number of zeros, there are 178/940 are 0s.
+zero_count <- sum(ccr1$inspection_rate == 0)
+#histogram of the distribution of Inspection rate
+hist(ccr1$inspection_rate, breaks = 20, main = "Distribution of Inspection Rate")
+#3. Normality of residuals
+qqnorm(residuals(m1))
+qqline(residuals(m1))
+shapiro.test(residuals(m1)) #low p-value, almost 0, support agains H0 of linearity, the residuals from the lm are NOT normally distributed
 
-# this is now per specific location, could also consider doing it per area (e.g. if tool users are used 
-# to camera's you'd think they wouldn't respond that strongly to a camera being placed later)
-# unless the response is also about the specific camera, not about camera traps in general
-# can think about this. The old deployment nr with the tag of the deployment captures how much time has passed since the project start
+###Let's start with the models
+##I still use the simplest model as a starting point, so the lm
+###m1
+m1 <- lm(inspection_rate ~ date , data=ccr1) #it is bad because the date seems to have a positive effect on the inspection rate, this is due to the fact that it does not consider 0s (no inspections) in between 
+summary(m1) #bad do not do, we have already eexplained why
+###m2, not completed yet
+m2 <- glm((insp_day ~ date , data=ccr1 , weights=ccr1$)) #put the weights as the total number of capuchin detections per location per day
+summary(m2)
+###m3
+m3 <- glm(insp_day ~ date, data=ccr1, family = "poisson") #start with this
+summary(m3)
+plot(m3)
+plot_predictions(m3, condition = "date") #does not seem to work
+##I found another code to plot predictions(https://stats.stackexchange.com/questions/487947/plotting-predicted-values-with-lmer)
+#add predicted values to the original dataset
+ccr1 <- ccr1 %>%
+  rowwise() %>%
+  mutate(pred = predict(m3, newdata = data.frame(date = date), type = "response"))
+#plot predictions
+m3 <- glm(insp_day ~ date, data=ccr1, family = "poisson") #start with this
+library(ggplot2)
+ccr1 %>%
+  ggplot(aes(date, pred, color = uniqueloctag)) +
+  geom_line() +
+  geom_point(aes(date, insp_day, color = uniqueloctag)) +
+  labs(title = "Predicted Values by uniqueloctag",
+       x = "Date",
+       y = "Predicted Value") +
+  theme_minimal()
 
-#? the new deployment nr captures how many deployments have already been in this specific location. 
+###m3v, in this model the slope is different for each unique loctag
+m3v <- glmer(insp_day ~ date + (1|uniqueloctag), data=ccr1, family = "poisson")
+summary(m3v)
+plot(m3v)
+##plot predictions using the same code as before
+#add predicted values to the original dataset
+ccr1 <- ccr1 %>%
+  rowwise() %>%
+  mutate(pred = predict(m3v, newdata = data.frame(date = date, uniqueloctag = uniqueloctag), type = "response"))
+#plot predictions
+library(ggplot2)
+ccr1 %>%
+  ggplot(aes(date, pred, color = uniqueloctag)) +
+  geom_line() +
+  geom_point(aes(date, insp_day, color = uniqueloctag)) +
+  labs(title = "Predicted Values by uniqueloctag",
+       x = "Date",
+       y = "Predicted Value") +
+  theme_minimal()
+###m4
+m4 <- glmer(insp_day ~ date + tool_site + (1|uniqueloctag), data=ccr1, family = "poisson")
+summary(m4)
+plot(m4)
+##plot predictions, always same code
+ccr1 <- ccr1 %>%
+  rowwise() %>%
+  mutate(pred = predict(m4, newdata = data.frame(date = date, tool_site = tool_site, uniqueloctag = uniqueloctag), type = "response"))
+library(ggplot2)
+ccr1 %>%
+  ggplot(aes(date, pred, color = uniqueloctag)) +
+  geom_line() +
+  geom_point(aes(date, insp_day, color = uniqueloctag)) +
+  labs(title = "Predicted Values by uniqueloctag",
+       x = "Date",
+       y = "Predicted Value") +
+  theme_minimal()
+##m4 but distinguish tool site from non-tool
+ccr1 <- ccr1 %>%
+  rowwise() %>%
+  mutate(pred = predict(m4, newdata = data.frame(date = date, tool_site = tool_site, uniqueloctag = uniqueloctag), type = "response"))
+#plot predictions with different linetypes for tool_site levels
+library(ggplot2)
+ccr1 %>%
+  ggplot(aes(date, pred, color = uniqueloctag, linetype = factor(tool_site))) +
+  geom_line() +
+  geom_point(aes(date, insp_day, color = uniqueloctag, shape = factor(tool_site)), size = 2) +
+  labs(title = "Predicted Values by uniqueloctag",
+       x = "Date",
+       y = "Predicted Value") +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_shape_manual(values = c(16, 17)) +
+  theme_minimal()
+unique(ccr1$tool_site) #1 and 0, so solid and 16 (circles) is for tool-using, dashed and 17 (triangles) is for non-tool using
+###m4v, date effect depends on the tool or non-tool
+m4v <- glmer(insp_day ~ date * tool_site + (1|uniqueloctag), data=ccr1, family = "poisson")
+summary(m4v)
+plot(m4v)
+##plot predictions
+ccr1 <- ccr1 %>%
+  rowwise() %>%
+  mutate(pred = predict(m4v, newdata = data.frame(date = date, tool_site = tool_site, uniqueloctag = uniqueloctag), type = "response"))
+library(ggplot2)
+ccr1 %>%
+  ggplot(aes(date, pred, color = uniqueloctag, linetype = factor(tool_site))) +
+  geom_line() +
+  geom_point(aes(date, insp_day, color = uniqueloctag, shape = factor(tool_site)), size = 2) +
+  labs(title = "Predicted Values by uniqueloctag",
+       x = "Date",
+       y = "Predicted Value") +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_shape_manual(values = c(16, 17)) +
+  theme_minimal()
 
-agouti_inspect <- agouti_inspect[,c("sequenceID", "locationfactor", "seq_start", "seq_end", "seq_length",
-                                    "uniqueloctag", "dep_start", "dep_end", "dep_length_hours", "month",
-                                    "season", "island", "tool_anvil", "tool_site", "streambed", "n",
-                                    "n_inspect", "depdays", "depnr2", "depnr", "depnrF", "toolusers")]
+####plot main fixed effect per tool or non-tool against the data
+##I have started doing it for m3v but I am a bit unsure on what I am plotting
+###m3v
+summary(m3v)
+ranef(m3v) #I don't get this
+library(ggplot2)
 
-#### Models ####
-# for now only considering sequences with capuchins!
+#create a new dataset with date and predicted values for plotting
+plot_data_m3v <- expand.grid(
+  date = seq(min(ccr1$date), max(ccr1$date), by = "days"),
+  uniqueloctag = unique(ccr1$uniqueloctag),
+  tool = c(0, 1)
+)
+#add predicted values to the new dataset
+plot_data_m3v$pred <- predict(m3v, newdata = plot_data_m3v, type = "response")
+#plot main fixed effect of tool, I can see that per all the locations the inpection rate is higher for tool-users(?)
+ggplot(plot_data_m3v, aes(date, pred, color = factor(tool))) +
+  geom_line() +
+  geom_point(aes(shape = factor(tool), fill = factor(tool)), size = 2) +
+  labs(title = "Main Fixed Effect of Tool",
+       x = "Date",
+       y = "Predicted Value",
+       color = "Tool") +
+  scale_shape_manual(values = c(16, 17)) +  # Shapes for 0 and 1
+  theme_minimal()
 
-library(brms)
-# set normal prior
-inspect_prior <- c(prior(normal(0,2), class = b))
+##add slopes, the shapes make the graph difficult to read
+#plot main fixed effect per tool with separate slopes for each uniqueloctag. The blue slope hides the one for the non-tool users.
+ggplot(plot_data_m3v, aes(date, pred, color = factor(tool))) +
+  geom_line() +
+  geom_jitter(aes(shape = factor(tool)), size = 2, position = position_jitter(width = 0.2), show.legend = FALSE) +
+  geom_smooth(aes(group = interaction(uniqueloctag, tool), method = "lm", se = FALSE)) +
+  labs(title = "Main Fixed Effect of Tool",
+       x = "Date",
+       y = "Predicted Value",
+       color = "Tool") +
+  scale_shape_manual(values = c(16, 17)) +  # Shapes for 0 and 1
+  facet_wrap(~ uniqueloctag, scales = "free") +  # Separate slopes for each uniqueloctag
+  theme_minimal()
 
-## prior simulation (for 4a model)
-#warning message: rows containing NAs were excluded from the model,cannot plot it
-ibm4a_p <- brm(n_inspect|trials(n) ~ depdays*toolusers*depnr2 + (1|locationfactor), family = "binomial", data = agouti_inspect,
-               iter = 2000, chains = 2, cores = 2, backend = "cmdstan", prior = inspect_prior, sample_prior =  "only")
+#trying to solve it
+#reorder levels of the "tool" variable
+plot_data_m3v$tool <- factor(plot_data_m3v$tool, levels = c(1, 0))
 
-plot(ibm4a_p)
+#plot main fixed effect per tool with separate colors for each uniqueloctag
+ggplot(plot_data_m3v, aes(date, pred, color = factor(tool))) +
+  geom_line(size = 1.5) +  # Increased line thickness
+  geom_smooth(aes(group = interaction(uniqueloctag), linetype = factor(tool), color = factor(tool)), method = "lm", se = FALSE, size = 1.5) +
+  labs(title = "Main Fixed Effect of Tool",
+       x = "Date",
+       y = "Predicted Value",
+       color = "Tool") +
+  scale_color_manual(values = c("darkblue", "red")) +  # Colors for tool 1 and tool 0
+  facet_wrap(~ uniqueloctag, scales = "free") +  # Separate panels for each uniqueloctag
+  theme_minimal()
 
-##### IBM1: Model 1, only looking at days since deployment started in interaction with toolusers yes or no #####
-# nr of capuchins
-ibm1 <- brm(n_inspect ~ depdays*toolusers, family = "poisson", data = agoutisequence_c[agoutisequence_c$capuchin == 1 & agoutisequence_c$depnr < 7,],
-            iter = 2000, chains = 2, cores = 2, backend = "cmdstan", prior = inspect_prior)
-#saveRDS(ibm1, file ="tide_analysis/ModelRDS/ibm1.rds")
-ibm1 <- readRDS("tide_analysis/ModelRDS/ibm1.rds")
-summary(ibm1)
-plot(conditional_effects(ibm1))
+##the shapes overlap...I am thinking how to represent it
+ggplot(plot_data_m3v, aes(date, pred, color = factor(uniqueloctag), linetype = factor(tool))) +
+  geom_line() +
+  geom_point(aes(shape = factor(tool)), size = 2) +
+  labs(title = "Main Fixed Effect of Tool",
+       x = "Date",
+       y = "Predicted Value",
+       color = "Uniqueloctag",
+       linetype = "Tool") +
+  scale_shape_manual(values = c(16, 17)) +  # Shapes for 0 and 1
+  theme_minimal()
 
-# inspections decrease over time
-# non tool users inspect more than tool users
+###that's what I have done so far
 
-##### IBM2: Model 2, adding nr of deployment (how many deployments have been at this location?) #####
-# nr of capuchins
-ibm2 <- brm(n_inspect ~ depdays*toolusers + depnr2, family = "poisson", data = agoutisequence_c[agoutisequence_c$capuchin == 1 & agoutisequence_c$depnr < 7,],
-            iter = 2000, chains = 2, cores = 2, backend = "cmdstan", prior = inspect_prior)
-#saveRDS(ibm3, file ="tide_analysis/ModelRDS/ibm2.rds")
-#ibm2 <- readRDS("tide_analysis/ModelRDS/ibm2.rds")
-summary(ibm2)
-plot(conditional_effects(ibm2))
-plot(ibm2)
 
-# prop of capuchins
-ibm2a <-brm(n_inspect | trials(n) ~ depdays*toolusers + depnr2, family = "binomial", data = agouti_inspect,
-            iter = 2000, chains = 2, cores = 2, backend = "cmdstan", prior = inspect_prior)
-#saveRDS(ibm2a, file = "tide_analysis/ModelRDS/ibm2a.rds")
-ibm2a <- readRDS("tide_analysis/ModelRDS/ibm2a.rds")
-plot(conditional_effects(ibm2a))
 
-# same results as first model
-# with addition that there's highest proportion inspecting in first deployment in a location and drops quickly
 
-# still need to add camera location and deployment number (nested)
 
-##### IBM3: Model 3, adding location factor as random effect #####
-# nr of capuchins
-ibm3 <- brm(n_inspect ~ depdays*toolusers + depnr2 + (1|locationfactor), family = "poisson", data = agouti_inspect,
-            iter = 2000, chains = 2, cores = 2, backend = "cmdstan",  prior = inspect_prior)
-#saveRDS(ibm3, file ="tide_analysis/ModelRDS/ibm3.rds")
-ibm3 <- readRDS("tide_analysis/ModelRDS/ibm3.rds")
-summary(ibm3)
-plot(conditional_effects(ibm3))
-
-# prop of capuchins
-ibm3a <- brm(n_inspect|trials(n) ~ depdays*toolusers + depnr2 + (1|locationfactor), family = "binomial", data = agouti_inspect,
-             iter = 2000, chains = 2, cores = 2, backend = "cmdstan",  prior = inspect_prior)
-#saveRDS(ibm3a, file ="tide_analysis/ModelRDS/ibm3a.rds")
-ibm3a <- readRDS("tide_analysis/ModelRDS/ibm3a.rds")
-summary(ibm3a)
-mcmc_plot(ibm3a)
-plot(conditional_effects(ibm3a))
-
-# all effects still present but less strong
-
-##### IBM4: Model 4, adding location factor as random effect but having other 3 variables as 3-way interaction #####
-# proportion
-ibm4a <- brm(n_inspect|trials(n) ~ depdays*toolusers*depnr2 + (1|locationfactor), family = "binomial", data = agouti_inspect,
-             iter = 2000, chains = 2, cores = 2, backend = "cmdstan",  prior = inspect_prior)
-#saveRDS(ibm4a, file ="tide_analysis/ModelRDS/ibm4a.rds")
-#ibm4a <- readRDS("tide_analysis/ModelRDS/ibm4a.rds")
-summary(ibm4a)
-plot(conditional_effects(ibm4a))
-mcmc_plot(ibm4a)
-
-# get super many max treedepth warnings and took like 2 hours so might not be right way to construct it
-# I think it's because the depnr2 is 1 for most non tool using things. 
-
-### looking at depdays for tool-users non tool users and for number of deployment
-ibm5a <- brm(n_inspect|trials(n) ~ depdays*toolusers + depdays*depnr2+ (1|locationfactor), family = "binomial", data = agouti_inspect,
-             iter = 2000, chains = 2, cores = 2, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
-#ibm5a <- add_criterion(ibm5a, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 2000) 
-#saveRDS(ibm5a, file ="tide_analysis/ModelRDS/ibm5a.rds")
-#ibm5a <- readRDS("tide_analysis/ModelRDS/ibm5a.rds")
-summary(ibm5a)
-plot(conditional_effects(ibm5a))
-mcmc_plot(ibm5a)
-pp_check(ibm5a, ndraws = 100)
-
-# random slope for depdays
-ibm5a_r <- brm(n_inspect|trials(n) ~ depdays*toolusers + depdays*depnr2+ (depdays|locationfactor), family = "binomial", data = agouti_inspect,
-               iter = 2000, chains = 2, cores = 2, backend = "cmdstanr", save_pars = save_pars(all = TRUE))
-ibm5a_r <- add_criterion(ibm5a_r, c("loo", "loo_R2", "bayes_R2"), reloo = TRUE, backend = "cmdstanr", ndraws = 2000) 
-#saveRDS(ibm5a_r, file ="tide_analysis/ModelRDS/ibm5a_r.rds")
-#ibm5a_r <- readRDS("tide_analysis/ModelRDS/ibm5a_r.rds")
-summary(ibm5a_r)
-plot(conditional_effects(ibm5a_r))
-mcmc_plot(ibm5a_r)
-pp_check(ibm5a_r, ndraws = 100)
